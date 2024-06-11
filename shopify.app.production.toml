@@ -1,0 +1,36 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "1639ed2961f7779509b2b69ff929fee2"
+extension_directories = [
+  "extensions/offline-discount",
+  "extensions/offline-exclusive-production",
+  "extensions/offline-gate"
+]
+name = "Offline Unlock"
+handle = "offline-unlock"
+application_url = "https://offline-unlock-production.herokuapp.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = false
+dev_store_url = "offline-unlock.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_discounts,read_gates,write_discounts,write_gates,write_products"
+
+[auth]
+redirect_urls = [
+  "https://offline-unlock-production.herokuapp.com/auth/callback",
+  "https://offline-unlock-production.herokuapp.com/auth/shopify/callback",
+  "https://offline-unlock-production.herokuapp.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "unstable"
+
+[app_proxy]
+url = "https://www.offline.live/api/shopify"
+subpath = "offline"
+prefix = "apps"

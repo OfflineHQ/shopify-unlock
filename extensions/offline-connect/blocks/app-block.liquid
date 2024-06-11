@@ -1,0 +1,183 @@
+{% assign has_matching_gate = false %}
+{%- for gate in product.gates -%}
+  {%- if gate.configuration.handle == app.metafields.offline.offline_handle -%}
+    {% assign has_matching_gate = true %}
+    {%- break -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{% assign product_gated = false %}
+{%- if product.gated? and has_matching_gate -%}
+  {% assign product_gated = true %}
+{%- endif -%}
+
+<div
+  id="offline-unlock"
+  data-account_login_url="{{ routes.account_login_url }}"
+  data-product_id="{{ product.id }}"
+  data-product_gated="{{ product_gated }}"
+  data-product_available="{{ product.available }}"
+  data-product_title="{{ product.title }}"
+  data-settings_css_variables="{{ block.settings | json | escape }}"
+  data-customer_id="{{ customer.id }}"
+  data-customer_email="{{ customer.email }}"
+  data-customer_first_name="{{ customer.first_name }}"
+  data-customer_last_name="{{ customer.last_name }}"
+>
+</div>
+<script async type="module" src="{{ "index.js" | asset_url }}"></script>
+<link rel="stylesheet" href="{{ "index.css" | asset_url }}">
+
+{% schema %}
+{
+  "name": "Offline Connect",
+  "target": "section",
+  "templates": ["product"],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "offline_primary_color",
+      "label": "Primary Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "offline_secondary_color",
+      "label": "Secondary Color",
+      "default": "#F1F5F9"
+    },
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    {
+      "type": "select",
+      "id": "offline_border_radius",
+      "label": "Border Radius",
+      "options": [
+        {
+          "value": "0rem",
+          "label": "None"
+        },
+        {
+          "value": "0.3rem",
+          "label": "Small"
+        },
+        {
+          "value": "0.5rem",
+          "label": "Medium"
+        },
+        {
+          "value": "0.75rem",
+          "label": "Large"
+        },
+        {
+          "value": "1rem",
+          "label": "Full"
+        }
+      ],
+      "default": "0.3rem"
+    },
+    {
+      "type": "header",
+      "content": "Sizing"
+    },
+    {
+      "type": "text",
+      "id": "offline_max_width",
+      "label": "Max Width",
+      "default": "100%"
+    },
+    {
+      "type": "text",
+      "id": "offline_button_height",
+      "label": "Button Height",
+      "default": "3rem"
+    },
+    {
+      "type": "text",
+      "id": "offline_button_font_size",
+      "label": "Button Font Size",
+      "default": "0.85rem"
+    },
+    {
+      "type": "text",
+      "id": "offline_button_letter_spacing",
+      "label": "Button Letter Spacing",
+      "default": "0.06rem"
+    },
+    {
+      "type": "text",
+      "id": "offline_button_padding",
+      "label": "Button Padding",
+      "default": "0.25rem 1rem"
+    },
+    {
+      "type": "text",
+      "id": "offline_avatar_size",
+      "label": "Avatar Size",
+      "default": "3rem"
+    },
+    {
+      "type": "text",
+      "id": "offline_gate_status_banner_height",
+      "label": "Gate Status Banner Height",
+      "default": "3rem"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "select",
+      "id": "offline_font_family",
+      "label": "Font Family",
+      "options": [
+        {
+          "value": "inter",
+          "label": "Inter"
+        },
+        {
+          "value": "roboto",
+          "label": "Roboto"
+        },
+        {
+          "value": "openSans",
+          "label": "Open Sans"
+        },
+        {
+          "value": "neueHaasGrotesk",
+          "label": "Neue Haas Grotesk"
+        },
+        {
+          "value": "helveticaNeue",
+          "label": "Helvetica Neue"
+        }
+      ],
+      "default": "helveticaNeue"
+    }
+  ]
+}
+{% endschema %}
+
+<script>
+  window.myAppGates = [
+    {%- for gate in product.gates -%}
+      {%- if gate.configuration.handle == app.metafields.offline.offline_handle -%}
+        {%- assign configuration = gate.configuration -%}
+        {%- assign metafields = configuration.metafields -%}
+        {%- assign reaction = metafields["offline-gate"].reaction -%}
+        {
+          id: "{{ configuration.id }}",
+          name: "{{ configuration.name | escape }}",
+          requirements: {{ metafields["offline-gate"].requirements }},
+          reaction: {{ reaction }},
+        },
+      {%- endif -%}
+    {%- endfor -%}
+  ];
+</script>

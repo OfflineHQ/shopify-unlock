@@ -1,0 +1,20 @@
+api_version = "unstable"
+
+[[extensions]]
+handle = "offline-exclusive-staging"
+name = "Offline Exclusive Staging"
+description = "Offline Exclusive Staging"
+type = "function"
+
+  [[extensions.targeting]]
+  target = "purchase.validation.run"
+  input_query = "../offline-exclusive/src/run.staging.graphql"
+
+  [extensions.build]
+  command = "cd ../offline-exclusive && cargo wasi build --release --features staging"
+  path = "../offline-exclusive/target/wasm32-wasi/release/offline-exclusive.wasm"
+  watch = [ "../offline-exclusive/**", "*.toml" ]
+
+  [extensions.ui.paths]
+  create = "/"
+  details = "/"

@@ -1,0 +1,6 @@
+assets/*.ts
+assets/*.sh
+assets/*.scss
+assets/*.css.map
+assets/*.json
+node_modules

@@ -1,0 +1,20 @@
+api_version = "unstable"
+
+[[extensions]]
+handle = "offline-exclusive-development"
+name = "Offline Exclusive Development"
+description = "Offline Exclusive Development"
+type = "function"
+
+  [[extensions.targeting]]
+  target = "purchase.validation.run"
+  input_query = "../offline-exclusive/src/run.development.graphql"
+
+  [extensions.build]
+  command = "cd ../offline-exclusive && cargo wasi build --release --features dev"
+  path = "../offline-exclusive/target/wasm32-wasi/release/offline-exclusive.wasm"
+  watch = [ "../offline-exclusive/**", "*.toml" ]
+
+  [extensions.ui.paths]
+  create = "/"
+  details = "/"

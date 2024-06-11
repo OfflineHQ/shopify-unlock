@@ -1,0 +1,37 @@
+query Input {
+  localization {
+    language {
+      isoCode
+    }
+  }
+  cart {
+    attribute(key: "_shopify_gate_context") {
+      value
+    }
+    lines {
+      quantity
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          id
+          product {
+            id
+            gates(handle: "offline-unlock-prod") {
+              id
+              configuration {
+                id
+                handle
+                reaction: metafield(namespace: "offline-gate", key: "reaction") {
+                  value
+                }
+                orderLimit: metafield(namespace: "offline-gate", key: "orderLimit") {
+                  value
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
