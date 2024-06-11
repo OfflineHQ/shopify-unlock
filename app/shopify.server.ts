@@ -30,6 +30,7 @@ const shopify = shopifyApp({
       shopify.registerWebhooks({ session });
     },
   },
+  isEmbeddedApp: true,
   future: {
     unstable_newEmbeddedAuthStrategy: true,
   },
