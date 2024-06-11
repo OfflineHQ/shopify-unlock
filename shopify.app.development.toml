@@ -1,14 +1,14 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "4882183f4bde802d2e5d230636649df4"
+client_id = "856a9b0ebc152239f6a6ce4743e0c0ce"
 extension_directories = [
   "extensions/offline-discount",
   "extensions/offline-exclusive-development",
-  "extensions/offline-gate"
+  "extensions/offline-connect"
 ]
-name = "Offline Unlock Development"
-handle = "offline-unlock-development"
-application_url = "https://faq-travels-advertisements-norwegian.trycloudflare.com"
+name = "Offline Unlock Remix"
+handle = "offline-unlock-remix"
+application_url = "https://void-riverside-valve-enhancements.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,9 +22,9 @@ scopes = "read_discounts,read_gates,write_discounts,write_gates,write_products"
 
 [auth]
 redirect_urls = [
-  "https://faq-travels-advertisements-norwegian.trycloudflare.com/auth/callback",
-  "https://faq-travels-advertisements-norwegian.trycloudflare.com/auth/shopify/callback",
-  "https://faq-travels-advertisements-norwegian.trycloudflare.com/api/auth/callback"
+  "https://void-riverside-valve-enhancements.trycloudflare.com/auth/callback",
+  "https://void-riverside-valve-enhancements.trycloudflare.com/auth/shopify/callback",
+  "https://void-riverside-valve-enhancements.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
