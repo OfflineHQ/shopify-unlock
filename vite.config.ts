@@ -1,5 +1,5 @@
 import { vitePlugin as remix } from "@remix-run/dev";
-import { defineConfig, type UserConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 // Related: https://github.com/remix-run/remix/issues/2835#issuecomment-1144102176
@@ -34,22 +34,44 @@ if (host === "localhost") {
   };
 }
 
-export default defineConfig({
-  server: {
-    port: Number(process.env.PORT || 3000),
-    hmr: hmrConfig,
-    fs: {
-      // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information
-      allow: ["app", "node_modules"],
+export default defineConfig(({ mode }) => {
+  // Load environment variables based on the current mode
+  const env = loadEnv(mode, process.cwd(), "");
+  if (!env.SHOPIFY_API_KEY) throw new Error("SHOPIFY_API_KEY is required");
+
+  if (!env.OFFLINE_WEB_API_URL)
+    throw new Error("OFFLINE_WEB_API_URL is required");
+
+  if (!env.OFFLINE_GATES_HANDLE)
+    throw new Error("OFFLINE_GATES_HANDLE is required");
+  return {
+    server: {
+      port: Number(process.env.PORT || 3000),
+      hmr: hmrConfig,
+      fs: {
+        // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information
+        allow: ["app", "node_modules"],
+      },
     },
-  },
-  plugins: [
-    remix({
-      ignoredRouteFiles: ["**/.*"],
-    }),
-    tsconfigPaths(),
-  ],
-  build: {
-    assetsInlineLimit: 0,
-  },
-}) satisfies UserConfig;
+    plugins: [
+      remix({
+        ignoredRouteFiles: ["**/.*"],
+      }),
+      tsconfigPaths(),
+    ],
+    define: {
+      "process.env.SHOPIFY_API_KEY": env.SHOPIFY_API_KEY
+        ? JSON.stringify(env.SHOPIFY_API_KEY)
+        : process.env.SHOPIFY_API_KEY,
+      "process.env.OFFLINE_WEB_API_URL": JSON.stringify(
+        env.OFFLINE_WEB_API_URL,
+      ),
+      "process.env.OFFLINE_GATES_HANDLE": JSON.stringify(
+        env.OFFLINE_GATES_HANDLE,
+      ),
+    },
+    build: {
+      assetsInlineLimit: 0,
+    },
+  };
+});

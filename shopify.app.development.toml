@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Remix"
 handle = "offline-unlock-remix"
-application_url = "https://void-riverside-valve-enhancements.trycloudflare.com"
+application_url = "https://explain-printers-age-loved.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,9 +22,9 @@ scopes = "read_discounts,read_gates,write_discounts,write_gates,write_products"
 
 [auth]
 redirect_urls = [
-  "https://void-riverside-valve-enhancements.trycloudflare.com/auth/callback",
-  "https://void-riverside-valve-enhancements.trycloudflare.com/auth/shopify/callback",
-  "https://void-riverside-valve-enhancements.trycloudflare.com/api/auth/callback"
+  "https://explain-printers-age-loved.trycloudflare.com/auth/callback",
+  "https://explain-printers-age-loved.trycloudflare.com/auth/shopify/callback",
+  "https://explain-printers-age-loved.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
