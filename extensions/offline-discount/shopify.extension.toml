@@ -1,0 +1,24 @@
+api_version = "unstable"
+
+[[extensions]]
+handle = "offline-discount"
+name = "Offline Discount"
+description = "Offline Discount"
+type = "function"
+
+  [[extensions.targeting]]
+  target = "purchase.product-discount.run"
+  input_query = "src/run.graphql"
+
+  [extensions.build]
+  command = "cargo wasi build --release"
+  path = "target/wasm32-wasi/release/offline-discount.wasm"
+  watch = [ "src/**/*.rs" ]
+
+  [extensions.ui.paths]
+  create = "/"
+  details = "/"
+
+[extensions.input.variables]
+namespace = "offline-gate"
+key = "offline_handle"

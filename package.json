@@ -3,10 +3,10 @@
   "private": true,
   "scripts": {
     "build": "remix vite:build",
-    "dev": "shopify app dev",
+    "dev": "shopify app dev --config development",
     "config:link": "shopify app config link",
     "generate": "shopify app generate",
-    "deploy": "shopify app deploy",
+    "deploy": "shopify app deploy --config development",
     "config:use": "shopify app config use",
     "env": "shopify app env",
     "start": "remix-serve ./build/server/index.js",

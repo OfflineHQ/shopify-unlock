@@ -43260,7 +43260,7 @@ function getGateContextClient(options) {
 // TODO: here using a public api for now but should be replaced with a private api with app proxy (see https://github.com/OfflineHQ/shopify-gates/issues/25)
 // export const shopifyUnlockBackendApiUrl = '/apps/offline';
 const shopifyUnlockBackendApiUrl =
-  "https://hours-workshops-garmin-cal.trycloudflare.com";
+  "https://void-riverside-valve-enhancements.trycloudflare.com";
 
 const gateContextClient = getGateContextClient({
   backingStore: "ajaxApi",
@@ -47467,7 +47467,7 @@ const _App = ({
     if (!gateId || isIframeIdle) {
       return null;
     }
-    const unlockAppUrl = undefined;
+    const unlockAppUrl = "https://www.staging.unlock.offline.live";
     const baseUrl = `${unlockAppUrl}/en/shopify/${gateId}`;
     let src = baseUrl;
     if (walletAddress) {
