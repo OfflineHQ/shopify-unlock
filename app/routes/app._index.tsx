@@ -1,6 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useNavigate, useNavigation } from "@remix-run/react";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import {
   BlockStack,
   Button,
@@ -9,7 +8,6 @@ import {
 } from "@shopify/polaris";
 import type { IndexTableHeading } from "@shopify/polaris/build/ts/src/components/IndexTable";
 import type { NonEmptyArray } from "@shopify/polaris/build/ts/src/types";
-import { useEffect } from "react";
 import { authenticate } from "../shopify.server";
 
 async function getCampaigns() {
@@ -23,16 +21,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function Index() {
-  const nav = useNavigation();
-  const shopify = useAppBridge();
   const navigate = useNavigate();
   const campaigns = useLoaderData<typeof loader>();
 
-  useEffect(() => {
-    if (nav.state === "idle" && nav.formAction === "/create-campaign") {
-      shopify.toast.show("Campaign created");
-    }
-  }, [nav.state, nav.formAction, shopify]);
 
   const tableHeadings = [
     { title: "Gate" },
@@ -84,7 +75,7 @@ export default function Index() {
     <Page title="My Campaigns" primaryAction={{
       content: "Create new campaign",
       onAction: () => {
-        navigate("/create-campaign");
+        navigate("/app/create-campaign");
       },
     }}>
       <IndexTable
