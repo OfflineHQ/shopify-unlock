@@ -1,4 +1,7 @@
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import {
+  BlockStack,
   Box,
   Card,
   Layout,
@@ -6,14 +9,43 @@ import {
   List,
   Page,
   Text,
-  BlockStack,
 } from "@shopify/polaris";
-import { TitleBar } from "@shopify/app-bridge-react";
+import { authenticate } from "~/shopify.server";
 
-export default function AdditionalPage() {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { admin } = await authenticate.admin(request);
+
+  const response = await admin.graphql(
+    `#graphql
+      query {
+        shopLocales {
+          locale
+          primary
+          published
+        }
+      }
+    `,
+  );
+
+  const responseJson = await response.json();
+  const languages = responseJson.data.shopLocales;
+
+  return json({ languages });
+};
+
+export default function Settings() {
+  const { languages } = useLoaderData<typeof loader>();
+  console.log({ languages });
+
   return (
-    <Page>
-      <TitleBar title="Additional page" />
+    <Page
+      backAction={{
+        content: "Go back",
+        accessibilityLabel: "Go back",
+        url: "/app",
+      }}
+      title="Settings"
+    >
       <Layout>
         <Layout.Section>
           <Card>
@@ -56,6 +88,22 @@ export default function AdditionalPage() {
                     App nav best practices
                   </Link>
                 </List.Item>
+              </List>
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="200">
+              <Text as="h2" variant="headingMd">
+                Setup your store default translations
+              </Text>
+              <List>
+                {languages.map((language) => (
+                  <List.Item key={language.locale}>
+                    {language.locale}
+                  </List.Item>
+                ))}
               </List>
             </BlockStack>
           </Card>
