@@ -1,9 +1,11 @@
-import { useNavigate } from "@remix-run/react";
+import type { ActionFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Form, useFetcher, useNavigate } from "@remix-run/react";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import {
   Button,
   ButtonGroup,
   ChoiceList,
-  Form,
   FormLayout,
   InlineStack,
   Layout,
@@ -13,120 +15,79 @@ import {
   TextField,
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.json();
+  console.log({ formData });
+  return json({
+    status: 'success',
+  });
+};
 
 export default function CreateTokengate() {
+  const shopify = useAppBridge();
   const navigate = useNavigate();
-  const [toastProps, setToastProps] = useState({ content: null });
+  const fetcher = useFetcher();
+  const isSubmitting =
+  fetcher.state === "submitting";
+  useEffect(() => {
+    console.log(fetcher.data);
+    if (fetcher.data?.status === "success") {
+      shopify.toast.show("Campaign created successfully");
+      navigate("/app");
+    }
+  }, [fetcher.data]);
   const [exclusive, setExclusive] = useState(false);
+
+  const perkType = useField("discount");
+  const discountType = useField("percentage");
 
   const fieldsDefinition = {
     name: useField({
       value: "",
-      validates: (name) => !name && "Name cannot be empty",
+      validates: (name) => !name && "Name cannot be empty" || undefined,
     }),
-    discountType: useField("percentage"),
-    discount: useField({
-      value: undefined,
+    discountType,
+    discount: useField(
+      {
+        value: 0,
+        validates: (discount) => {
+          if (perkType.value === "discount" && !discount) {
+            return "Discount cannot be empty";
+          }
+        },
+      },
+      [perkType.value]
+    ),
+    products: useField({
+      value: [],
+      // validates: (products) =>
+      //   products.length === 0 && "Products cannot be empty",
     }),
-    products: useField([]),
-    perkType: useField("discount"),
-    orderLimit: useField(""),
+    perkType,
+    orderLimit: useField(
+      {
+        value: 0,
+        validates: (orderLimit) => {
+          if (perkType.value === "exclusive_access" && !orderLimit) {
+            return "Order limit cannot be empty";
+          }
+        },
+      },
+      [perkType.value],
+    ),
   };
 
-  const { fields, submit, submitting, dirty, reset, makeClean } = useForm({
+  const { fields, submit, reset } = useForm({
     fields: fieldsDefinition,
     onSubmit: async (formData) => {
-      try {
-        const { discountType, discount, name, products, perkType, orderLimit } =
-          formData;
-
-        const productGids = products.map((product) => product.id);
-
-        console.log({ discount });
-        if (perkType === "discount" && !discount) {
-          setToastProps({
-            content: "Discount cannot be empty!",
-            error: true,
-          });
-          return;
-        }
-
-        // TODO Fix this, call to proxy not working
-
-        // // Call to proxy
-        // const loyaltyCardContractResponse = await fetch(
-        //   `/apps/offline/admin/loyalty-card`,
-        //   {
-        //     method: "GET",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //   }
-        // );
-        // console.log({ loyaltyCardContractResponse });
-        // const data = await loyaltyCardContractResponse.json();
-        // console.log({ data });
-        // const loyaltyCardContractAddress = data
-        //   ?.contractAddress;
-        // console.log({ loyaltyCardContractAddress });
-        // if (!loyaltyCardContractResponse.ok || !loyaltyCardContractAddress) {
-        //   setToastProps({
-        //     content: "There was an error getting your loyalty card contract. Please contact support.",
-        //     error: true,
-        //   });
-        //   return;
-        // }
-
-        // TODO: remove this when call to proxy resolved
-        const loyaltyCardContractAddress =
-          "0x35f30b6ca28c3fae0bf97abfcc6c81b6559fb333";
-
-        console.log({ productGids });
-
-        let requestBody = {
-          // gatesHandle: appData?.response?.metafield?.value,
-          discountType,
-          discount,
-          name,
-          productGids,
-          segment: [loyaltyCardContractAddress],
-          perkType,
-          exclusiveAccess: perkType === "exclusive_access" ? true : false,
-        };
-
-        console.log({ createTokenGateRequestBody: requestBody });
-
-        const orderLimitValue = Number(orderLimit);
-        if (!isNaN(orderLimitValue) && orderLimitValue > 0) {
-          requestBody.orderLimit = orderLimitValue;
-        }
-
-        //   const response = await authenticatedFetch("/api/gates", {
-        //     method: "POST",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify(requestBody),
-        //   });
-
-        //   if (response.ok) {
-        //     setToastProps({ content: "Offline Gate created" });
-        //     makeClean();
-        //     navigate("/");
-        //   } else {
-        //     setToastProps({
-        //       content: "There was an error creating an Offline Gate",
-        //       error: true,
-        //     });
-        //   }
-      } catch (error) {
-        console.error({ error });
-        setToastProps({
-          content: "There was an error creating an Offline Gate",
-          error: true,
-        });
-      }
+      console.log("Form submitted with data:", formData);
+      fetcher.submit(formData, {
+        method: "POST",
+        encType: "application/json"
+      });
+      return { status: 'success' };
     },
   });
 
@@ -149,7 +110,7 @@ export default function CreateTokengate() {
     >
       <Layout>
         <Layout.Section>
-          <Form onSubmit={submit} data-save-bar>
+          <Form data-save-bar onSubmit={submit}>
             <FormLayout>
               <Text variant="headingMd" as="h2">
                 Configuration
@@ -210,12 +171,16 @@ export default function CreateTokengate() {
                 />
               )}
               <PageActions
-                primaryAction={{
-                  content: "Create Gate",
-                  onAction: submit,
-                  loading: submitting,
-                  disabled: submitting,
-                }}
+                primaryAction={
+                  <Button
+                    variant="primary"
+                    submit
+                    loading={isSubmitting}
+                    disabled={isSubmitting}
+                  >
+                    Create Campaign
+                  </Button>
+                }
                 secondaryActions={[
                   {
                     content: "Cancel",
