@@ -1,30 +1,32 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useNavigate, useNavigation } from "@remix-run/react";
-import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
+import { useLoaderData, useNavigate, useNavigation } from "@remix-run/react";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import {
   BlockStack,
   Button,
-  Card,
-  InlineStack,
-  Layout,
-  Link,
-  List,
-  Page,
-  Text,
+  IndexTable,
+  Page
 } from "@shopify/polaris";
+import type { IndexTableHeading } from "@shopify/polaris/build/ts/src/components/IndexTable";
+import type { NonEmptyArray } from "@shopify/polaris/build/ts/src/types";
 import { useEffect } from "react";
 import { authenticate } from "../shopify.server";
 
+async function getCampaigns() {
+  return [];
+}
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
-  return null;
+  const campaigns = await getCampaigns();
+  return campaigns;
 };
 
 export default function Index() {
   const nav = useNavigation();
   const shopify = useAppBridge();
-  const isLoading = ["loading", "submitting"].includes(nav.state);
   const navigate = useNavigate();
+  const campaigns = useLoaderData<typeof loader>();
 
   useEffect(() => {
     if (nav.state === "idle" && nav.formAction === "/create-campaign") {
@@ -32,182 +34,71 @@ export default function Index() {
     }
   }, [nav.state, nav.formAction, shopify]);
 
+  const tableHeadings = [
+    { title: "Gate" },
+    { title: "Perk" },
+    { title: "Products" },
+    { title: "ID" },
+    { title: "" },
+  ];
+
+  const perkTypeName = Object.freeze({
+    discount: "Discount",
+    exclusive_access: "Exclusive Access",
+  });
+
+  const emptyState = (
+    <BlockStack align="center">
+      <p>No campaigns found</p>
+    </BlockStack>
+  );
+
+  const campaignsMarkup = campaigns.filter((gate) => gate.requirements?.value && gate.reaction?.value).map((gate, index) => {
+    const { id, name, requirements, reaction, subjectBindings } = gate;
+
+    // const segment = (JSON.parse(requirements.value)?.conditions || [])
+    //   .map((condition) => condition.contractAddress)
+    //   .join(", ");
+
+    console.log({gate})
+
+    const perkType = JSON.parse(reaction.value)?.type ?? "—";
+
+    const numProducts = subjectBindings?.nodes?.length ?? "—";
+
+
+    return (
+      <IndexTable.Row id={id} key={id} position={index}>
+        <IndexTable.Cell>{name}</IndexTable.Cell>
+        <IndexTable.Cell>{perkTypeName[perkType]}</IndexTable.Cell>
+        <IndexTable.Cell>{numProducts}</IndexTable.Cell>
+        <IndexTable.Cell>{id.split('/').pop()}</IndexTable.Cell>
+        <IndexTable.Cell>
+          <Button>Delete</Button>
+        </IndexTable.Cell>
+      </IndexTable.Row>
+    );
+  });
+
   return (
-    <Page>
-      <TitleBar title="Remix app template">
-          <button
-            variant="primary"
-            onClick={() => navigate("/create-campaign")}
-          >
-            Create a new Campaign
-          </button>
-      </TitleBar>
-      <BlockStack gap="500">
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <BlockStack gap="500">
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    Congrats on creating a new Shopify app 🎉
-                  </Text>
-                  <Text variant="bodyMd" as="p">
-                    This embedded app template uses{" "}
-                    <Link
-                      url="https://shopify.dev/docs/apps/tools/app-bridge"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      App Bridge
-                    </Link>{" "}
-                    interface examples like an{" "}
-                    <Link url="/app/additional" removeUnderline>
-                      additional page in the app nav
-                    </Link>
-                    , as well as an{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      Admin GraphQL
-                    </Link>{" "}
-                    mutation demo, to provide a starting point for app
-                    development.
-                  </Text>
-                </BlockStack>
-                <BlockStack gap="200">
-                  <Text as="h3" variant="headingMd">
-                    Get started with products
-                  </Text>
-                  <Text as="p" variant="bodyMd">
-                    Generate a product with GraphQL and get the JSON output for
-                    that product. Learn more about the{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      productCreate
-                    </Link>{" "}
-                    mutation in our API references.
-                  </Text>
-                </BlockStack>
-                <InlineStack gap="300">
-                  <Button
-                    loading={isLoading}
-                    onClick={() => nav.navigate("/create-campaign")}
-                  >
-                    Generate a product
-                  </Button>
-                </InlineStack>
-              </BlockStack>
-            </Card>
-          </Layout.Section>
-          <Layout.Section variant="oneThird">
-            <BlockStack gap="500">
-              <Card>
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    App template specs
-                  </Text>
-                  <BlockStack gap="200">
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Framework
-                      </Text>
-                      <Link
-                        url="https://remix.run"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        Remix
-                      </Link>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Database
-                      </Text>
-                      <Link
-                        url="https://www.prisma.io/"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        Prisma
-                      </Link>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Interface
-                      </Text>
-                      <span>
-                        <Link
-                          url="https://polaris.shopify.com"
-                          target="_blank"
-                          removeUnderline
-                        >
-                          Polaris
-                        </Link>
-                        {", "}
-                        <Link
-                          url="https://shopify.dev/docs/apps/tools/app-bridge"
-                          target="_blank"
-                          removeUnderline
-                        >
-                          App Bridge
-                        </Link>
-                      </span>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        API
-                      </Text>
-                      <Link
-                        url="https://shopify.dev/docs/api/admin-graphql"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        GraphQL API
-                      </Link>
-                    </InlineStack>
-                  </BlockStack>
-                </BlockStack>
-              </Card>
-              <Card>
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    Next steps
-                  </Text>
-                  <List>
-                    <List.Item>
-                      Build an{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/getting-started/build-app-example"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        {" "}
-                        example app
-                      </Link>{" "}
-                      to get started
-                    </List.Item>
-                    <List.Item>
-                      Explore Shopify’s API with{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        GraphiQL
-                      </Link>
-                    </List.Item>
-                  </List>
-                </BlockStack>
-              </Card>
-            </BlockStack>
-          </Layout.Section>
-        </Layout>
-      </BlockStack>
+    <Page title="My Campaigns" primaryAction={{
+      content: "Create new campaign",
+      onAction: () => {
+        navigate("/create-campaign");
+      },
+    }}>
+      <IndexTable
+        emptyState={emptyState}
+        headings={tableHeadings as NonEmptyArray<IndexTableHeading>}
+        itemCount={campaigns?.length ?? 0}
+        resourceName={{
+          singular: "Campaign",
+          plural: "Campaigns",
+        }}
+        selectable={false}
+      >
+        {campaignsMarkup}
+      </IndexTable>
     </Page>
   );
 }
