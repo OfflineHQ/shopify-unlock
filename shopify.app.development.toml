@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Remix"
 handle = "offline-unlock-remix"
-application_url = "https://displaying-jean-adjust-moderate.trycloudflare.com"
+application_url = "https://triangle-sublime-missing-bolt.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,9 +22,9 @@ scopes = "read_discounts,read_gates,write_discounts,write_gates,write_products"
 
 [auth]
 redirect_urls = [
-  "https://displaying-jean-adjust-moderate.trycloudflare.com/auth/callback",
-  "https://displaying-jean-adjust-moderate.trycloudflare.com/auth/shopify/callback",
-  "https://displaying-jean-adjust-moderate.trycloudflare.com/api/auth/callback"
+  "https://triangle-sublime-missing-bolt.trycloudflare.com/auth/callback",
+  "https://triangle-sublime-missing-bolt.trycloudflare.com/auth/shopify/callback",
+  "https://triangle-sublime-missing-bolt.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
