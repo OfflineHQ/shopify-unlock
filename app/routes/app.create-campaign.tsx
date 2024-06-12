@@ -4,10 +4,8 @@ import { Form, useFetcher, useNavigate } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import {
   Button,
-  ButtonGroup,
   ChoiceList,
   FormLayout,
-  InlineStack,
   Layout,
   Page,
   PageActions,
@@ -29,7 +27,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.json();
   console.log({ formData });
   return json({
-    status: 'success',
+    status: "success",
   });
 };
 
@@ -37,8 +35,7 @@ export default function CreateTokengate() {
   const shopify = useAppBridge();
   const navigate = useNavigate();
   const fetcher = useFetcher();
-  const isSubmitting =
-  fetcher.state === "submitting";
+  const isSubmitting = fetcher.state === "submitting";
   useEffect(() => {
     console.log(fetcher.data);
     if (fetcher.data?.status === "success") {
@@ -54,7 +51,7 @@ export default function CreateTokengate() {
   const fieldsDefinition = {
     name: useField({
       value: "",
-      validates: (name) => !name && "Name cannot be empty" || undefined,
+      validates: (name) => (!name && "Name cannot be empty") || undefined,
     }),
     discountType,
     discount: useField(
@@ -66,12 +63,12 @@ export default function CreateTokengate() {
           }
         },
       },
-      [perkType.value]
+      [perkType.value],
     ),
     products: useField({
       value: [],
       validates: (products) =>
-        products.length === 0 && "Products cannot be empty" || undefined,
+        (products.length === 0 && "Products cannot be empty") || undefined,
     }),
     perkType,
     orderLimit: useField(
@@ -93,9 +90,9 @@ export default function CreateTokengate() {
       console.log("Form submitted with data:", formData);
       fetcher.submit(formData, {
         method: "POST",
-        encType: "application/json"
+        encType: "application/json",
       });
-      return { status: 'success' };
+      return { status: "success" };
     },
   });
 
@@ -147,28 +144,23 @@ export default function CreateTokengate() {
                 }}
               />
               {fields.perkType.value === "discount" && (
-                <InlineStack blockAlign="end" gap="400">
-                  <ButtonGroup>
-                    <Button
-                      pressed={fields.discountType.value === "percentage"}
-                      onClick={handleDiscountTypeButtonClick}
-                    >
-                      Percentage
-                    </Button>
-                    <Button
-                      pressed={fields.discountType.value === "amount"}
-                      onClick={handleDiscountTypeButtonClick}
-                    >
-                      Amount
-                    </Button>
-                  </ButtonGroup>
+                <FormLayout.Group>
+                  <ChoiceList
+                    title="Discount Type"
+                    choices={[
+                      { label: "Percentage", value: "percentage" },
+                      { label: "Amount", value: "amount" },
+                    ]}
+                    selected={[fields.discountType.value]}
+                    onChange={(value) => fields.discountType.onChange(value[0])}
+                  />
                   <TextField
                     label="Discount"
                     type="number"
                     {...fields.discount}
                     autoComplete="off"
                   />
-                </InlineStack>
+                </FormLayout.Group>
               )}
               {fields.perkType.value === "exclusive_access" && (
                 <TextField
@@ -178,7 +170,7 @@ export default function CreateTokengate() {
                   autoComplete="off"
                 />
               )}
-              
+
               {/* <TokengatesResourcePicker products={fields.products} /> */}
               <TargetProductsOrCollections products={fields.products} />
               <PageActions
