@@ -1,10 +1,16 @@
 import { useNavigate } from "@remix-run/react";
-// import { ContextualSaveBar } from "@shopify/app-bridge-react";
 import {
+  Button,
+  ButtonGroup,
+  ChoiceList,
   Form,
+  FormLayout,
+  InlineStack,
   Layout,
   Page,
-  PageActions
+  PageActions,
+  Text,
+  TextField,
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
 import { useCallback, useState } from "react";
@@ -143,112 +149,81 @@ export default function CreateTokengate() {
     >
       <Layout>
         <Layout.Section>
-          <Form onSubmit={submit}>
-            {/* <ContextualSaveBar
-              saveAction={{
-                onAction: submit,
-                disabled: submitting || !dirty,
-                // loading: submitting || !isSuccess,
-              }}
-              discardAction={{
-                onAction: reset,
-              }}
-              visible={dirty}
-            /> */}
-            {/* <Layout>
-              <Layout.Section>
-                <Card>
-                  <Card.Section>
-                    <TextContainer>
-                    <Text variant="headingMd" as="h2">Configuration</Text>
-                      <TextField
-                        name="name"
-                        label="Name"
-                        type="text"
-                        {...fields.name}
-                        autoComplete="off"
-                      />
-                    </TextContainer>
-                  </Card.Section>
-                  <Card.Section title="PERK TYPE">
-                    <ChoiceList
-                      title="Perk Type"
-                      choices={[
-                        { label: "Discount", value: "discount" },
-                        {
-                          label: "Exclusive Access",
-                          value: "exclusive_access",
-                        },
-                      ]}
-                      selected={[fields.perkType.value]}
-                      onChange={(value) => {
-                        console.log(value[0]);
-                        fields.perkType.onChange(value[0]);
-                        setExclusive(!exclusive);
-                      }}
-                    />
-                  </Card.Section>
-                  {fields.perkType.value === "discount" && (
-                    <Card.Section title="DISCOUNT PERK">
-                      <InlineStack>
-                        <InlineStack.Item>
-                          <ButtonGroup segmented>
-                            <Button
-                              pressed={
-                                fields.discountType.value === "percentage"
-                              }
-                              onClick={handleDiscountTypeButtonClick}
-                            >
-                              Percentage
-                            </Button>
-                            <Button
-                              pressed={fields.discountType.value === "amount"}
-                              onClick={handleDiscountTypeButtonClick}
-                            >
-                              Amount
-                            </Button>
-                          </ButtonGroup>
-                        </InlineStack.Item>
-                        <InlineStack.Item fill>
-                          <TextField
-                            label="Discount"
-                            type="number"
-                            {...fields.discount}
-                            autoComplete="off"
-                          />
-                        </InlineStack.Item>
-                      </InlineStack>
-                    </Card.Section>
-                  )}
-                  {fields.perkType.value === "exclusive_access" && (
-                    <Card.Section title="EXCLUSIVE ACCESS PERK">
-                      <TextContainer>
-                        <TextField
-                          label="Order Limit"
-                          type="number"
-                          {...fields.orderLimit}
-                          autoComplete="off"
-                        />
-                      </TextContainer>
-                    </Card.Section>
-                  )}
-                </Card>
-              </Layout.Section>
-            </Layout> */}
-            <PageActions
-              primaryAction={{
-                content: "Create Gate",
-                onAction: submit,
-                loading: submitting,
-                disabled: submitting,
-              }}
-              secondaryActions={[
-                {
-                  content: "Cancel",
-                  onAction: reset,
-                },
-              ]}
-            />
+          <Form onSubmit={submit} data-save-bar>
+            <FormLayout>
+              <Text variant="headingMd" as="h2">
+                Configuration
+              </Text>
+              <TextField
+                name="name"
+                label="Name"
+                type="text"
+                {...fields.name}
+                autoComplete="off"
+              />
+              <ChoiceList
+                title="Perk Type"
+                choices={[
+                  { label: "Discount", value: "discount" },
+                  {
+                    label: "Exclusive Access",
+                    value: "exclusive_access",
+                  },
+                ]}
+                selected={[fields.perkType.value]}
+                onChange={(value) => {
+                  console.log(value[0]);
+                  fields.perkType.onChange(value[0]);
+                  setExclusive(!exclusive);
+                }}
+              />
+              {fields.perkType.value === "discount" && (
+                <InlineStack blockAlign="end" gap="400">
+                  <ButtonGroup>
+                    <Button
+                      pressed={fields.discountType.value === "percentage"}
+                      onClick={handleDiscountTypeButtonClick}
+                    >
+                      Percentage
+                    </Button>
+                    <Button
+                      pressed={fields.discountType.value === "amount"}
+                      onClick={handleDiscountTypeButtonClick}
+                    >
+                      Amount
+                    </Button>
+                  </ButtonGroup>
+                  <TextField
+                    label="Discount"
+                    type="number"
+                    {...fields.discount}
+                    autoComplete="off"
+                  />
+                </InlineStack>
+              )}
+              {fields.perkType.value === "exclusive_access" && (
+                <TextField
+                  label="Order Limit"
+                  type="number"
+                  {...fields.orderLimit}
+                  autoComplete="off"
+                />
+              )}
+              <PageActions
+                primaryAction={{
+                  content: "Create Gate",
+                  onAction: submit,
+                  loading: submitting,
+                  disabled: submitting,
+                }}
+                secondaryActions={[
+                  {
+                    content: "Cancel",
+                    onAction: reset,
+                  },
+                ]}
+              />
+            </FormLayout>
           </Form>
         </Layout.Section>
       </Layout>
