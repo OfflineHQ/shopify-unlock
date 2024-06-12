@@ -16,6 +16,8 @@ import {
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
 import { useCallback, useEffect, useState } from "react";
+import { TargetProductsOrCollections } from "~/components/TargetProductsOrCollections";
+// import { TokengatesResourcePicker } from "../components/TokengatesResourcePicker";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.json();
@@ -62,8 +64,8 @@ export default function CreateTokengate() {
     ),
     products: useField({
       value: [],
-      // validates: (products) =>
-      //   products.length === 0 && "Products cannot be empty",
+      validates: (products) =>
+        products.length === 0 && "Products cannot be empty" || undefined,
     }),
     perkType,
     orderLimit: useField(
@@ -106,7 +108,7 @@ export default function CreateTokengate() {
         accessibilityLabel: "Go back",
         url: "/app",
       }}
-      title="Create a new Offline Gate"
+      title="Create a new Campaign"
     >
       <Layout>
         <Layout.Section>
@@ -170,6 +172,9 @@ export default function CreateTokengate() {
                   autoComplete="off"
                 />
               )}
+              
+              {/* <TokengatesResourcePicker products={fields.products} /> */}
+              <TargetProductsOrCollections products={fields.products} />
               <PageActions
                 primaryAction={
                   <Button
