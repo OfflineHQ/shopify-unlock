@@ -58,7 +58,7 @@ export default function CreateTokengate() {
       {
         value: 0,
         validates: (discount) => {
-          if (perkType.value === "discount" && !discount) {
+          if (perkType.value === "discount" && !discount || !(discount > 0)) {
             return "Discount cannot be empty";
           }
         },
@@ -75,7 +75,7 @@ export default function CreateTokengate() {
       {
         value: 0,
         validates: (orderLimit) => {
-          if (perkType.value === "exclusive_access" && !orderLimit) {
+          if (perkType.value === "exclusive_access" && !orderLimit || !(orderLimit > 0)) {
             return "Order limit cannot be empty";
           }
         },

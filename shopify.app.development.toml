@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Remix"
 handle = "offline-unlock-remix"
-application_url = "https://profit-navy-madness-itunes.trycloudflare.com"
+application_url = "https://verse-knives-grams-solid.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,9 +22,9 @@ scopes = "read_discounts,read_gates,read_locales,write_discounts,write_gates,wri
 
 [auth]
 redirect_urls = [
-  "https://profit-navy-madness-itunes.trycloudflare.com/auth/callback",
-  "https://profit-navy-madness-itunes.trycloudflare.com/auth/shopify/callback",
-  "https://profit-navy-madness-itunes.trycloudflare.com/api/auth/callback"
+  "https://verse-knives-grams-solid.trycloudflare.com/auth/callback",
+  "https://verse-knives-grams-solid.trycloudflare.com/auth/shopify/callback",
+  "https://verse-knives-grams-solid.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

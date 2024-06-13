@@ -4,39 +4,35 @@ import {
   Box,
   Button,
   Card,
+  Divider,
   FormLayout,
   Layout,
   Page,
   PageActions,
   Tabs,
   Text,
-  TextField
+  TextField,
 } from "@shopify/polaris";
-import { useForm, useList } from "@shopify/react-form";
-import { useCallback, useState } from "react";
+import { notEmptyString, useForm, useList } from "@shopify/react-form";
+import { useCallback, useMemo, useState } from "react";
+import getShopLocales from "~/libs/shop/get-shop-locales.server";
 import { authenticate } from "~/shopify.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
 
-  const response = await admin.graphql(
-    `#graphql
-      query {
-        shopLocales {
-          locale
-          primary
-          published
-        }
-      }
-    `,
+  const res = await getShopLocales(admin.graphql);
+  if (!res) {
+    return json({
+      languages: [],
+    });
+  }
+  const languages = res.sort(
+    (a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0),
   );
-
-  const responseJson = await response.json();
-  const languages = responseJson.data.shopLocales;
 
   return json({
     languages,
-    primaryLanguage: languages.find((language) => language.primary),
   });
 };
 
@@ -46,11 +42,6 @@ export default function Settings() {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state === "submitting";
 
-  const fieldsDefinition = languages.map((language) => ({
-    key: language.locale,
-    name: "",
-    description: "",
-  }));
   const [selected, setSelected] = useState(0);
 
   const handleTabChange = useCallback(
@@ -58,14 +49,20 @@ export default function Settings() {
     [],
   );
 
+  const tExclusiveFields = languages.map((language) => ({
+    key: language.locale,
+    noAccess: "",
+    limitReached: "",
+    published: language.published,
+  }));
+
   const { fields, submit, reset } = useForm({
     fields: {
-      translations: useList({
-        list: fieldsDefinition,
+      tExclusive: useList({
+        list: tExclusiveFields,
         validates: {
-          name: (name) => (!name && `Name cannot be empty`) || undefined,
-          description: (description) =>
-            (!description && `Description cannot be empty`) || undefined,
+          noAccess: notEmptyString("Required"),
+          limitReached: notEmptyString("Required"),
         },
       }),
     },
@@ -79,36 +76,52 @@ export default function Settings() {
     },
   });
 
-  function translationForm(
+  function translationForms(
     language: (typeof languages)[number],
     index: number,
   ) {
     return (
       <>
-        <TextField
-          label="Store name"
-          {...fields.translations[index].name}
-          autoComplete="off"
-        />
-        <TextField
-          label="Store description"
-          {...fields.translations[index].description}
-          autoComplete="off"
-          multiline={4}
-        />
+        <Box paddingBlockStart="400">
+          <Text as="h3" variant="headingSm">
+            Exclusive (Limited) Access Error Text
+          </Text>
+        </Box>
+        <Box paddingBlock="200">
+          <FormLayout>
+            <TextField
+              label="No access"
+              {...fields.tExclusive[index].noAccess}
+              autoComplete="off"
+            />
+            <TextField
+              label="Store description"
+              {...fields.tExclusive[index].limitReached}
+              autoComplete="off"
+            />
+          </FormLayout>
+        </Box>
       </>
     );
   }
 
-  const tabs = languages.map((language, index) => ({
-    id: language.locale,
-    primary: language.primary,
-    content: language.locale,
-    accessibilityLabel: language.primary
-      ? `${language.locale} (Primary)`
-      : language.locale,
-    panelID: `${language.locale}-content`,
-  }));
+  const tabs = useMemo(
+    () =>
+      languages.map((language, index) => ({
+        id: language.locale,
+        primary: language.primary,
+        content: (
+          <Text as="h3" variant="headingMd">
+            {language.locale}
+          </Text>
+        ),
+        accessibilityLabel: language.primary
+          ? `${language.locale} (Primary)`
+          : language.locale,
+        panelID: `${language.locale}-content`,
+      })),
+    [languages],
+  );
 
   return (
     <Page
@@ -122,16 +135,19 @@ export default function Settings() {
       <Layout>
         <Layout.Section>
           <Form data-save-bar onSubmit={submit}>
-            <Card>
-              <Text as="h2" variant="headingMd">
-                Translations
+            <Card roundedAbove="sm">
+              <Text as="h2" variant="headingLg">
+                Default Campaigns Translations
               </Text>
+              <Box paddingBlockStart="200">
+                <Text as="p" variant="bodyMd">
+                  Define the default translations for your campaigns.
+                </Text>
+              </Box>
               <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
-                <Box paddingBlockStart="200">
-                  <FormLayout key={selected}>
-                    {translationForm(languages[selected], selected)}
-                  </FormLayout>
-                  {/* <TextField
+                <Divider />
+                {translationForms(languages[selected], selected)}
+                {/* <TextField
                           label="Store name"
                           {...fields[selectedLanguage.id].name}
                           autoComplete="off"
@@ -142,8 +158,7 @@ export default function Settings() {
                           autoComplete="off"
                           multiline={4}
                         /> */}
-                  {/* Add more form fields */}
-                  </Box>
+                {/* Add more form fields */}
               </Tabs>
               <PageActions
                 primaryAction={
@@ -162,7 +177,8 @@ export default function Settings() {
                     onAction: reset,
                   },
                 ]}
-              />            </Card>
+              />
+            </Card>
           </Form>
         </Layout.Section>
       </Layout>
