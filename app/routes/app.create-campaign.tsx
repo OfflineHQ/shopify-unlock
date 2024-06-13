@@ -13,8 +13,8 @@ import {
   TextField,
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
-import { useCallback, useEffect, useState } from "react";
-import { TargetProductsOrCollections } from "~/components/TargetProductsOrCollections";
+import { useEffect, useState } from "react";
+import { TargetProductsOrCollections } from "~/libs/campaigns-product-collection/TargetProductsOrCollections";
 import { authenticate } from "~/shopify.server";
 // import { TokengatesResourcePicker } from "../components/TokengatesResourcePicker";
 
@@ -34,7 +34,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function CreateTokengate() {
   const shopify = useAppBridge();
   const navigate = useNavigate();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const isSubmitting = fetcher.state === "submitting";
   useEffect(() => {
     console.log(fetcher.data);
@@ -58,7 +58,7 @@ export default function CreateTokengate() {
       {
         value: 0,
         validates: (discount) => {
-          if (perkType.value === "discount" && !discount || !(discount > 0)) {
+          if ((perkType.value === "discount" && !discount) || !(discount > 0)) {
             return "Discount cannot be empty";
           }
         },
@@ -75,7 +75,10 @@ export default function CreateTokengate() {
       {
         value: 0,
         validates: (orderLimit) => {
-          if (perkType.value === "exclusive_access" && !orderLimit || !(orderLimit > 0)) {
+          if (
+            (perkType.value === "exclusive_access" && !orderLimit) ||
+            !(orderLimit > 0)
+          ) {
             return "Order limit cannot be empty";
           }
         },
@@ -95,14 +98,6 @@ export default function CreateTokengate() {
       return { status: "success" };
     },
   });
-
-  const handleDiscountTypeButtonClick = useCallback(() => {
-    if (fields.discountType.value === "percentage") {
-      fields.discountType.onChange("amount");
-    } else {
-      fields.discountType.onChange("percentage");
-    }
-  }, [fields.discountType]);
 
   return (
     <Page

@@ -62,7 +62,13 @@ export default function Settings() {
         list: tExclusiveFields,
         validates: {
           noAccess: notEmptyString("Required"),
-          limitReached: notEmptyString("Required"),
+          limitReached: [
+            notEmptyString("Required"),
+            (value) =>
+              value.includes("{}")
+                ? undefined
+                : "{} is required to indicate the order limit",
+          ],
         },
       }),
     },
@@ -90,12 +96,14 @@ export default function Settings() {
         <Box paddingBlock="200">
           <FormLayout>
             <TextField
-              label="No access"
+              label="No Access"
+              placeholder="Ex: You don't have access to this product"
               {...fields.tExclusive[index].noAccess}
               autoComplete="off"
             />
             <TextField
-              label="Store description"
+              label="Limit Reached"
+              placeholder="Ex: You have reached the limit of {} by order"
               {...fields.tExclusive[index].limitReached}
               autoComplete="off"
             />
