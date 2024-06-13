@@ -14,13 +14,15 @@ import {
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
 import { useEffect, useState } from "react";
+import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace";
 import { TargetProductsOrCollections } from "~/libs/campaigns-product-collection/TargetProductsOrCollections";
 import { authenticate } from "~/shopify.server";
 // import { TokengatesResourcePicker } from "../components/TokengatesResourcePicker";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
-  return null;
+  const { admin } = await authenticate.admin(request);
+  const appNamespace = await setupAppNamespace(admin.graphql);
+  return { appNamespace };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {

@@ -1,29 +1,27 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import {
-  BlockStack,
-  Button,
-  IndexTable,
-  Page
-} from "@shopify/polaris";
+import { BlockStack, Button, IndexTable, Page } from "@shopify/polaris";
 import type { IndexTableHeading } from "@shopify/polaris/build/ts/src/components/IndexTable";
 import type { NonEmptyArray } from "@shopify/polaris/build/ts/src/types";
+import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace";
 import { authenticate } from "../shopify.server";
 
-async function getCampaigns() {
+async function getCampaigns(appNamespace: string) {
   return [];
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
-  const campaigns = await getCampaigns();
-  return campaigns;
+  const { admin } = await authenticate.admin(request);
+  const appNamespace = await setupAppNamespace(admin.graphql);
+  const campaigns = await getCampaigns(appNamespace);
+  return { campaigns, appNamespace };
 };
 
 export default function Index() {
   const navigate = useNavigate();
-  const campaigns = useLoaderData<typeof loader>();
+  const { campaigns, appNamespace } = useLoaderData<typeof loader>();
 
+  console.log({ appNamespace });
 
   const tableHeadings = [
     { title: "Gate" },
@@ -44,40 +42,44 @@ export default function Index() {
     </BlockStack>
   );
 
-  const campaignsMarkup = campaigns.filter((gate) => gate.requirements?.value && gate.reaction?.value).map((gate, index) => {
-    const { id, name, requirements, reaction, subjectBindings } = gate;
+  const campaignsMarkup = campaigns
+    .filter((gate) => gate.requirements?.value && gate.reaction?.value)
+    .map((gate, index) => {
+      const { id, name, requirements, reaction, subjectBindings } = gate;
 
-    // const segment = (JSON.parse(requirements.value)?.conditions || [])
-    //   .map((condition) => condition.contractAddress)
-    //   .join(", ");
+      // const segment = (JSON.parse(requirements.value)?.conditions || [])
+      //   .map((condition) => condition.contractAddress)
+      //   .join(", ");
 
-    console.log({gate})
+      console.log({ gate });
 
-    const perkType = JSON.parse(reaction.value)?.type ?? "—";
+      const perkType = JSON.parse(reaction.value)?.type ?? "—";
 
-    const numProducts = subjectBindings?.nodes?.length ?? "—";
+      const numProducts = subjectBindings?.nodes?.length ?? "—";
 
-
-    return (
-      <IndexTable.Row id={id} key={id} position={index}>
-        <IndexTable.Cell>{name}</IndexTable.Cell>
-        <IndexTable.Cell>{perkTypeName[perkType]}</IndexTable.Cell>
-        <IndexTable.Cell>{numProducts}</IndexTable.Cell>
-        <IndexTable.Cell>{id.split('/').pop()}</IndexTable.Cell>
-        <IndexTable.Cell>
-          <Button>Delete</Button>
-        </IndexTable.Cell>
-      </IndexTable.Row>
-    );
-  });
+      return (
+        <IndexTable.Row id={id} key={id} position={index}>
+          <IndexTable.Cell>{name}</IndexTable.Cell>
+          <IndexTable.Cell>{perkTypeName[perkType]}</IndexTable.Cell>
+          <IndexTable.Cell>{numProducts}</IndexTable.Cell>
+          <IndexTable.Cell>{id.split("/").pop()}</IndexTable.Cell>
+          <IndexTable.Cell>
+            <Button>Delete</Button>
+          </IndexTable.Cell>
+        </IndexTable.Row>
+      );
+    });
 
   return (
-    <Page title="My Campaigns" primaryAction={{
-      content: "Create new campaign",
-      onAction: () => {
-        navigate("/app/create-campaign");
-      },
-    }}>
+    <Page
+      title="My Campaigns"
+      primaryAction={{
+        content: "Create new campaign",
+        onAction: () => {
+          navigate("/app/create-campaign");
+        },
+      }}
+    >
       <IndexTable
         emptyState={emptyState}
         headings={tableHeadings as NonEmptyArray<IndexTableHeading>}

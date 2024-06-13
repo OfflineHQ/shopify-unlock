@@ -145,11 +145,12 @@ export default function Settings() {
           <Form data-save-bar onSubmit={submit}>
             <Card roundedAbove="sm">
               <Text as="h2" variant="headingLg">
-                Default Campaigns Translations
+                Default Campaigns Text
               </Text>
               <Box paddingBlockStart="200">
-                <Text as="p" variant="bodyMd">
-                  Define the default translations for your campaigns.
+                <Text as="p" variant="bodyLg" tone="subdued">
+                  Define the default text for your campaigns with translation
+                  for each language supported on your store.
                 </Text>
               </Box>
               <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
