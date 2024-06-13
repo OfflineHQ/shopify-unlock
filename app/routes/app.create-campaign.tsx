@@ -14,7 +14,7 @@ import {
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
 import { useEffect, useState } from "react";
-import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace";
+import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { TargetProductsOrCollections } from "~/libs/campaigns-product-collection/TargetProductsOrCollections";
 import { authenticate } from "~/shopify.server";
 // import { TokengatesResourcePicker } from "../components/TokengatesResourcePicker";
@@ -45,7 +45,7 @@ export default function CreateTokengate() {
       navigate("/app");
     }
   }, [fetcher.data]);
-  const [exclusive, setExclusive] = useState(false);
+  const [exclusive, sei18nExclusiveError] = useState(false);
 
   const perkType = useField("discount");
   const discountType = useField("percentage");
@@ -89,7 +89,7 @@ export default function CreateTokengate() {
     ),
   };
 
-  const { fields, submit, reset } = useForm({
+  const { fields, submit, reset, dirty } = useForm({
     fields: fieldsDefinition,
     onSubmit: async (formData) => {
       console.log("Form submitted with data:", formData);
@@ -137,7 +137,7 @@ export default function CreateTokengate() {
                 onChange={(value) => {
                   console.log(value[0]);
                   fields.perkType.onChange(value[0]);
-                  setExclusive(!exclusive);
+                  sei18nExclusiveError(!exclusive);
                 }}
               />
               {fields.perkType.value === "discount" && (
@@ -183,8 +183,9 @@ export default function CreateTokengate() {
                 }
                 secondaryActions={[
                   {
-                    content: "Cancel",
+                    content: "Reset",
                     onAction: reset,
+                    disabled: isSubmitting || !dirty,
                   },
                 ]}
               />
