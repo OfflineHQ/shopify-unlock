@@ -15,6 +15,14 @@ export type GetCurrentInstallationQueryVariables = AdminTypes.Exact<{ [key: stri
 
 export type GetCurrentInstallationQuery = { currentAppInstallation: Pick<AdminTypes.AppInstallation, 'id'> };
 
+export type GetAppNamespaceMetafieldsQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
+
+
+export type GetAppNamespaceMetafieldsQuery = { currentAppInstallation: (
+    Pick<AdminTypes.AppInstallation, 'id'>
+    & { metafield?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'key' | 'value'>> }
+  ) };
+
 export type GetShopLocalesQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
 
 
@@ -39,8 +47,8 @@ export type ShopifyRemixTemplateUpdateVariantMutation = { productVariantUpdate?:
 
 interface GeneratedQueryTypes {
   "#graphql\nquery GetCurrentInstallation {\n  currentAppInstallation {\n    id\n  }\n}\n": {return: GetCurrentInstallationQuery, variables: GetCurrentInstallationQueryVariables},
+  "#graphql\nquery GetAppNamespaceMetafields {\n  currentAppInstallation {\n    id\n    metafield(key: \"offline_handle\", namespace: \"offline\") {\n      key\n      value\n    }\n  }\n}\n": {return: GetAppNamespaceMetafieldsQuery, variables: GetAppNamespaceMetafieldsQueryVariables},
   "#graphql\n  query GetShopLocales {\n\tshopLocales {\n\t\tlocale\n\t\tprimary\n\t\tpublished\n    }\n  }\n": {return: GetShopLocalesQuery, variables: GetShopLocalesQueryVariables},
-  "#graphql\n      query GetShopLocales {\n        shopLocales {\n          locale\n          primary\n          published\n        }\n      }\n    ": {return: GetShopLocalesQuery, variables: GetShopLocalesQueryVariables},
 }
 
 interface GeneratedMutationTypes {
