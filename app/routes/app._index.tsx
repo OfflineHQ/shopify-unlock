@@ -3,7 +3,7 @@ import { useLoaderData, useNavigate } from "@remix-run/react";
 import { BlockStack, Button, IndexTable, Page } from "@shopify/polaris";
 import type { IndexTableHeading } from "@shopify/polaris/build/ts/src/components/IndexTable";
 import type { NonEmptyArray } from "@shopify/polaris/build/ts/src/types";
-import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace";
+import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { authenticate } from "../shopify.server";
 
 async function getCampaigns(appNamespace: string) {

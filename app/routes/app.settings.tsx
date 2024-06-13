@@ -5,18 +5,23 @@ import {
   Button,
   Card,
   Divider,
-  FormLayout,
   Layout,
   Page,
   PageActions,
   Tabs,
   Text,
-  TextField,
 } from "@shopify/polaris";
-import { notEmptyString, useForm, useList } from "@shopify/react-form";
 import { useCallback, useMemo, useState } from "react";
+import getAppI18nMetafield from "~/libs/app-metafields/get-app-i18n-metafield.server";
+import type { ExclusiveErrorFieldsType } from "~/libs/campaigns-exclusive/i18n-form";
+import {
+  ExclusiveTranslationForm,
+  useExclusiveForm,
+} from "~/libs/campaigns-exclusive/i18n-form";
+import { I18nMetafieldKey } from "~/libs/i18n/types";
 import getShopLocales from "~/libs/shop/get-shop-locales.server";
 import { authenticate } from "~/shopify.server";
+import type { LanguageCode } from "~/types/admin.types";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
@@ -25,20 +30,27 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (!res) {
     return json({
       languages: [],
+      exclusiveError: null,
     });
   }
   const languages = res.sort(
     (a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0),
   );
 
+  const exclusiveError = await getAppI18nMetafield(
+    admin.graphql,
+    I18nMetafieldKey.EXCLUSIVE_ERROR,
+  );
+
   return json({
     languages,
+    exclusiveError,
   });
 };
 
 export default function Settings() {
-  const { languages } = useLoaderData<typeof loader>();
-
+  const { languages, exclusiveError } = useLoaderData<typeof loader>();
+  console.log("exclusiveError", exclusiveError);
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state === "submitting";
 
@@ -49,69 +61,23 @@ export default function Settings() {
     [],
   );
 
-  const tExclusiveFields = languages.map((language) => ({
-    key: language.locale,
-    noAccess: "",
-    limitReached: "",
-    published: language.published,
-  }));
+  const i18nExclusiveErrorFields: ExclusiveErrorFieldsType[] = languages.map(
+    (language) => ({
+      locale: language.locale.toUpperCase() as LanguageCode,
+      noAccess: "",
+      limitReached: "",
+      published: language.published,
+      primary: language.primary,
+    }),
+  );
 
-  const { fields, submit, reset } = useForm({
-    fields: {
-      tExclusive: useList({
-        list: tExclusiveFields,
-        validates: {
-          noAccess: notEmptyString("Required"),
-          limitReached: [
-            notEmptyString("Required"),
-            (value) =>
-              value.includes("{}")
-                ? undefined
-                : "{} is required to indicate the order limit",
-          ],
-        },
-      }),
-    },
-    onSubmit: async (formData) => {
+  const { fields, submit, reset, dirty } = useExclusiveForm(
+    i18nExclusiveErrorFields,
+    async (formData) => {
       console.log("Form submitted with data:", formData);
-      fetcher.submit(formData, {
-        method: "POST",
-        encType: "application/json",
-      });
       return { status: "success" };
     },
-  });
-
-  function translationForms(
-    language: (typeof languages)[number],
-    index: number,
-  ) {
-    return (
-      <>
-        <Box paddingBlockStart="400">
-          <Text as="h3" variant="headingSm">
-            Exclusive (Limited) Access Error Text
-          </Text>
-        </Box>
-        <Box paddingBlock="200">
-          <FormLayout>
-            <TextField
-              label="No Access"
-              placeholder="Ex: You don't have access to this product"
-              {...fields.tExclusive[index].noAccess}
-              autoComplete="off"
-            />
-            <TextField
-              label="Limit Reached"
-              placeholder="Ex: You have reached the limit of {} by order"
-              {...fields.tExclusive[index].limitReached}
-              autoComplete="off"
-            />
-          </FormLayout>
-        </Box>
-      </>
-    );
-  }
+  );
 
   const tabs = useMemo(
     () =>
@@ -120,11 +86,13 @@ export default function Settings() {
         primary: language.primary,
         content: (
           <Text as="h3" variant="headingMd">
-            {language.locale}
+            {language.primary
+              ? `${language.locale} (primary)`
+              : language.locale}
           </Text>
         ),
         accessibilityLabel: language.primary
-          ? `${language.locale} (Primary)`
+          ? `${language.locale} (primary)`
           : language.locale,
         panelID: `${language.locale}-content`,
       })),
@@ -155,7 +123,11 @@ export default function Settings() {
               </Box>
               <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
                 <Divider />
-                {translationForms(languages[selected], selected)}
+                <ExclusiveTranslationForm
+                  language={languages[selected]}
+                  index={selected}
+                  fields={fields}
+                />
                 {/* <TextField
                           label="Store name"
                           {...fields[selectedLanguage.id].name}
@@ -169,25 +141,26 @@ export default function Settings() {
                         /> */}
                 {/* Add more form fields */}
               </Tabs>
-              <PageActions
-                primaryAction={
-                  <Button
-                    variant="primary"
-                    submit
-                    loading={isSubmitting}
-                    disabled={isSubmitting}
-                  >
-                    Save Settings
-                  </Button>
-                }
-                secondaryActions={[
-                  {
-                    content: "Cancel",
-                    onAction: reset,
-                  },
-                ]}
-              />
             </Card>
+            <PageActions
+              primaryAction={
+                <Button
+                  variant="primary"
+                  submit
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                >
+                  Save
+                </Button>
+              }
+              secondaryActions={[
+                {
+                  content: "Reset",
+                  onAction: reset,
+                  disabled: isSubmitting || !dirty,
+                },
+              ]}
+            />
           </Form>
         </Layout.Section>
       </Layout>

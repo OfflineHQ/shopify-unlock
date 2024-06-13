@@ -1,4 +1,5 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
+import { NAMESPACE } from "./common";
 import createAppMetafields from "./create-app-metafields.server";
 
 const GET_APP_NAMESPACE_METAFIELDS = `#graphql
@@ -29,7 +30,7 @@ export default async function setupAppNamespace(graphql: AdminGraphqlClient) {
       {
         type: "single_line_text_field",
         key: "offline_handle",
-        namespace: "offline",
+        namespace: NAMESPACE,
         value: process.env.OFFLINE_GATES_HANDLE,
         ownerId: id,
       },
