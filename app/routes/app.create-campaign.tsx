@@ -3,8 +3,12 @@ import { json } from "@remix-run/node";
 import { Form, useFetcher, useNavigate } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import {
+  BlockStack,
+  Box,
   Button,
+  Card,
   ChoiceList,
+  Divider,
   FormLayout,
   Layout,
   Page,
@@ -49,12 +53,14 @@ export default function CreateTokengate() {
 
   const perkType = useField("discount");
   const discountType = useField("percentage");
+  const campaignType = useField("open");
 
   const fieldsDefinition = {
     name: useField({
       value: "",
       validates: (name) => (!name && "Name cannot be empty") || undefined,
     }),
+    campaignType,
     discountType,
     discount: useField(
       {
@@ -113,83 +119,140 @@ export default function CreateTokengate() {
       <Layout>
         <Layout.Section>
           <Form data-save-bar onSubmit={submit}>
-            <FormLayout>
-              <Text variant="headingMd" as="h2">
-                Configuration
-              </Text>
-              <TextField
-                name="name"
-                label="Name"
-                type="text"
-                {...fields.name}
-                autoComplete="off"
-              />
-              <ChoiceList
-                title="Perk Type"
-                choices={[
-                  { label: "Discount", value: "discount" },
-                  {
-                    label: "Exclusive Access",
-                    value: "exclusive_access",
-                  },
-                ]}
-                selected={[fields.perkType.value]}
-                onChange={(value) => {
-                  console.log(value[0]);
-                  fields.perkType.onChange(value[0]);
-                  sei18nExclusiveError(!exclusive);
-                }}
-              />
-              {fields.perkType.value === "discount" && (
-                <FormLayout.Group>
-                  <ChoiceList
-                    title="Discount Type"
-                    choices={[
-                      { label: "Percentage", value: "percentage" },
-                      { label: "Amount", value: "amount" },
-                    ]}
-                    selected={[fields.discountType.value]}
-                    onChange={(value) => fields.discountType.onChange(value[0])}
-                  />
+            <BlockStack gap="500">
+              <Card roundedAbove="sm">
+                <Text as="h2" variant="headingLg">
+                  Campaign Settings
+                </Text>
+                <Box paddingBlockStart="200" paddingBlockEnd="400">
+                  <Text as="p" variant="bodyLg" tone="subdued">
+                    Define the type of campaign you want.
+                  </Text>
+                </Box>
+                <FormLayout>
+                  <Divider />
                   <TextField
-                    label="Discount"
-                    type="number"
-                    {...fields.discount}
+                    name="name"
+                    label="Campaign Name"
+                    helpText="This name will be used to identify your campaign on the dashboard (not displayed to customers)"
+                    placeholder="Ex: Summer Sale"
+                    type="text"
+                    {...fields.name}
                     autoComplete="off"
                   />
-                </FormLayout.Group>
-              )}
-              {fields.perkType.value === "exclusive_access" && (
-                <TextField
-                  label="Order Limit"
-                  type="number"
-                  {...fields.orderLimit}
-                  autoComplete="off"
-                />
-              )}
+                  <ChoiceList
+                    title="Campaign Type"
+                    choices={[
+                      {
+                        label: "Open (any customer)",
+                        value: "open",
+                        helpText:
+                          "Any customer can join the campaign and access the defined perks",
+                      },
+                      {
+                        label: "Targeted (specific customers)",
+                        value: "targeted",
+                        disabled: true,
+                        helpText:
+                          "Only customers segment imported from your CRM will be able to access those perks",
+                      },
+                      {
+                        label: "Tiered (multi-level)",
+                        value: "tiered",
+                        disabled: true,
+                        helpText:
+                          "Define a set of perks attached to customer segments or open to any customers. Useful if you want to personalize your campaign to a specific audience",
+                      },
+                    ]}
+                    selected={[fields.campaignType.value]}
+                    onChange={(value) => {
+                      console.log(value[0]);
+                      fields.campaignType.onChange(value[0]);
+                    }}
+                  />
+                </FormLayout>
+              </Card>
+              <Card roundedAbove="sm">
+                <Text as="h2" variant="headingLg">
+                  Define your perks
+                </Text>
+                <Box paddingBlockStart="200" paddingBlockEnd="400">
+                  <Text as="p" variant="bodyLg" tone="subdued">
+                    Define the type of perks for your campaign.
+                  </Text>
+                </Box>
+                <FormLayout>
+                  <Divider />
+                  <ChoiceList
+                    title="Perk Type"
+                    choices={[
+                      { label: "Product discount", value: "discount" },
+                      {
+                        label: "Exclusive (limited) access to product",
+                        value: "exclusive_access",
+                      },
+                    ]}
+                    selected={[fields.perkType.value]}
+                    onChange={(value) => {
+                      console.log(value[0]);
+                      fields.perkType.onChange(value[0]);
+                      sei18nExclusiveError(!exclusive);
+                    }}
+                  />
+                  {fields.perkType.value === "discount" && (
+                    <FormLayout.Group>
+                      <ChoiceList
+                        title="Discount Type"
+                        choices={[
+                          { label: "Percentage", value: "percentage" },
+                          { label: "Fixed amount", value: "amount" },
+                        ]}
+                        selected={[fields.discountType.value]}
+                        onChange={(value) =>
+                          fields.discountType.onChange(value[0])
+                        }
+                      />
+                      <TextField
+                        label="Discount"
+                        type="number"
+                        {...fields.discount}
+                        autoComplete="off"
+                      />
+                    </FormLayout.Group>
+                  )}
+                  {fields.perkType.value === "exclusive_access" && (
+                    <TextField
+                      label="Order Limit"
+                      type="number"
+                      {...fields.orderLimit}
+                      autoComplete="off"
+                    />
+                  )}
 
-              {/* <TokengatesResourcePicker products={fields.products} /> */}
-              <TargetProductsOrCollections products={fields.products} />
-              <PageActions
-                primaryAction={
-                  <Button
-                    variant="primary"
-                    submit
-                    loading={isSubmitting}
-                    disabled={isSubmitting}
-                  >
-                    Create Campaign
-                  </Button>
-                }
-                secondaryActions={[
-                  {
-                    content: "Reset",
-                    onAction: reset,
-                    disabled: isSubmitting || !dirty,
-                  },
-                ]}
-              />
-            </FormLayout>
+                  {/* <TokengatesResourcePicker products={fields.products} /> */}
+                  <TargetProductsOrCollections products={fields.products} />
+                </FormLayout>
+              </Card>
+            </BlockStack>
+            <PageActions
+              primaryAction={
+                <Button
+                  variant="primary"
+                  submit
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                >
+                  Create Campaign
+                </Button>
+              }
+              secondaryActions={[
+                {
+                  content: "Reset",
+                  onAction: reset,
+                  disabled: isSubmitting || !dirty,
+                },
+              ]}
+            />
           </Form>
         </Layout.Section>
       </Layout>

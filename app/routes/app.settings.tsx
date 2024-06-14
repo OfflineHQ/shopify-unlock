@@ -69,7 +69,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     ownerId: formData.appId,
     exclusiveErrorForm: formData.exclusiveError,
   });
-  console.log("res", res);
   return json({
     status: "success",
   });
@@ -80,14 +79,12 @@ export default function Settings() {
   const navigate = useNavigate();
   const { languages, i18nExclusiveErrorFields, appId } =
     useLoaderData<typeof loader>();
-  console.log("exclusiveError", i18nExclusiveErrorFields);
   const fetcher = useFetcher<typeof action>();
   const isSubmitting = fetcher.state === "submitting";
 
   const [selected, setSelected] = useState(0);
 
   useEffect(() => {
-    console.log(fetcher.data);
     if (fetcher.data?.status === "success") {
       shopify.toast.show("Settings saved successfully");
       navigate("/app");
@@ -101,7 +98,6 @@ export default function Settings() {
   const { fields, submit, reset, dirty } = useExclusiveForm(
     i18nExclusiveErrorFields,
     async (formData) => {
-      console.log("Form submitted with data:", formData);
       fetcher.submit(
         { ...formData, appId },
         {
@@ -147,7 +143,7 @@ export default function Settings() {
               <Text as="h2" variant="headingLg">
                 Default Campaigns Text
               </Text>
-              <Box paddingBlockStart="200">
+              <Box paddingBlockStart="200" paddingBlockEnd="400">
                 <Text as="p" variant="bodyLg" tone="subdued">
                   Define the default text for your campaigns with translation
                   for each language supported on your store.
