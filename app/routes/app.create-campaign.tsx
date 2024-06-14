@@ -49,7 +49,6 @@ export default function CreateTokengate() {
       navigate("/app");
     }
   }, [fetcher.data]);
-  const [exclusive, sei18nExclusiveError] = useState(false);
 
   const perkType = useField("discount");
   const discountType = useField("percentage");
@@ -73,6 +72,28 @@ export default function CreateTokengate() {
     },
     [redemptionLimit.value],
   );
+
+  const [isProductSelection, setIsProductSelection] = useState<boolean | null>(
+    null,
+  );
+
+  const products = useField({
+    value: [],
+    validates: (products) =>
+      (isProductSelection &&
+        products.length === 0 &&
+        "Products cannot be empty") ||
+      undefined,
+  });
+
+  const collections = useField({
+    value: [],
+    validates: (collections) =>
+      (!isProductSelection &&
+        collections.length === 0 &&
+        "Collections cannot be empty") ||
+      undefined,
+  });
 
   const fieldsDefinition = {
     name: useField({
@@ -105,11 +126,8 @@ export default function CreateTokengate() {
       },
       [perkType.value, discountType.value],
     ),
-    products: useField({
-      value: [],
-      validates: (products) =>
-        (products.length === 0 && "Products cannot be empty") || undefined,
-    }),
+    products,
+    collections,
     perkType,
     orderLimit,
   };
@@ -199,7 +217,6 @@ export default function CreateTokengate() {
                     ]}
                     selected={[fields.campaignType.value]}
                     onChange={(value) => {
-                      console.log(value[0]);
                       fields.campaignType.onChange(value[0]);
                     }}
                   />
@@ -228,9 +245,7 @@ export default function CreateTokengate() {
                     ]}
                     selected={[fields.perkType.value]}
                     onChange={(value) => {
-                      console.log(value[0]);
                       fields.perkType.onChange(value[0]);
-                      sei18nExclusiveError(!exclusive);
                     }}
                   />
                   {fields.perkType.value === "discount" && (
@@ -282,25 +297,12 @@ export default function CreateTokengate() {
                     }}
                   />
                   {/* <TokengatesResourcePicker products={fields.products} /> */}
-                  <Card roundedAbove="sm" background="bg-surface-secondary">
-                    <Text as="h3" variant="headingLg">
-                      Target Products or Collections
-                    </Text>
-                    <Box paddingBlockStart="200" paddingBlockEnd="400">
-                      <Text as="p" variant="bodyLg" tone="subdued">
-                        Select the products or collections that will be targeted
-                        for those perks in your campaign.
-                        <br />
-                        <br />
-                        Please note that you cannot have the same product or
-                        collection selected twice in the same campaign.
-                      </Text>
-                    </Box>
-                    <Divider />
-                    <Box paddingBlockStart="400" paddingBlockEnd="400">
-                      <TargetProductsOrCollections products={fields.products} />
-                    </Box>
-                  </Card>
+                  <TargetProductsOrCollections
+                    products={fields.products}
+                    collections={fields.collections}
+                    isProductSelection={isProductSelection}
+                    setIsProductSelection={setIsProductSelection}
+                  />
                 </FormLayout>
               </Card>
             </BlockStack>
