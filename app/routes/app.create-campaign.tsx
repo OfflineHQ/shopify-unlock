@@ -211,7 +211,8 @@ export default function CreateTokengate() {
                 </Text>
                 <Box paddingBlockStart="200" paddingBlockEnd="400">
                   <Text as="p" variant="bodyLg" tone="subdued">
-                    Define the type of perks for your campaign.
+                    Define the type of perks for your campaign assigned to your
+                    products or collections.
                   </Text>
                 </Box>
                 <FormLayout>
@@ -270,7 +271,7 @@ export default function CreateTokengate() {
                         label: "Set Limit",
                         value: "set_limit",
                         helpText:
-                          "Limit the number of times each customer can redeem their offer. This is applicable for both product discounts and exclusive access.",
+                          "Limit the number of times each customer can redeem their offer. This is applicable for both product discounts or exclusive access while the campaign is active.",
                         renderChildren: renderOrderLimit,
                       },
                     ]}
@@ -281,7 +282,25 @@ export default function CreateTokengate() {
                     }}
                   />
                   {/* <TokengatesResourcePicker products={fields.products} /> */}
-                  <TargetProductsOrCollections products={fields.products} />
+                  <Card roundedAbove="sm" background="bg-surface-secondary">
+                    <Text as="h3" variant="headingLg">
+                      Target Products or Collections
+                    </Text>
+                    <Box paddingBlockStart="200" paddingBlockEnd="400">
+                      <Text as="p" variant="bodyLg" tone="subdued">
+                        Select the products or collections that will be targeted
+                        for those perks in your campaign.
+                        <br />
+                        <br />
+                        Please note that you cannot have the same product or
+                        collection selected twice in the same campaign.
+                      </Text>
+                    </Box>
+                    <Divider />
+                    <Box paddingBlockStart="400" paddingBlockEnd="400">
+                      <TargetProductsOrCollections products={fields.products} />
+                    </Box>
+                  </Card>
                 </FormLayout>
               </Card>
             </BlockStack>
