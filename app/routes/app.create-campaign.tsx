@@ -17,7 +17,7 @@ import {
   TextField,
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { TargetProductsOrCollections } from "~/libs/campaigns-product-collection/TargetProductsOrCollections";
 import { authenticate } from "~/shopify.server";
@@ -54,6 +54,25 @@ export default function CreateTokengate() {
   const perkType = useField("discount");
   const discountType = useField("percentage");
   const campaignType = useField("open");
+  const redemptionLimit = useField("no_limit");
+  const orderLimit = useField(
+    {
+      value: 0,
+      validates: [
+        (orderLimit) => {
+          if (redemptionLimit.value === "set_limit" && !orderLimit) {
+            return "Order limit cannot be empty";
+          }
+        },
+        (orderLimit) => {
+          if (orderLimit && !(orderLimit > 0)) {
+            return "Order limit cannot be negative";
+          }
+        },
+      ],
+    },
+    [redemptionLimit.value],
+  );
 
   const fieldsDefinition = {
     name: useField({
@@ -61,17 +80,30 @@ export default function CreateTokengate() {
       validates: (name) => (!name && "Name cannot be empty") || undefined,
     }),
     campaignType,
+    redemptionLimit,
     discountType,
     discount: useField(
       {
         value: 0,
-        validates: (discount) => {
-          if ((perkType.value === "discount" && !discount) || !(discount > 0)) {
-            return "Discount cannot be empty";
-          }
-        },
+        validates: [
+          (discount) => {
+            if (perkType.value === "discount" && !discount) {
+              return "Discount cannot be empty";
+            }
+          },
+          (discount) => {
+            if (discount && !(discount > 0)) {
+              return "Discount cannot be negative";
+            }
+          },
+          (discount) => {
+            if (discountType.value === "percentage" && !(discount <= 100)) {
+              return "Discount cannot be greater than 100%";
+            }
+          },
+        ],
       },
-      [perkType.value],
+      [perkType.value, discountType.value],
     ),
     products: useField({
       value: [],
@@ -79,20 +111,7 @@ export default function CreateTokengate() {
         (products.length === 0 && "Products cannot be empty") || undefined,
     }),
     perkType,
-    orderLimit: useField(
-      {
-        value: 0,
-        validates: (orderLimit) => {
-          if (
-            (perkType.value === "exclusive_access" && !orderLimit) ||
-            !(orderLimit > 0)
-          ) {
-            return "Order limit cannot be empty";
-          }
-        },
-      },
-      [perkType.value],
-    ),
+    orderLimit,
   };
 
   const { fields, submit, reset, dirty } = useForm({
@@ -106,6 +125,20 @@ export default function CreateTokengate() {
       return { status: "success" };
     },
   });
+
+  const renderOrderLimit = useCallback(
+    (isSelected: boolean) =>
+      isSelected && (
+        <TextField
+          label="Order Limit"
+          labelHidden
+          autoComplete="off"
+          type="number"
+          {...fields.orderLimit}
+        />
+      ),
+    [fields.orderLimit],
+  );
 
   return (
     <Page
@@ -215,20 +248,38 @@ export default function CreateTokengate() {
                       <TextField
                         label="Discount"
                         type="number"
+                        suffix={
+                          fields.discountType.value === "percentage" ? "%" : "€"
+                        }
                         {...fields.discount}
                         autoComplete="off"
                       />
                     </FormLayout.Group>
                   )}
-                  {fields.perkType.value === "exclusive_access" && (
-                    <TextField
-                      label="Order Limit"
-                      type="number"
-                      {...fields.orderLimit}
-                      autoComplete="off"
-                    />
-                  )}
 
+                  <ChoiceList
+                    title="Campaign Redemption Limit"
+                    choices={[
+                      {
+                        label: "No Limit",
+                        value: "no_limit",
+                        helpText:
+                          "Customers can redeem this offer an unlimited number of times as long as the campaign is active.",
+                      },
+                      {
+                        label: "Set Limit",
+                        value: "set_limit",
+                        helpText:
+                          "Limit the number of times each customer can redeem their offer. This is applicable for both product discounts and exclusive access.",
+                        renderChildren: renderOrderLimit,
+                      },
+                    ]}
+                    selected={[fields.redemptionLimit.value]}
+                    onChange={(value) => {
+                      console.log(value[0]);
+                      fields.redemptionLimit.onChange(value[0]);
+                    }}
+                  />
                   {/* <TokengatesResourcePicker products={fields.products} /> */}
                   <TargetProductsOrCollections products={fields.products} />
                 </FormLayout>
