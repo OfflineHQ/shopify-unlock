@@ -1,10 +1,11 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
-import type { I18nMetafieldKey, I18nMetafieldValues } from "~/libs/i18n/types";
+import type { I18nMetafieldKey } from "../i18n/schema";
+import type { I18nMetafieldValues } from "../i18n/types";
 import { NAMESPACE } from "./common";
 
-export default async function getAppI18nMetafield(
+export default async function getAppI18nMetafield<K extends I18nMetafieldKey>(
   graphql: AdminGraphqlClient,
-  key: I18nMetafieldKey,
+  key: K,
 ) {
   const res = await graphql(
     `
@@ -29,5 +30,6 @@ export default async function getAppI18nMetafield(
   if (!value) {
     return null;
   }
-  return JSON.parse(value) as I18nMetafieldValues[I18nMetafieldKey];
+
+  return JSON.parse(value) as I18nMetafieldValues[K];
 }

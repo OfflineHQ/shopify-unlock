@@ -39,8 +39,14 @@ export default async function setupAppNamespace(graphql: AdminGraphqlClient) {
     if (!resMetafield) {
       throw new Error("Failed to create app metafield");
     }
-    return resMetafield.value;
+    return {
+      appNamespace: resMetafield.value,
+      appId: id,
+    };
   }
   const { value } = metafield;
-  return value;
+  return {
+    appNamespace: value,
+    appId: id,
+  };
 }

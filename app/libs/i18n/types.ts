@@ -1,32 +1,31 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
-import type { LanguageCode } from "~/types/admin.types";
+import type { LanguageCode, ShopLocale } from "~/types/admin.types";
+import type {
+  I18nExclusiveError,
+  I18nExclusiveText,
+  I18nFieldsType,
+  I18nMetafieldKey,
+} from "./schema";
 
-// Form types
+export type Languages = Pick<ShopLocale, "primary" | "locale" | "published">;
 
-export interface I18nExclusiveError {
-  noAccess: string;
-  limitReached: string;
-}
+// [{"locale":"EN","noAccess":"asfgasf","limitReached":"{}","published":true,"primary" :true},{"locale":"DE","noAccess":"asfasgasg","limitReached":"{}","published":false,"primary":false},{"locale":"FR","noAccess":"adgsg","l imitReached":"{}","published":true,"primary":false}]
 
 // Abstract types
 
-export interface I18nFieldsType {
-  locale: LanguageCode;
-  published: boolean;
-  primary: boolean;
+export interface I18nMetafieldValues {
+  [I18nMetafieldKey.EXCLUSIVE_ERROR]: I18nContentMap<I18nExclusiveError>;
+  [I18nMetafieldKey.EXCLUSIVE_TEXT]: I18nContentMap<I18nExclusiveText>;
+}
+
+export interface I18nMetafieldForm {
+  [I18nMetafieldKey.EXCLUSIVE_ERROR]: (I18nFieldsType & I18nExclusiveError)[];
+  [I18nMetafieldKey.EXCLUSIVE_TEXT]: (I18nFieldsType & I18nExclusiveText)[];
 }
 
 export type I18nContentMap<T> = {
-  [key in LanguageCode]: T;
+  [key in LanguageCode]?: T;
 };
-
-export enum I18nMetafieldKey {
-  EXCLUSIVE_ERROR = "exclusiveError",
-}
-
-export interface I18nMetafieldValues {
-  [I18nMetafieldKey.EXCLUSIVE_ERROR]: I18nContentMap<I18nExclusiveError>;
-}
 
 export interface I18nContentMetaFields<K extends I18nMetafieldKey> {
   key: K;
