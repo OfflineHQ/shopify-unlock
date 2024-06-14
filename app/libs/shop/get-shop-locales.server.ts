@@ -4,6 +4,7 @@ const GET_SHOP_LOCALES = `#graphql
   query GetShopLocales {
 	shopLocales {
 		locale
+    name
 		primary
 		published
     }

@@ -1,9 +1,9 @@
+import type { I18nMetafieldKey } from "~/libs/i18n/schema";
 import type {
   I18nContentMap,
   I18nContentMetafieldsQueryArgs,
-  I18nMetafieldKey,
   I18nMetafieldValues,
-} from "../i18n/types";
+} from "~/libs/i18n/types";
 import { NAMESPACE } from "./common";
 import createAppMetafields from "./create-app-metafields.server";
 

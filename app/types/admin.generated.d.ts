@@ -10,11 +10,6 @@ export type CreateAppDataMetafieldMutationVariables = AdminTypes.Exact<{
 
 export type CreateAppDataMetafieldMutation = { metafieldsSet?: AdminTypes.Maybe<{ metafields?: AdminTypes.Maybe<Array<Pick<AdminTypes.Metafield, 'key' | 'value'>>>, userErrors: Array<Pick<AdminTypes.MetafieldsSetUserError, 'field' | 'message'>> }> };
 
-export type GetCurrentInstallationQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
-
-
-export type GetCurrentInstallationQuery = { currentAppInstallation: Pick<AdminTypes.AppInstallation, 'id'> };
-
 export type GetAppMetafieldQueryVariables = AdminTypes.Exact<{
   namespace: AdminTypes.Scalars['String']['input'];
   key: AdminTypes.Scalars['String']['input'];
@@ -22,6 +17,11 @@ export type GetAppMetafieldQueryVariables = AdminTypes.Exact<{
 
 
 export type GetAppMetafieldQuery = { currentAppInstallation: { metafield?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>> } };
+
+export type GetCurrentInstallationQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
+
+
+export type GetCurrentInstallationQuery = { currentAppInstallation: Pick<AdminTypes.AppInstallation, 'id'> };
 
 export type GetAppNamespaceMetafieldsQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
 
@@ -34,7 +34,7 @@ export type GetAppNamespaceMetafieldsQuery = { currentAppInstallation: (
 export type GetShopLocalesQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
 
 
-export type GetShopLocalesQuery = { shopLocales: Array<Pick<AdminTypes.ShopLocale, 'locale' | 'primary' | 'published'>> };
+export type GetShopLocalesQuery = { shopLocales: Array<Pick<AdminTypes.ShopLocale, 'locale' | 'name' | 'primary' | 'published'>> };
 
 export type PopulateProductMutationVariables = AdminTypes.Exact<{
   input: AdminTypes.ProductInput;
@@ -54,10 +54,10 @@ export type ShopifyRemixTemplateUpdateVariantMutationVariables = AdminTypes.Exac
 export type ShopifyRemixTemplateUpdateVariantMutation = { productVariantUpdate?: AdminTypes.Maybe<{ productVariant?: AdminTypes.Maybe<Pick<AdminTypes.ProductVariant, 'id' | 'price' | 'barcode' | 'createdAt'>> }> };
 
 interface GeneratedQueryTypes {
-  "#graphql\nquery GetCurrentInstallation {\n  currentAppInstallation {\n    id\n  }\n}\n": {return: GetCurrentInstallationQuery, variables: GetCurrentInstallationQueryVariables},
   "\n      #graphql\n      query GetAppMetafield($namespace: String!, $key: String!) {\n        currentAppInstallation {\n          metafield(namespace: $namespace, key: $key) {\n            value\n          }\n        }\n      }\n    ": {return: GetAppMetafieldQuery, variables: GetAppMetafieldQueryVariables},
+  "#graphql\nquery GetCurrentInstallation {\n  currentAppInstallation {\n    id\n  }\n}\n": {return: GetCurrentInstallationQuery, variables: GetCurrentInstallationQueryVariables},
   "#graphql\nquery GetAppNamespaceMetafields {\n  currentAppInstallation {\n    id\n    metafield(key: \"offline_handle\", namespace: \"offline\") {\n      key\n      value\n    }\n  }\n}\n": {return: GetAppNamespaceMetafieldsQuery, variables: GetAppNamespaceMetafieldsQueryVariables},
-  "#graphql\n  query GetShopLocales {\n\tshopLocales {\n\t\tlocale\n\t\tprimary\n\t\tpublished\n    }\n  }\n": {return: GetShopLocalesQuery, variables: GetShopLocalesQueryVariables},
+  "#graphql\n  query GetShopLocales {\n\tshopLocales {\n\t\tlocale\n    name\n\t\tprimary\n\t\tpublished\n    }\n  }\n": {return: GetShopLocalesQuery, variables: GetShopLocalesQueryVariables},
 }
 
 interface GeneratedMutationTypes {

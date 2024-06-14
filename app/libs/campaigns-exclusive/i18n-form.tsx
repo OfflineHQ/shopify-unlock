@@ -1,15 +1,16 @@
 import { Box, FormLayout, Text, TextField } from "@shopify/polaris";
 import type { SubmitResult } from "@shopify/react-form";
 import { notEmptyString, useForm, useList } from "@shopify/react-form";
-import type { I18nExclusiveError, I18nFieldsType } from "~/libs/i18n/types";
-import { I18nMetafieldKey } from "~/libs/i18n/types";
+import type { I18nExclusiveError, I18nFieldsType } from "~/libs/i18n/schema";
+import { I18nMetafieldKey } from "~/libs/i18n/schema";
+import type { I18nMetafieldForm } from "~/libs/i18n/types";
 
 export interface ExclusiveErrorFieldsType
   extends I18nFieldsType,
     I18nExclusiveError {}
 
 export type ExclusiveFormDataType = {
-  [I18nMetafieldKey.EXCLUSIVE_ERROR]: ExclusiveErrorFieldsType[];
+  [I18nMetafieldKey.EXCLUSIVE_ERROR]: I18nMetafieldForm[I18nMetafieldKey.EXCLUSIVE_ERROR];
 };
 
 export function useExclusiveForm(

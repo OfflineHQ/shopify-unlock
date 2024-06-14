@@ -21,7 +21,7 @@ import { authenticate } from "~/shopify.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
-  const appNamespace = await setupAppNamespace(admin.graphql);
+  const { appNamespace } = await setupAppNamespace(admin.graphql);
   return { appNamespace };
 };
 
