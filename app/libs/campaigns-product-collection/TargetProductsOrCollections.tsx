@@ -35,7 +35,7 @@ export const TargetProductsOrCollections = ({
   setIsProductSelection,
 }: TargetProductsOrCollectionsProps) => {
   const shopify = useAppBridge();
-  const [selected, setSelected] = useState<string[]>(
+  const [selectedProducts, setSelectedProducts] = useState<string[]>(
     products.value.map((product) => product.id),
   );
 
@@ -58,7 +58,9 @@ export const TargetProductsOrCollections = ({
       // @ts-ignore
       products.onChange(updatedSelection);
       setIsProductSelection(true);
-      setSelected(updatedSelection.map((product: Product) => product.id));
+      setSelectedProducts(
+        updatedSelection.map((product: Product) => product.id),
+      );
     }
   }, [shopify, products, setIsProductSelection]);
 
@@ -90,7 +92,7 @@ export const TargetProductsOrCollections = ({
     products.reset();
     collections.reset();
     setIsProductSelection(null);
-    setSelected([]);
+    setSelectedProducts([]);
   }
 
   return (
@@ -150,8 +152,8 @@ export const TargetProductsOrCollections = ({
           products.value.length > 0 && (
             <SelectedProductsTable
               products={products.value}
-              selected={selected}
-              setSelected={setSelected}
+              selectedProducts={selectedProducts}
+              setSelectedProducts={setSelectedProducts}
             />
           )
         )}

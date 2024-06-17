@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Remix"
 handle = "offline-unlock-remix"
-application_url = "https://latitude-tablet-spouse-ta.trycloudflare.com"
+application_url = "https://needed-categories-ups-noble.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,9 +22,9 @@ scopes = "read_discounts,read_gates,read_locales,write_discounts,write_gates,wri
 
 [auth]
 redirect_urls = [
-  "https://latitude-tablet-spouse-ta.trycloudflare.com/auth/callback",
-  "https://latitude-tablet-spouse-ta.trycloudflare.com/auth/shopify/callback",
-  "https://latitude-tablet-spouse-ta.trycloudflare.com/api/auth/callback"
+  "https://needed-categories-ups-noble.trycloudflare.com/auth/callback",
+  "https://needed-categories-ups-noble.trycloudflare.com/auth/shopify/callback",
+  "https://needed-categories-ups-noble.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
