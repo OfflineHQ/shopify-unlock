@@ -5,14 +5,14 @@ import type { Product } from "~/types/admin.types";
 
 interface SelectedProductsTableProps {
   products: Product[];
-  selected: string[];
-  setSelected: Dispatch<SetStateAction<string[]>>;
+  selectedProducts: string[];
+  setSelectedProducts: Dispatch<SetStateAction<string[]>>;
 }
 
 const SelectedProductsTable: React.FC<SelectedProductsTableProps> = ({
   products,
-  selected,
-  setSelected,
+  selectedProducts,
+  setSelectedProducts,
 }) => {
   const resourceName = {
     singular: "product",
@@ -24,7 +24,7 @@ const SelectedProductsTable: React.FC<SelectedProductsTableProps> = ({
         id={id}
         key={id}
         position={index}
-        selected={selected?.includes(id)}
+        selected={selectedProducts?.includes(id)}
       >
         <IndexTable.Cell>
           <Thumbnail source={images?.[0]?.originalSrc || ""} alt={handle} />
@@ -52,14 +52,19 @@ const SelectedProductsTable: React.FC<SelectedProductsTableProps> = ({
     <IndexTable
       resourceName={resourceName}
       itemCount={products.length}
-      selectedItemsCount={selected.length}
-      onSelectionChange={(selectionType, toggleType, selection) => {
-        if (selectionType === "All") {
-          setSelected(products.map((product) => product.id));
-        } else if (selectionType === "None") {
-          setSelected([]);
-        } else {
-          setSelected(selection);
+      selectedItemsCount={selectedProducts.length}
+      onSelectionChange={(selectionType, toggleType, selection, position) => {
+        console.log({ selectionType, toggleType, selection, position });
+        if (selectionType === "page") {
+          setSelectedProducts(
+            toggleType ? products.map((product) => product.id) : [],
+          );
+        } else if (selectionType === "single") {
+          setSelectedProducts(
+            toggleType
+              ? [...selectedProducts, selection as string]
+              : selectedProducts.filter((id) => id !== selection),
+          );
         }
       }}
       headings={[
