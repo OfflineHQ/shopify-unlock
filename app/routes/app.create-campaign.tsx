@@ -77,23 +77,28 @@ export default function CreateTokengate() {
     null,
   );
 
-  const products = useField({
-    value: [],
-    validates: (products) =>
-      (isProductSelection &&
-        products.length === 0 &&
-        "Products cannot be empty") ||
-      undefined,
-  });
+  const products = useField(
+    {
+      value: [],
+      validates: (products) =>
+        (!!isProductSelection || isProductSelection === null) &&
+        products?.length === 0 &&
+        "Products cannot be empty",
+    },
+    [isProductSelection],
+  );
 
-  const collections = useField({
-    value: [],
-    validates: (collections) =>
-      (!isProductSelection &&
-        collections.length === 0 &&
-        "Collections cannot be empty") ||
-      undefined,
-  });
+  const collections = useField(
+    {
+      value: [],
+      validates: (collections) =>
+        (isProductSelection === false &&
+          collections?.length === 0 &&
+          "Collections cannot be empty") ||
+        undefined,
+    },
+    [isProductSelection],
+  );
 
   const fieldsDefinition = {
     name: useField({

@@ -6,6 +6,7 @@ import {
   ButtonGroup,
   Card,
   Divider,
+  InlineError,
   InlineGrid,
   Text,
 } from "@shopify/polaris";
@@ -158,6 +159,8 @@ export const TargetProductsOrCollections = ({
           )
         )}
       </Box>
+      <InlineError message={products.error} fieldID="products" />
+      <InlineError message={collections.error} fieldID="collections" />
     </Card>
   );
 };
