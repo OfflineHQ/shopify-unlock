@@ -4,16 +4,16 @@ import { BlockStack, Button, IndexTable, Page } from "@shopify/polaris";
 import type { IndexTableHeading } from "@shopify/polaris/build/ts/src/components/IndexTable";
 import type { NonEmptyArray } from "@shopify/polaris/build/ts/src/types";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
+import getCampaigns from "~/libs/campaigns/get-campaigns.server";
 import { authenticate } from "../shopify.server";
-
-async function getCampaigns(appNamespace: string) {
-  return [];
-}
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
   const { appNamespace } = await setupAppNamespace(admin.graphql);
-  const campaigns = await getCampaigns(appNamespace);
+  const campaigns = await getCampaigns({
+    graphql: admin.graphql,
+    appNamespace,
+  });
   return { campaigns, appNamespace };
 };
 
