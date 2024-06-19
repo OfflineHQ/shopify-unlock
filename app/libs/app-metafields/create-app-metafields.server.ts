@@ -2,7 +2,7 @@ import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
 import type { MetafieldsSetInput } from "~/types/admin.types";
 
 const UPDATE_APP_NAMESPACE_METAFIELDS = `#graphql
-mutation CreateAppDataMetafield($metafieldsSetInput: [MetafieldsSetInput!]!) {
+mutation CreateAppMetafield($metafieldsSetInput: [MetafieldsSetInput!]!) {
   metafieldsSet(metafields: $metafieldsSetInput) {
     metafields {
       key

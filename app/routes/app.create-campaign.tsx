@@ -20,7 +20,21 @@ import { useField, useForm } from "@shopify/react-form";
 import { useCallback, useEffect, useState } from "react";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { TargetProductsOrCollections } from "~/libs/campaigns-product-collection/TargetProductsOrCollections";
+import {
+  CampaignTypeEnum,
+  DiscountTypeEnum,
+  PerkTypeEnum,
+  RedemptionLimitEnum,
+  campaignFormSchema,
+  type CampaignFormData,
+  type campaignTypeEnum,
+  type discountTypeEnum,
+  type perkTypeEnum,
+  type redemptionLimitEnum,
+} from "~/libs/campaigns/schema";
+import setupCampaign from "~/libs/campaigns/setup-campaign.server";
 import { authenticate } from "~/shopify.server";
+import type { Collection, Product } from "~/types/admin.types";
 // import { TokengatesResourcePicker } from "../components/TokengatesResourcePicker";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -30,8 +44,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.json();
-  console.log({ formData });
+  const formData = (await request.json()) as CampaignFormData & {
+    appNamespace: string;
+    collections: Collection[];
+    products: Product[];
+    orderLimit: string;
+    discount: string;
+  };
+  const { appNamespace, products, collections, orderLimit, discount, ...form } =
+    formData;
+  const campaignForm = {
+    ...form,
+    orderLimit: orderLimit ? parseInt(orderLimit) : undefined,
+    discount: discount ? parseFloat(discount) : undefined,
+    products: products.map((product) => product.id),
+  };
+  campaignFormSchema.parse(campaignForm);
+  console.log({ campaignForm, products, collections });
+  const { admin } = await authenticate.admin(request);
+  await setupCampaign({
+    graphql: admin.graphql,
+    campaignForm,
+    appNamespace,
+  });
   return json({
     status: "success",
   });
@@ -50,13 +85,21 @@ export default function CreateTokengate() {
     }
   }, [fetcher.data]);
 
-  const perkType = useField("discount");
-  const discountType = useField("percentage");
-  const campaignType = useField("open");
-  const redemptionLimit = useField("no_limit");
+  const campaignType = useField<(typeof campaignTypeEnum)[number]>(
+    CampaignTypeEnum.Open,
+  );
+  const perkType = useField<(typeof perkTypeEnum)[number]>(
+    PerkTypeEnum.Discount,
+  );
+  const discountType = useField<(typeof discountTypeEnum)[number]>(
+    DiscountTypeEnum.Percentage,
+  );
+  const redemptionLimit = useField<(typeof redemptionLimitEnum)[number]>(
+    RedemptionLimitEnum.NoLimit,
+  );
   const orderLimit = useField(
     {
-      value: 0,
+      value: "",
       validates: [
         (orderLimit) => {
           if (redemptionLimit.value === "set_limit" && !orderLimit) {
@@ -64,7 +107,7 @@ export default function CreateTokengate() {
           }
         },
         (orderLimit) => {
-          if (orderLimit && !(orderLimit > 0)) {
+          if (orderLimit && !(parseInt(orderLimit) > 0)) {
             return "Order limit cannot be negative";
           }
         },
@@ -81,9 +124,10 @@ export default function CreateTokengate() {
     {
       value: [],
       validates: (products) =>
-        (!!isProductSelection || isProductSelection === null) &&
-        products?.length === 0 &&
-        "Products cannot be empty",
+        ((!!isProductSelection || isProductSelection === null) &&
+          products?.length === 0 &&
+          "Products cannot be empty") ||
+        undefined,
     },
     [isProductSelection],
   );
@@ -110,7 +154,7 @@ export default function CreateTokengate() {
     discountType,
     discount: useField(
       {
-        value: 0,
+        value: "",
         validates: [
           (discount) => {
             if (perkType.value === "discount" && !discount) {
@@ -118,12 +162,15 @@ export default function CreateTokengate() {
             }
           },
           (discount) => {
-            if (discount && !(discount > 0)) {
+            if (discount && !(parseFloat(discount) > 0)) {
               return "Discount cannot be negative";
             }
           },
           (discount) => {
-            if (discountType.value === "percentage" && !(discount <= 100)) {
+            if (
+              discountType.value === "percentage" &&
+              !(parseFloat(discount) <= 100)
+            ) {
               return "Discount cannot be greater than 100%";
             }
           },
@@ -222,7 +269,9 @@ export default function CreateTokengate() {
                     ]}
                     selected={[fields.campaignType.value]}
                     onChange={(value) => {
-                      fields.campaignType.onChange(value[0]);
+                      fields.campaignType.onChange(
+                        value[0] as (typeof campaignTypeEnum)[number],
+                      );
                     }}
                   />
                 </FormLayout>
@@ -250,7 +299,9 @@ export default function CreateTokengate() {
                     ]}
                     selected={[fields.perkType.value]}
                     onChange={(value) => {
-                      fields.perkType.onChange(value[0]);
+                      fields.perkType.onChange(
+                        value[0] as (typeof perkTypeEnum)[number],
+                      );
                     }}
                   />
                   {fields.perkType.value === "discount" && (
@@ -263,7 +314,9 @@ export default function CreateTokengate() {
                         ]}
                         selected={[fields.discountType.value]}
                         onChange={(value) =>
-                          fields.discountType.onChange(value[0])
+                          fields.discountType.onChange(
+                            value[0] as (typeof discountTypeEnum)[number],
+                          )
                         }
                       />
                       <TextField
@@ -298,7 +351,9 @@ export default function CreateTokengate() {
                     selected={[fields.redemptionLimit.value]}
                     onChange={(value) => {
                       console.log(value[0]);
-                      fields.redemptionLimit.onChange(value[0]);
+                      fields.redemptionLimit.onChange(
+                        value[0] as (typeof redemptionLimitEnum)[number],
+                      );
                     }}
                   />
                   {/* <TokengatesResourcePicker products={fields.products} /> */}

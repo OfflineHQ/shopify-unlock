@@ -159,8 +159,11 @@ export const TargetProductsOrCollections = ({
           )
         )}
       </Box>
-      <InlineError message={products.error} fieldID="products" />
-      <InlineError message={collections.error} fieldID="collections" />
+      <InlineError message={products.error as string} fieldID="products" />
+      <InlineError
+        message={collections.error as string}
+        fieldID="collections"
+      />
     </Card>
   );
 };

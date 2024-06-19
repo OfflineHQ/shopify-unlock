@@ -3,12 +3,11 @@
 client_id = "856a9b0ebc152239f6a6ce4743e0c0ce"
 extension_directories = [
   "extensions/offline-discount",
-  "extensions/offline-exclusive-development",
-  "extensions/offline-connect"
+  "extensions/offline-exclusive-development"
 ]
 name = "Offline Unlock Remix"
 handle = "offline-unlock-remix"
-application_url = "https://needed-categories-ups-noble.trycloudflare.com"
+application_url = "https://eos-conclusion-cutting-declared.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,9 +21,9 @@ scopes = "read_discounts,read_gates,read_locales,write_discounts,write_gates,wri
 
 [auth]
 redirect_urls = [
-  "https://needed-categories-ups-noble.trycloudflare.com/auth/callback",
-  "https://needed-categories-ups-noble.trycloudflare.com/auth/shopify/callback",
-  "https://needed-categories-ups-noble.trycloudflare.com/api/auth/callback"
+  "https://eos-conclusion-cutting-declared.trycloudflare.com/auth/callback",
+  "https://eos-conclusion-cutting-declared.trycloudflare.com/auth/shopify/callback",
+  "https://eos-conclusion-cutting-declared.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

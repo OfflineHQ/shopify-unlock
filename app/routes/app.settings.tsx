@@ -64,7 +64,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = (await request.json()) as {
     appId: string;
   } & ExclusiveFormDataType;
-  const res = await setupI18nExclusiveDefaults({
+  await setupI18nExclusiveDefaults({
     graphql: admin.graphql,
     ownerId: formData.appId,
     exclusiveErrorForm: formData.exclusiveError,
