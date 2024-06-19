@@ -162,12 +162,17 @@ export default function CreateTokengate() {
             }
           },
           (discount) => {
-            if (discount && !(parseFloat(discount) > 0)) {
+            if (
+              perkType.value === "discount" &&
+              discount &&
+              !(parseFloat(discount) > 0)
+            ) {
               return "Discount cannot be negative";
             }
           },
           (discount) => {
             if (
+              perkType.value === "discount" &&
               discountType.value === "percentage" &&
               !(parseFloat(discount) <= 100)
             ) {
@@ -184,7 +189,7 @@ export default function CreateTokengate() {
     orderLimit,
   };
 
-  const { fields, submit, reset, dirty } = useForm({
+  const { fields, submit, reset, dirty, ...remaining } = useForm({
     fields: fieldsDefinition,
     onSubmit: async (formData) => {
       console.log("Form submitted with data:", formData);
@@ -209,6 +214,8 @@ export default function CreateTokengate() {
       ),
     [fields.orderLimit],
   );
+
+  console.log({ dirty, ...remaining });
 
   return (
     <Page
