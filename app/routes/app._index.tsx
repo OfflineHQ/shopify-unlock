@@ -2,28 +2,49 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { BlockStack, IndexTable, Page, Text } from "@shopify/polaris";
+import { DeleteIcon } from "@shopify/polaris-icons";
 import type { IndexTableHeading } from "@shopify/polaris/build/ts/src/components/IndexTable";
 import type { NonEmptyArray } from "@shopify/polaris/build/ts/src/types";
 import { useEffect, useState } from "react";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
-import deleteCampaigns from "~/libs/campaigns/detele-campaigns.server";
+import { CampaignRowActions } from "~/libs/campaigns/campaign-row-actions";
+import deleteCampaigns, {
+  deleteCampaign,
+} from "~/libs/campaigns/detele-campaigns.server";
 import type { GetCampaignRes } from "~/libs/campaigns/get-campaigns.server";
 import getCampaigns from "~/libs/campaigns/get-campaigns.server";
+import { ActionsEnum } from "~/libs/campaigns/types";
 import { authenticate } from "../shopify.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
-  const campaigns = (await request.json()) as GetCampaignRes;
-
-  if (campaigns.length) {
-    await deleteCampaigns({
-      graphql: admin.graphql,
-      campaigns,
-    });
+  const { campaigns, campaign, action } = (await request.json()) as {
+    campaigns?: GetCampaignRes;
+    campaign?: GetCampaignRes[number];
+    action: ActionsEnum;
+  };
+  switch (action) {
+    case ActionsEnum.DeleteCampaigns:
+      if (campaigns?.length) {
+        await deleteCampaigns({
+          graphql: admin.graphql,
+          campaigns,
+        });
+      }
+      break;
+    case ActionsEnum.DeleteCampaign:
+      if (campaign) {
+        await deleteCampaign({
+          graphql: admin.graphql,
+          campaign,
+        });
+      }
+      break;
   }
 
   return json({
     status: "success",
+    action,
   });
 };
 
@@ -51,7 +72,8 @@ export default function Index() {
     { title: "Name" },
     { title: "Perk" },
     { title: "Products" },
-    { title: "ID", alignment: "end" },
+    { title: "ID" },
+    { title: "Actions", alignment: "end" },
   ];
 
   const perkTypeName = Object.freeze({
@@ -68,7 +90,14 @@ export default function Index() {
   useEffect(() => {
     console.log(fetcher.data);
     if (fetcher.data?.status === "success") {
-      shopify.toast.show("Campaign deleted successfully");
+      switch (fetcher.data.action) {
+        case ActionsEnum.DeleteCampaigns:
+          shopify.toast.show("Campaigns deleted successfully");
+          break;
+        case ActionsEnum.DeleteCampaign:
+          shopify.toast.show("Campaign deleted successfully");
+          break;
+      }
       navigate("/app");
     }
   }, [fetcher.data]);
@@ -78,11 +107,28 @@ export default function Index() {
       selectedCampaigns.includes(campaign.id),
     );
     console.log("Deleting campaigns:", campaignToDelete);
-    fetcher.submit(campaignToDelete, {
-      method: "POST",
-      encType: "application/json",
-    });
+    fetcher.submit(
+      { campaigns: campaignToDelete, action: ActionsEnum.DeleteCampaigns },
+      {
+        method: "POST",
+        encType: "application/json",
+      },
+    );
     return { status: "success" };
+  };
+
+  const handleAction = (campaignId: string, action: ActionsEnum) => {
+    const campaign = campaigns.find((campaign) => campaign.id === campaignId);
+    if (!campaign) {
+      return;
+    }
+    fetcher.submit(
+      {
+        campaign,
+        action,
+      },
+      { method: "POST", encType: "application/json" },
+    );
   };
 
   const campaignsMarkup = campaigns
@@ -121,9 +167,14 @@ export default function Index() {
             </Text>
           </IndexTable.Cell>
           <IndexTable.Cell>
-            <Text as="span" alignment="end" numeric>
+            <Text as="span" numeric>
               {id.split("/").pop()}
             </Text>
+          </IndexTable.Cell>
+          <IndexTable.Cell>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <CampaignRowActions campaignId={id} handleAction={handleAction} />
+            </div>
           </IndexTable.Cell>
         </IndexTable.Row>
       );
@@ -142,7 +193,9 @@ export default function Index() {
       <IndexTable
         promotedBulkActions={[
           {
+            destructive: true,
             content: "Delete campaigns",
+            icon: DeleteIcon,
             onAction: handleBulkDelete,
           },
         ]}

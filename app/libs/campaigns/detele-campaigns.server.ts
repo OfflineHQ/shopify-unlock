@@ -24,7 +24,10 @@ interface DeleteCampaignProps {
   campaign: GetCampaignRes[number];
 }
 
-async function deleteCampaign({ graphql, campaign }: DeleteCampaignProps) {
+export async function deleteCampaign({
+  graphql,
+  campaign,
+}: DeleteCampaignProps) {
   const discountId = campaign.discountId?.value;
   if (discountId) {
     await deleteProductDiscount({ graphql, discountId });
