@@ -100,6 +100,9 @@ export default async function setupCampaign({
   if (!gateConfigurationId) {
     throw new Error("Failed to create gate configuration");
   }
+  console.log({
+    gateCreated: resJson.data?.gateConfigurationCreate?.gateConfiguration,
+  });
   const resProductGate = await getProductsGatesMinimal({
     graphql,
     productsGid: campaignForm.products,

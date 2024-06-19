@@ -60,7 +60,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     products: products.map((product) => product.id),
   };
   campaignFormSchema.parse(campaignForm);
-  console.log({ campaignForm, products, collections });
+  console.log({ campaignForm, appNamespace });
   const { admin } = await authenticate.admin(request);
   await setupCampaign({
     graphql: admin.graphql,
