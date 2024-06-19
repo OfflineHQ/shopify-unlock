@@ -16,7 +16,6 @@ export default async function getCampaigns({
       nodes {
         id
         name
-        handle
         requirements: metafield(namespace: "offline-gate",
           key: "requirements") {
             value
@@ -25,9 +24,20 @@ export default async function getCampaigns({
           key: "reaction") {
             value
         }
+        discountId: metafield(namespace: "offline-gate",
+          key: "discount-id") {
+            value
+        }
         subjectBindings(first: $first, includeInactive: true) {
           nodes {
             id
+            active
+	    subject {
+		... on Product {
+			title
+			id
+		}
+	    }
           }
         }
         createdAt
@@ -38,10 +48,12 @@ export default async function getCampaigns({
 `;
   const res = await graphql(GATES_QUERY, {
     variables: {
-      query: `handle:${appNamespace}`,
+      query: `"handle:${appNamespace}"`,
       first: 100,
     },
   });
   const resJson = await res.json();
   return resJson.data?.gateConfigurations?.nodes || [];
 }
+
+export type GetCampaignRes = Awaited<ReturnType<typeof getCampaigns>>;

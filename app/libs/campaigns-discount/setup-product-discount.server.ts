@@ -1,5 +1,6 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
 import createAppMetafields from "~/libs/app-metafields/create-app-metafields.server";
+import updateCampaignMetafields from "../campaigns-metafields/update-campaign-metafields.server";
 
 const CREATE_AUTOMATIC_DISCOUNT_MUTATION = `#graphql
   mutation CreateAutomaticDiscount($discount: DiscountAutomaticAppInput!) {
@@ -41,6 +42,7 @@ export default async function setupProductDiscount({
           shippingDiscounts: true,
         },
         startsAt: new Date(),
+        //TODO, add i18n translations text
         metafields: [
           {
             key: "gate_configuration_id",
@@ -76,5 +78,17 @@ export default async function setupProductDiscount({
         .join(", ")}`,
     );
   }
+  await updateCampaignMetafields({
+    graphql,
+    campaignId: gateConfigurationId,
+    metafields: [
+      {
+        type: "single_line_text_field",
+        key: "discount-id",
+        namespace: "offline-gate",
+        value: discountId,
+      },
+    ],
+  });
   return discountId;
 }
