@@ -83,7 +83,7 @@ export default function Index() {
 
   const emptyState = (
     <BlockStack align="center">
-      <p>No campaigns found</p>
+      <p>No campaigns</p>
     </BlockStack>
   );
 
@@ -131,54 +131,57 @@ export default function Index() {
     );
   };
 
-  const campaignsMarkup = campaigns
-    .filter((gate) => gate.requirements?.value && gate.reaction?.value)
-    .map((gate, index) => {
-      const { id, name, reaction, subjectBindings } = gate;
+  const filteredCampaigns = campaigns.filter(
+    (gate) => gate.requirements?.value && gate.reaction?.value,
+  );
+  console.log({ campaigns });
 
-      // const segment = (JSON.parse(requirements.value)?.conditions || [])
-      //   .map((condition) => condition.contractAddress)
-      //   .join(", ");
+  const campaignsMarkup = filteredCampaigns.map((gate, index) => {
+    const { id, name, reaction, subjectBindings } = gate;
 
-      const perkType = JSON.parse(reaction?.value || "{}")?.type ?? "—";
+    // const segment = (JSON.parse(requirements.value)?.conditions || [])
+    //   .map((condition) => condition.contractAddress)
+    //   .join(", ");
 
-      const numProducts = subjectBindings?.nodes?.length ?? "—";
+    const perkType = JSON.parse(reaction?.value || "{}")?.type ?? "—";
 
-      return (
-        <IndexTable.Row
-          id={id}
-          key={id}
-          position={index}
-          selected={!!selectedCampaigns.includes(id)}
-        >
-          <IndexTable.Cell>
-            <Text variant="bodyMd" fontWeight="bold" as="span">
-              {name}
-            </Text>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Text variant="bodyMd" as="span">
-              {perkTypeName[perkType]}
-            </Text>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Text variant="bodyMd" as="span" numeric>
-              {numProducts}
-            </Text>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Text as="span" numeric>
-              {id.split("/").pop()}
-            </Text>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <CampaignRowActions campaignId={id} handleAction={handleAction} />
-            </div>
-          </IndexTable.Cell>
-        </IndexTable.Row>
-      );
-    });
+    const numProducts = subjectBindings?.nodes?.length ?? "—";
+
+    return (
+      <IndexTable.Row
+        id={id}
+        key={id}
+        position={index}
+        selected={!!selectedCampaigns.includes(id)}
+      >
+        <IndexTable.Cell>
+          <Text variant="bodyMd" fontWeight="bold" as="span">
+            {name}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Text variant="bodyMd" as="span">
+            {perkTypeName[perkType]}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Text variant="bodyMd" as="span" numeric>
+            {numProducts}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Text as="span" numeric>
+            {id.split("/").pop()}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <CampaignRowActions campaignId={id} handleAction={handleAction} />
+          </div>
+        </IndexTable.Cell>
+      </IndexTable.Row>
+    );
+  });
 
   return (
     <Page
@@ -193,6 +196,7 @@ export default function Index() {
       <IndexTable
         promotedBulkActions={[
           {
+            //@ts-ignore
             destructive: true,
             content: "Delete campaigns",
             icon: DeleteIcon,
@@ -201,7 +205,7 @@ export default function Index() {
         ]}
         emptyState={emptyState}
         headings={tableHeadings as NonEmptyArray<IndexTableHeading>}
-        itemCount={campaigns?.length ?? 0}
+        itemCount={filteredCampaigns.length}
         resourceName={{
           singular: "Campaign",
           plural: "Campaigns",

@@ -17,9 +17,11 @@ export function CampaignRowActions({
   const toggleActive = useCallback(() => setActive((active) => !active), []);
 
   const activator = (
-    <Button onClick={toggleActive} disclosure>
-      Select an action
-    </Button>
+    <div onClick={(e) => e.stopPropagation()}>
+      <Button onClick={toggleActive} disclosure>
+        Select an action
+      </Button>
+    </div>
   );
 
   return (

@@ -16,6 +16,7 @@ export default async function getCampaigns({
       nodes {
         id
         name
+        handle
         requirements: metafield(namespace: "offline-gate",
           key: "requirements") {
             value

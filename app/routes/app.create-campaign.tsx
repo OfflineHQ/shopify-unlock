@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, useFetcher, useNavigate } from "@remix-run/react";
+import { Form, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import {
   BlockStack,
@@ -73,6 +73,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function CreateTokengate() {
+  const { appNamespace } = useLoaderData<typeof loader>();
   const shopify = useAppBridge();
   const navigate = useNavigate();
   const fetcher = useFetcher<typeof action>();
@@ -193,10 +194,13 @@ export default function CreateTokengate() {
     fields: fieldsDefinition,
     onSubmit: async (formData) => {
       console.log("Form submitted with data:", formData);
-      fetcher.submit(formData, {
-        method: "POST",
-        encType: "application/json",
-      });
+      fetcher.submit(
+        { ...formData, appNamespace },
+        {
+          method: "POST",
+          encType: "application/json",
+        },
+      );
       return { status: "success" };
     },
   });

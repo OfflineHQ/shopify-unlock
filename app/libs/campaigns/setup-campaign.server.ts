@@ -61,6 +61,9 @@ export default async function setupCampaign({
   campaignForm,
   appNamespace,
 }: SetupCampaign) {
+  if (!appNamespace) {
+    throw new Error("App namespace is required");
+  }
   const exclusiveAccess =
     campaignForm.perkType === PerkTypeEnum.ExclusiveAccess;
   const gateConfigurationRequirements = {
