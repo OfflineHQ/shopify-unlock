@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "remix vite:build",
+    "build:dev": "remix vite:build --mode development",
     "dev": "shopify app dev --config development",
     "config:link": "shopify app config link",
     "generate": "shopify app generate",
@@ -10,6 +11,7 @@
     "config:use": "shopify app config use",
     "env": "shopify app env",
     "start": "remix-serve ./build/server/index.js",
+    "start:dev": "remix-serve ./build/server/index.js --mode development",
     "docker-start": "npm run setup && npm run start",
     "setup": "prisma generate --schema=prisma/schema.prod.prisma && prisma migrate deploy",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
