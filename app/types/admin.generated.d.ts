@@ -31,6 +31,16 @@ export type GetAppNamespaceMetafieldsQuery = { currentAppInstallation: (
     & { metafield?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'key' | 'value'>> }
   ) };
 
+export type DiscountAutomaticDeleteMutationVariables = AdminTypes.Exact<{
+  id: AdminTypes.Scalars['ID']['input'];
+}>;
+
+
+export type DiscountAutomaticDeleteMutation = { discountAutomaticDelete?: AdminTypes.Maybe<(
+    Pick<AdminTypes.DiscountAutomaticDeletePayload, 'deletedAutomaticDiscountId'>
+    & { userErrors: Array<Pick<AdminTypes.DiscountUserError, 'message'>> }
+  )> };
+
 export type CreateAutomaticDiscountMutationVariables = AdminTypes.Exact<{
   discount: AdminTypes.DiscountAutomaticAppInput;
 }>;
@@ -70,7 +80,7 @@ export type GetGateConfigurationsQueryVariables = AdminTypes.Exact<{
 
 
 export type GetGateConfigurationsQuery = { gateConfigurations?: AdminTypes.Maybe<{ nodes: Array<(
-      Pick<AdminTypes.GateConfiguration, 'id' | 'name' | 'createdAt' | 'updatedAt'>
+      Pick<AdminTypes.GateConfiguration, 'id' | 'name' | 'handle' | 'createdAt' | 'updatedAt'>
       & { requirements?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>>, reaction?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>>, discountId?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>>, subjectBindings: { nodes: Array<(
           Pick<AdminTypes.GateSubject, 'id' | 'active'>
           & { subject: Pick<AdminTypes.Product, 'title' | 'id'> }
@@ -159,13 +169,14 @@ interface GeneratedQueryTypes {
   "\n      #graphql\n      query GetAppMetafield($namespace: String!, $key: String!) {\n        currentAppInstallation {\n          metafield(namespace: $namespace, key: $key) {\n            value\n          }\n        }\n      }\n    ": {return: GetAppMetafieldQuery, variables: GetAppMetafieldQueryVariables},
   "#graphql\nquery GetCurrentInstallation {\n  currentAppInstallation {\n    id\n  }\n}\n": {return: GetCurrentInstallationQuery, variables: GetCurrentInstallationQueryVariables},
   "#graphql\nquery GetAppNamespaceMetafields {\n  currentAppInstallation {\n    id\n    metafield(key: \"offline_handle\", namespace: \"offline\") {\n      key\n      value\n    }\n  }\n}\n": {return: GetAppNamespaceMetafieldsQuery, variables: GetAppNamespaceMetafieldsQueryVariables},
-  "#graphql\n  query GetGateConfigurations($query: String!, $first: Int!) {\n    gateConfigurations(query: $query, first: $first) {\n      nodes {\n        id\n        name\n        requirements: metafield(namespace: \"offline-gate\",\n          key: \"requirements\") {\n            value\n        }\n        reaction: metafield(namespace: \"offline-gate\",\n          key: \"reaction\") {\n            value\n        }\n        discountId: metafield(namespace: \"offline-gate\",\n          key: \"discount-id\") {\n            value\n        }\n        subjectBindings(first: $first, includeInactive: true) {\n          nodes {\n            id\n            active\n\t    subject {\n\t\t... on Product {\n\t\t\ttitle\n\t\t\tid\n\t\t}\n\t    }\n          }\n        }\n        createdAt\n        updatedAt\n      }\n    }\n  }\n": {return: GetGateConfigurationsQuery, variables: GetGateConfigurationsQueryVariables},
+  "#graphql\n  query GetGateConfigurations($query: String!, $first: Int!) {\n    gateConfigurations(query: $query, first: $first) {\n      nodes {\n        id\n        name\n        handle\n        requirements: metafield(namespace: \"offline-gate\",\n          key: \"requirements\") {\n            value\n        }\n        reaction: metafield(namespace: \"offline-gate\",\n          key: \"reaction\") {\n            value\n        }\n        discountId: metafield(namespace: \"offline-gate\",\n          key: \"discount-id\") {\n            value\n        }\n        subjectBindings(first: $first, includeInactive: true) {\n          nodes {\n            id\n            active\n\t    subject {\n\t\t... on Product {\n\t\t\ttitle\n\t\t\tid\n\t\t}\n\t    }\n          }\n        }\n        createdAt\n        updatedAt\n      }\n    }\n  }\n": {return: GetGateConfigurationsQuery, variables: GetGateConfigurationsQueryVariables},
   "#graphql\nquery RetrieveProductsGatesMinimal($queryString: String!, $first: Int!){\n  products(query: $queryString, first: $first) {\n    nodes {\n      id\n      gates(includeInactive: true) {\n        id\n        active\n        configuration {\n          handle\n        }\n      }\n    }\n  }\n}\n": {return: RetrieveProductsGatesMinimalQuery, variables: RetrieveProductsGatesMinimalQueryVariables},
   "#graphql\n  query GetShopLocales {\n\tshopLocales {\n\t\tlocale\n    name\n\t\tprimary\n\t\tpublished\n    }\n  }\n": {return: GetShopLocalesQuery, variables: GetShopLocalesQueryVariables},
 }
 
 interface GeneratedMutationTypes {
   "#graphql\nmutation CreateAppMetafield($metafieldsSetInput: [MetafieldsSetInput!]!) {\n  metafieldsSet(metafields: $metafieldsSetInput) {\n    metafields {\n      key\n      value\n    }\n    userErrors {\n      field\n      message\n    }\n  }\n}\n": {return: CreateAppMetafieldMutation, variables: CreateAppMetafieldMutationVariables},
+  "#graphql\nmutation DiscountAutomaticDelete($id: ID!) {\n  discountAutomaticDelete(id: $id) {\n    deletedAutomaticDiscountId\n    userErrors {\n      message\n    }\n  }\n}\n": {return: DiscountAutomaticDeleteMutation, variables: DiscountAutomaticDeleteMutationVariables},
   "#graphql\n  mutation CreateAutomaticDiscount($discount: DiscountAutomaticAppInput!) {\n    discountCreate: discountAutomaticAppCreate(\n      automaticAppDiscount: $discount\n    ) {\n      automaticAppDiscount {\n        discountId\n      }\n      userErrors {\n        code\n        message\n        field\n      }\n    }\n  }\n": {return: CreateAutomaticDiscountMutation, variables: CreateAutomaticDiscountMutationVariables},
   "#graphql\nmutation gateConfigurationUpdate($id: ID!, $metafields: [MetafieldInput!]!) {\n  gateConfigurationUpdate(input: {\n\tid: $id\n\tmetafields: $metafields\n  }) {\n    gateConfiguration {\n      id\n    }\n\tuserErrors {\n\t\tmessage\n\t}\n  }\n}\n": {return: GateConfigurationUpdateMutation, variables: GateConfigurationUpdateMutationVariables},
   "#graphql\nmutation ProductSubjectDelete($input: GateSubjectDeleteInput!) {\n\tgateSubjectDelete(input: $input) {\n    \tuserErrors {\n    \t  field\n    \t  message\n    \t}\n  }\n}\n": {return: ProductSubjectDeleteMutation, variables: ProductSubjectDeleteMutationVariables},

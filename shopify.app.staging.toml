@@ -4,7 +4,7 @@ client_id = "02531eab2a6cf8782a9a15b34aa7ed65"
 extension_directories = [
   "extensions/offline-discount",
   "extensions/offline-exclusive-staging",
-  "extensions/offline-gate"
+  "extensions/offline-connect"
 ]
 name = "Offline Unlock Staging"
 handle = "offline-unlock-staging"
