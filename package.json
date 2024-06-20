@@ -13,7 +13,7 @@
     "start": "remix-serve ./build/server/index.js",
     "start:dev": "remix-serve ./build/server/index.js --mode development",
     "docker-start": "npm run setup && npm run start",
-    "setup": "prisma generate --schema=prisma/schema.prod.prisma && prisma migrate deploy",
+    "setup": "prisma generate --schema=prisma/schema.prod.prisma && prisma migrate deploy --schema=prisma/schema.prod.prisma",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "shopify": "shopify",
     "prisma": "prisma",
