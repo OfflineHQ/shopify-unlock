@@ -82,7 +82,7 @@ export function enableBuyButtons() {
 export async function getLinkedCustomer(customerId) {
   console.log("getLinkedCustomer", customerId);
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public/getLinkedCustomer`,
+    `${shopifyUnlockBackendApiUrl}/public-api/getLinkedCustomer`,
     {
       method: "POST",
       headers: {
@@ -92,7 +92,7 @@ export async function getLinkedCustomer(customerId) {
         customerId,
         shopDomain: getShopDomain(),
       }),
-    }
+    },
   );
   if (!response.ok) {
     const errorData = await response.json();
@@ -115,23 +115,26 @@ export async function connectWallet({
   gateId,
   shopDomain,
 }) {
-  const response = await fetch(`${shopifyUnlockBackendApiUrl}/public/connect`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${shopifyUnlockBackendApiUrl}/public-api/connect`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        productId,
+        productGid: `gid://shopify/Product/${productId}`,
+        gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
+        shopDomain,
+        address,
+        message,
+        signature,
+        customerId,
+        existingCustomer,
+      }),
     },
-    body: JSON.stringify({
-      productId,
-      productGid: `gid://shopify/Product/${productId}`,
-      gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
-      shopDomain,
-      address,
-      message,
-      signature,
-      customerId,
-      existingCustomer,
-    }),
-  });
+  );
   if (!response.ok) {
     const errorData = await response.json();
     console.error("connectApi error:", errorData);
@@ -153,7 +156,7 @@ export async function isLoyaltyCardOwned({
   shopDomain,
 }) {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public/isLoyaltyCardOwned`,
+    `${shopifyUnlockBackendApiUrl}/public-api/isLoyaltyCardOwned`,
     {
       method: "POST",
       headers: {
@@ -168,7 +171,7 @@ export async function isLoyaltyCardOwned({
         gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
         shopDomain,
       }),
-    }
+    },
   );
   if (!response.ok) {
     const errorData = await response.json();
@@ -190,7 +193,7 @@ export async function mintLoyaltyCard({
   shopDomain,
 }) {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public/mintLoyaltyCard`,
+    `${shopifyUnlockBackendApiUrl}/public-api/mintLoyaltyCard`,
     {
       method: "POST",
       headers: {
@@ -205,7 +208,7 @@ export async function mintLoyaltyCard({
         gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
         shopDomain,
       }),
-    }
+    },
   );
 
   if (!response.ok) {
