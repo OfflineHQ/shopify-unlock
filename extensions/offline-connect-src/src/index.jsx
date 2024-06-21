@@ -5,10 +5,14 @@ import "./index.css";
 
 import { App } from "./App";
 
+console.log({ myAppGates: window.myAppGates });
+
 // The element ID is defined in app-block.liquid
 const container = document.getElementById("offline-unlock");
-if (container.dataset.product_gated === "true") {
-  const settingsCssVariables = JSON.parse(container.dataset.settings_css_variables);
+if (window.myAppGates?.length > 0) {
+  const settingsCssVariables = JSON.parse(
+    container.dataset.settings_css_variables,
+  );
   let customer = null;
   if (container.dataset.customer_id) {
     customer = {
@@ -22,8 +26,15 @@ if (container.dataset.product_gated === "true") {
     id: container.dataset.product_id,
     title: container.dataset.product_title,
     available: container.dataset.product_available === "true",
-  }
-  ReactDOM.createRoot(container).render(<App settingsCssVariables={settingsCssVariables} customer={customer} loginUrl={container.dataset.account_login_url} product={product} />);
+  };
+  ReactDOM.createRoot(container).render(
+    <App
+      settingsCssVariables={settingsCssVariables}
+      customer={customer}
+      loginUrl={container.dataset.account_login_url}
+      product={product}
+    />,
+  );
 } else {
   container.innerHTML = "";
 }

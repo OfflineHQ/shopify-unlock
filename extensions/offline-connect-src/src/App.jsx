@@ -12,22 +12,22 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
   const unlockIframeRef = authActorRef.system.get("unlockIframe");
   const isChildIframeReady = useSelector(
     unlockIframeRef,
-    (snapshot) => snapshot.context.childIsReady
+    (snapshot) => snapshot.context.childIsReady,
   );
   const walletAddress = AuthMachineContext.useSelector(
-    (snapshot) => snapshot.context.walletAddress
+    (snapshot) => snapshot.context.walletAddress,
   );
   const isReconnected = AuthMachineContext.useSelector(
-    (snapshot) => snapshot.context.isReconnected
+    (snapshot) => snapshot.context.isReconnected,
   );
   const isInitMessageToIframeNotSent = AuthMachineContext.useSelector(
-    (snapshot) => !snapshot.context.initMessageToIframeSent
+    (snapshot) => !snapshot.context.initMessageToIframeSent,
   );
   const isUnlocked = AuthMachineContext.useSelector(
-    (snapshot) => snapshot.context.isUnlocked
+    (snapshot) => snapshot.context.isUnlocked,
   );
   const isIframeIdle = useSelector(unlockIframeRef, (snapshot) =>
-    snapshot.matches(UnlockIframeStatus.Idle)
+    snapshot.matches(UnlockIframeStatus.Idle),
   );
 
   console.log("authActorRef:", authActorRef);
@@ -49,7 +49,7 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
           cssVariables: {
             "--primary": hexToHsl(settingsCssVariables.offline_primary_color),
             "--secondary": hexToHsl(
-              settingsCssVariables.offline_secondary_color
+              settingsCssVariables.offline_secondary_color,
             ),
             "--radius": settingsCssVariables.offline_border_radius,
             "--off-btn-height": settingsCssVariables.offline_button_height,
@@ -174,6 +174,7 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
 };
 
 export const App = ({ settingsCssVariables, customer, loginUrl, product }) => {
+  console.log("App gates:", window.myAppGate);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthMachineProvider>

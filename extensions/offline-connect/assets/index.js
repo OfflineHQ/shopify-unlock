@@ -43260,7 +43260,7 @@ function getGateContextClient(options) {
 // TODO: here using a public api for now but should be replaced with a private api with app proxy (see https://github.com/OfflineHQ/shopify-gates/issues/25)
 // export const shopifyUnlockBackendApiUrl = '/apps/offline';
 const shopifyUnlockBackendApiUrl =
-  "https://presented-cornell-awards-gst.trycloudflare.com";
+  "https://shipments-wr-recruitment-ww.trycloudflare.com";
 
 const gateContextClient = getGateContextClient({
   backingStore: "ajaxApi",
@@ -43331,7 +43331,7 @@ function enableBuyButtons() {
 async function getLinkedCustomer(customerId) {
   console.log("getLinkedCustomer", customerId);
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public/getLinkedCustomer`,
+    `${shopifyUnlockBackendApiUrl}/public-api/getLinkedCustomer`,
     {
       method: "POST",
       headers: {
@@ -43341,7 +43341,7 @@ async function getLinkedCustomer(customerId) {
         customerId,
         shopDomain: getShopDomain(),
       }),
-    }
+    },
   );
   if (!response.ok) {
     const errorData = await response.json();
@@ -43364,23 +43364,26 @@ async function connectWallet({
   gateId,
   shopDomain,
 }) {
-  const response = await fetch(`${shopifyUnlockBackendApiUrl}/public/connect`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${shopifyUnlockBackendApiUrl}/public-api/connect`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        productId,
+        productGid: `gid://shopify/Product/${productId}`,
+        gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
+        shopDomain,
+        address,
+        message,
+        signature,
+        customerId,
+        existingCustomer,
+      }),
     },
-    body: JSON.stringify({
-      productId,
-      productGid: `gid://shopify/Product/${productId}`,
-      gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
-      shopDomain,
-      address,
-      message,
-      signature,
-      customerId,
-      existingCustomer,
-    }),
-  });
+  );
   if (!response.ok) {
     const errorData = await response.json();
     console.error("connectApi error:", errorData);
@@ -43402,7 +43405,7 @@ async function isLoyaltyCardOwned({
   shopDomain,
 }) {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public/isLoyaltyCardOwned`,
+    `${shopifyUnlockBackendApiUrl}/public-api/isLoyaltyCardOwned`,
     {
       method: "POST",
       headers: {
@@ -43417,7 +43420,7 @@ async function isLoyaltyCardOwned({
         gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
         shopDomain,
       }),
-    }
+    },
   );
   if (!response.ok) {
     const errorData = await response.json();
@@ -43439,7 +43442,7 @@ async function mintLoyaltyCard({
   shopDomain,
 }) {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public/mintLoyaltyCard`,
+    `${shopifyUnlockBackendApiUrl}/public-api/mintLoyaltyCard`,
     {
       method: "POST",
       headers: {
@@ -43454,7 +43457,7 @@ async function mintLoyaltyCard({
         gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
         shopDomain,
       }),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -47546,6 +47549,7 @@ const App = ({
   loginUrl,
   product
 }) => {
+  console.log("App gates:", window.myAppGate);
   return /* @__PURE__ */ jsxDEV(QueryClientProvider, {
     client: queryClient,
     children: /* @__PURE__ */ jsxDEV(AuthMachineProvider, {
@@ -47556,25 +47560,28 @@ const App = ({
         product
       }, void 0, false, {
         fileName: _jsxFileName$1,
-        lineNumber: 180,
+        lineNumber: 181,
         columnNumber: 9
       }, void 0)
     }, void 0, false, {
       fileName: _jsxFileName$1,
-      lineNumber: 179,
+      lineNumber: 180,
       columnNumber: 7
     }, void 0)
   }, void 0, false, {
     fileName: _jsxFileName$1,
-    lineNumber: 178,
+    lineNumber: 179,
     columnNumber: 5
   }, void 0);
 };
 const queryClient = new QueryClient();
 
 var _jsxFileName = "/Users/sebpalluel/Documents/dev/offline/offline-unlock/extensions/offline-connect-src/src/index.jsx";
+console.log({
+  myAppGates: window.myAppGates
+});
 const container = document.getElementById("offline-unlock");
-if (container.dataset.product_gated === "true") {
+if (window.myAppGates?.length > 0) {
   const settingsCssVariables = JSON.parse(container.dataset.settings_css_variables);
   let customer = null;
   if (container.dataset.customer_id) {
@@ -47597,8 +47604,8 @@ if (container.dataset.product_gated === "true") {
     product
   }, void 0, false, {
     fileName: _jsxFileName,
-    lineNumber: 26,
-    columnNumber: 41
+    lineNumber: 31,
+    columnNumber: 5
   }, globalThis));
 } else {
   container.innerHTML = "";
