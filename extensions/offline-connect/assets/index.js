@@ -43260,7 +43260,7 @@ function getGateContextClient(options) {
 // TODO: here using a public api for now but should be replaced with a private api with app proxy (see https://github.com/OfflineHQ/shopify-gates/issues/25)
 // export const shopifyUnlockBackendApiUrl = '/apps/offline';
 const shopifyUnlockBackendApiUrl =
-  "https://shipments-wr-recruitment-ww.trycloudflare.com";
+  "https://staging.unlock-shopify.offline.live";
 
 const gateContextClient = getGateContextClient({
   backingStore: "ajaxApi",
