@@ -40,6 +40,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   });
   const body = await response.json();
   const gates = body.data?.product?.gates || [];
+  console.log({ gates, handle });
   const gatesFromHandle = gates.filter(
     (gate) => gate.configuration.handle === handle,
   );

@@ -4,6 +4,7 @@ import { authenticate } from "~/shopify.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { storefront, session } = await authenticate.public.appProxy(request);
+  console.log({ storefront, session });
   const { searchParams } = new URL(request.url);
   const loggedInCustomerId = searchParams.get("logged_in_customer_id");
   console.log({ session, loggedInCustomerId });

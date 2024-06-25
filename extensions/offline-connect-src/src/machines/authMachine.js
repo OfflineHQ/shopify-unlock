@@ -4,13 +4,9 @@ import {
   fromPromise,
   sendTo,
   spawnChild,
-  stopChild
+  stopChild,
 } from "xstate";
-import {
-  connectWallet,
-  gateContextClient,
-  getLinkedCustomer,
-} from "../gate";
+import { connectWallet, gateContextClient, getLinkedCustomer } from "../gate";
 import offKeyMachine from "./offKeyMachine";
 import unlockIframeMachine from "./unlockIframeMachine";
 
@@ -60,14 +56,14 @@ async function initStoreSessionAndCustomer(customerId) {
           sessionUpdated ||
           (walletAddress && linkedCustomer?.address !== walletAddress))
       ) {
-        await getLinkedCustomer(customerId);
+        await getLinkedCustomer();
         sessionUpdated = true;
       }
     } catch (error) {
       // TODO: check for what to do in case of error from our api, auto-heal in some cases ?
       console.error(
         "initStoreSessionAndCustomer getLinkedCustomer error:",
-        error
+        error,
       );
       throw error;
     }
@@ -95,15 +91,12 @@ async function initStoreSessionAndCustomer(customerId) {
 
 async function connectCustomerWallet({
   linkedCustomer: existingCustomer,
-  customerId,
   productId,
   gateId,
-  shopDomain,
   data,
 }) {
   try {
     console.log("connectCustomerWallet", {
-      customerId,
       existingCustomer,
       data,
     });
@@ -112,11 +105,9 @@ async function connectCustomerWallet({
       address,
       message,
       signature,
-      customerId,
       productId,
       existingCustomer,
       gateId,
-      shopDomain,
     });
     const res = await gateContextClient.read();
     console.log("connectCustomerWallet context res", res);
@@ -145,7 +136,6 @@ const authMachine = createMachine(
       customerId: undefined,
       productId: undefined,
       gateId: undefined,
-      shopDomain: undefined,
       linkedCustomer: null,
       walletAddress: null,
       fetchError: undefined,
@@ -161,12 +151,12 @@ const authMachine = createMachine(
           const { data } = event;
           console.log(
             "Received IFRAME_MESSAGE_RECEIVED event from iframe:",
-            event
+            event,
           );
           if (!data || !data.type) {
             console.warn(
               "Received invalid message for IFRAME_MESSAGE_RECEIVED:",
-              data
+              data,
             );
             return;
           }
@@ -183,7 +173,7 @@ const authMachine = createMachine(
             default:
               console.warn(
                 "Received unknown message type for IFRAME_MESSAGE_RECEIVED:",
-                data
+                data,
               );
               break;
           }
@@ -259,20 +249,13 @@ const authMachine = createMachine(
         invoke: {
           src: "connectCustomerWallet",
           input: ({
-            context: {
-              linkedCustomer,
-              customerId,
-              productId,
-              gateId,
-              shopDomain,
-            },
+            context: { linkedCustomer, customerId, productId, gateId },
             event,
           }) => ({
             linkedCustomer,
             customerId,
             productId,
             gateId,
-            shopDomain,
             data: event.data,
           }),
           onDone: {
@@ -350,13 +333,13 @@ const authMachine = createMachine(
     },
     actors: {
       initStoreSessionAndCustomer: fromPromise(({ input }) =>
-        initStoreSessionAndCustomer(input.customerId)
+        initStoreSessionAndCustomer(input.customerId),
       ),
       connectCustomerWallet: fromPromise(({ input }) =>
-        connectCustomerWallet(input)
+        connectCustomerWallet(input),
       ),
       disconnectCustomerWallet: fromPromise(({ input }) =>
-        disconnectCustomerWallet(input)
+        disconnectCustomerWallet(input),
       ),
     },
     actions: {
@@ -366,7 +349,6 @@ const authMachine = createMachine(
       assignGateContext: assign({
         productId: ({ event }) => event.productId,
         gateId: ({ event }) => event.gateId,
-        shopDomain: ({ event }) => event.shopDomain,
       }),
       logError: ({ event }) => console.error(event),
       assignFetchError: assign({
@@ -413,7 +395,6 @@ const authMachine = createMachine(
               walletAddress: context.walletAddress,
               productId: context.productId,
               gateId: context.gateId,
-              shopDomain: context.shopDomain,
               customerId: context.customerId,
             },
           }),
@@ -425,7 +406,7 @@ const authMachine = createMachine(
       // https://stately.ai/docs/system#cheatsheet-register-an-invoked-actor-with-the-system
       startUnlockIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
-        (_) => ({ type: "AUTH_INITIALIZED" })
+        (_) => ({ type: "AUTH_INITIALIZED" }),
       ),
       sendDisconnectedStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -447,7 +428,7 @@ const authMachine = createMachine(
               },
             },
           },
-        })
+        }),
       ),
       sendConnectedStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -478,13 +459,13 @@ const authMachine = createMachine(
               },
             },
           };
-        }
+        },
       ),
       assignInitMessageToIframeSent: assign({
         initMessageToIframeSent: true,
       }),
     },
-  }
+  },
 );
 
 export default authMachine;

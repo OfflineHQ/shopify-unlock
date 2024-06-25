@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Remix"
 handle = "offline-unlock-remix"
-application_url = "https://management-china-sharon-tie.trycloudflare.com"
+application_url = "https://merely-rendered-sc-switches.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,15 +22,15 @@ scopes = "read_discounts,read_gates,read_locales,write_discounts,write_gates,wri
 
 [auth]
 redirect_urls = [
-  "https://management-china-sharon-tie.trycloudflare.com/auth/callback",
-  "https://management-china-sharon-tie.trycloudflare.com/auth/shopify/callback",
-  "https://management-china-sharon-tie.trycloudflare.com/api/auth/callback"
+  "https://merely-rendered-sc-switches.trycloudflare.com/auth/callback",
+  "https://merely-rendered-sc-switches.trycloudflare.com/auth/shopify/callback",
+  "https://merely-rendered-sc-switches.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "unstable"
 
 [app_proxy]
-url = "https://management-china-sharon-tie.trycloudflare.com"
+url = "https://merely-rendered-sc-switches.trycloudflare.com"
 subpath = "offline"
 prefix = "apps"
