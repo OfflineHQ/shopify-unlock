@@ -43260,7 +43260,7 @@ function getGateContextClient(options) {
 // TODO: here using a public api for now but should be replaced with a private api with app proxy (see https://github.com/OfflineHQ/shopify-gates/issues/25)
 const shopifyUnlockBackendApiUrl = "/apps/offline";
 // export const shopifyUnlockBackendApiUrl =
-//   "https://management-china-sharon-tie.trycloudflare.com";
+//   "https://merely-rendered-sc-switches.trycloudflare.com";
 
 const gateContextClient = getGateContextClient({
   backingStore: "ajaxApi",
@@ -43328,8 +43328,7 @@ function enableBuyButtons() {
   });
 }
 
-async function getLinkedCustomer(customerId) {
-  console.log("getLinkedCustomer", customerId);
+async function getLinkedCustomer() {
   const response = await fetch(
     `${shopifyUnlockBackendApiUrl}/public-api/linked-customer`,
     {
@@ -43337,12 +43336,9 @@ async function getLinkedCustomer(customerId) {
       headers: {
         "Content-Type": "application/json",
       },
-      // body: JSON.stringify({
-      //   customerId,
-      //   shopDomain: getShopDomain(),
-      // }),
     },
   );
+  console.log("getLinkedCustomer response:", response);
   if (!response.ok) {
     const errorData = await response.json();
     console.error("getLinkedCustomer error:", errorData);
@@ -43358,11 +43354,9 @@ async function connectWallet({
   address,
   message,
   signature,
-  customerId,
   existingCustomer,
   productId,
   gateId,
-  shopDomain,
 }) {
   const response = await fetch(
     `${shopifyUnlockBackendApiUrl}/public-api/connect`,
@@ -43375,11 +43369,9 @@ async function connectWallet({
         productId,
         productGid: `gid://shopify/Product/${productId}`,
         gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
-        shopDomain,
         address,
         message,
         signature,
-        customerId,
         existingCustomer,
       }),
     },
@@ -43396,16 +43388,15 @@ async function connectWallet({
   }
 }
 
-async function isLoyaltyCardOwned({
+async function evaluateGate$1({
   address,
   message,
   signature,
   productId,
   gateId,
-  shopDomain,
 }) {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public-api/isLoyaltyCardOwned`,
+    `${shopifyUnlockBackendApiUrl}/public-api/evaluate-gate`,
     {
       method: "POST",
       headers: {
@@ -43418,51 +43409,12 @@ async function isLoyaltyCardOwned({
         productId,
         productGid: `gid://shopify/Product/${productId}`,
         gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
-        shopDomain,
       }),
     },
   );
   if (!response.ok) {
     const errorData = await response.json();
-    console.error("isLoyaltyCardOwned error:", errorData);
-    throw errorData;
-  } else {
-    const json = await response.json();
-    await gateContextClient.write(json);
-    return json;
-  }
-}
-
-async function mintLoyaltyCard({
-  address,
-  message,
-  signature,
-  productId,
-  gateId,
-  shopDomain,
-}) {
-  const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public-api/mintLoyaltyCard`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        address,
-        message,
-        signature,
-        productId,
-        productGid: `gid://shopify/Product/${productId}`,
-        gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
-        shopDomain,
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error("mintLoyaltyCard error:", errorData);
+    console.error("evaluateGate error:", errorData);
     throw errorData;
   } else {
     const json = await response.json();
@@ -43474,16 +43426,16 @@ async function mintLoyaltyCard({
 const getGate = () => window.myAppGates?.[0] || {};
 
 const OffKeyState = {
-  Idle: "Idle", // Waiting for the off-key status to be loaded
-  Unlocked: "Unlocked", // The off-key is unlocked and can be used
-  Locked: "Locked", // The off-key is locked and cannot be used
-  Unlocking: "Unlocking", // The off-key is unlocking (being created)
-  Used: "Used", // The off-key has been used and cannot be used again in this context
+  Idle: "Idle", // Waiting for the gate status to be loaded
+  Unlocked: "Unlocked", // The gate is unlocked and perk is applied
+  Locked: "Locked", // The gate is locked and no perk is applied
+  Unlocking: "Unlocking", // The gate is unlocking (perk being evaluated)
+  Used: "Used", // The gate has been used and cannot be used again in this context (perk already used)
 };
 
 function getMatchingVault({ gateId, vaults }) {
   return vaults.find(
-    (vault) => vault.id === `gid://shopify/GateConfiguration/${gateId}`
+    (vault) => vault.id === `gid://shopify/GateConfiguration/${gateId}`,
   );
 }
 
@@ -43510,18 +43462,16 @@ function gateEvaluation(matchingVault) {
   };
 }
 
-const isOffKeyOwned = async ({
+const isGateEvaluated = async ({
   customerId,
   productId,
   gateId,
-  shopDomain,
   walletAddress,
 }) => {
-  console.log("isOffKeyOwned", {
+  console.log("isGateEvaluated", {
     customerId,
     productId,
     gateId,
-    shopDomain,
     walletAddress,
   });
   try {
@@ -43529,18 +43479,17 @@ const isOffKeyOwned = async ({
       await gateContextClient.read();
     const matchingVault = getMatchingVault({ gateId, vaults });
     const evaluation = gateEvaluation(matchingVault);
-    console.log("isOffKeyOwned evaluation before", evaluation);
+    console.log("isGateEvaluated evaluation before", evaluation);
     if (evaluation.owned || evaluation.mintable) {
       return evaluation;
     }
     // for now we are only fetching from our system in case it's not detected in vault or if it is not owned or not mintable
-    const { vaults: updatedVaults } = await isLoyaltyCardOwned({
+    const { vaults: updatedVaults } = await evaluateGate({
       address: walletAddress,
       message: customerId,
       signature: walletVerificationSignature,
       productId,
       gateId,
-      shopDomain,
     });
     return gateEvaluation(getMatchingVault({ gateId, vaults: updatedVaults }));
   } catch (error) {
@@ -43549,18 +43498,16 @@ const isOffKeyOwned = async ({
   }
 };
 
-const mintOffKey = async ({
+const evaluateGate = async ({
   customerId,
   productId,
   gateId,
-  shopDomain,
   walletAddress,
 }) => {
-  console.log("mintOffKey", {
+  console.log("evaluateGate", {
     customerId,
     productId,
     gateId,
-    shopDomain,
     walletAddress,
   });
   const { vaults, walletVerificationSignature } =
@@ -43571,13 +43518,12 @@ const mintOffKey = async ({
     if (evaluation.owned || !evaluation.mintable) {
       throw new Error("Off-key is already owned or not mintable");
     }
-    const { vaults: updatedVaults } = await mintLoyaltyCard({
+    const { vaults: updatedVaults } = await evaluateGate$1({
       address: walletAddress,
       message: customerId,
       signature: walletVerificationSignature,
       productId,
       gateId,
-      shopDomain,
     });
     return gateEvaluation(getMatchingVault({ gateId, vaults: updatedVaults }));
   } catch (error) {
@@ -43596,27 +43542,19 @@ const offKeyMachine = createMachine(
       error: undefined,
       walletAddress: input.walletAddress,
       gateId: input.gateId,
-      shopDomain: input.shopDomain,
       productId: input.productId,
       customerId: input.customerId,
     }),
     states: {
       [OffKeyState.Idle]: {
         invoke: {
-          src: "isOffKeyOwned",
+          src: "isGateEvaluated",
           input: ({
-            context: {
-              customerId,
-              productId,
-              gateId,
-              shopDomain,
-              walletAddress,
-            },
+            context: { customerId, productId, gateId, walletAddress },
           }) => ({
             customerId,
             productId,
             gateId,
-            shopDomain,
             walletAddress,
           }),
           onDone: [
@@ -43645,20 +43583,13 @@ const offKeyMachine = createMachine(
       [OffKeyState.Unlocking]: {
         entry: "sendUnlockingStateToIframe",
         invoke: {
-          src: "mintOffKey",
+          src: "evaluateGate",
           input: ({
-            context: {
-              customerId,
-              productId,
-              gateId,
-              shopDomain,
-              walletAddress,
-            },
+            context: { customerId, productId, gateId, walletAddress },
           }) => ({
             customerId,
             productId,
             gateId,
-            shopDomain,
             walletAddress,
           }),
           onDone: {
@@ -43693,7 +43624,9 @@ const offKeyMachine = createMachine(
       offKeyNotMintable: ({ event }) => {
         console.log(
           "offKeyNotMintable",
-          !event.output?.mintable && !event.output?.owned && !event.output?.used
+          !event.output?.mintable &&
+            !event.output?.owned &&
+            !event.output?.used,
         );
         return (
           !event.output?.mintable && !event.output?.owned && !event.output?.used
@@ -43704,7 +43637,7 @@ const offKeyMachine = createMachine(
           "offKeyCanBeMinted 5",
           !!event.output?.mintable &&
             !event.output?.used &&
-            !event.output?.owned
+            !event.output?.owned,
         );
         return (
           !!event.output?.mintable &&
@@ -43722,7 +43655,7 @@ const offKeyMachine = createMachine(
         ({ context, event }) => ({
           type: "UNLOCKED",
           // TODO, maybe send more context like linked gateId, tokenId and other stuff (voucher applied etc) ?
-        })
+        }),
       ),
       sendUnlockedStateToIframe: sendTo(
         ({ system }) => {
@@ -43736,7 +43669,7 @@ const offKeyMachine = createMachine(
               status: OffKeyState.Unlocked,
             },
           },
-        })
+        }),
       ),
       sendLockedStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -43748,7 +43681,7 @@ const offKeyMachine = createMachine(
               status: OffKeyState.Locked,
             },
           },
-        })
+        }),
       ),
       sendUsedStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -43760,7 +43693,7 @@ const offKeyMachine = createMachine(
               status: OffKeyState.Used,
             },
           },
-        })
+        }),
       ),
       sendUnlockingStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -43772,14 +43705,14 @@ const offKeyMachine = createMachine(
               status: OffKeyState.Unlocking,
             },
           },
-        })
+        }),
       ),
     },
     actors: {
-      isOffKeyOwned: fromPromise(({ input }) => isOffKeyOwned(input)),
-      mintOffKey: fromPromise(({ input }) => mintOffKey(input)),
+      isGateEvaluated: fromPromise(({ input }) => isGateEvaluated(input)),
+      evaluateGate: fromPromise(({ input }) => evaluateGate(input)),
     },
-  }
+  },
 );
 
 var iframeResizer = {exports: {}};
@@ -46885,14 +46818,14 @@ async function initStoreSessionAndCustomer(customerId) {
           sessionUpdated ||
           (walletAddress && linkedCustomer?.address !== walletAddress))
       ) {
-        await getLinkedCustomer(customerId);
+        await getLinkedCustomer();
         sessionUpdated = true;
       }
     } catch (error) {
       // TODO: check for what to do in case of error from our api, auto-heal in some cases ?
       console.error(
         "initStoreSessionAndCustomer getLinkedCustomer error:",
-        error
+        error,
       );
       throw error;
     }
@@ -46920,15 +46853,12 @@ async function initStoreSessionAndCustomer(customerId) {
 
 async function connectCustomerWallet({
   linkedCustomer: existingCustomer,
-  customerId,
   productId,
   gateId,
-  shopDomain,
   data,
 }) {
   try {
     console.log("connectCustomerWallet", {
-      customerId,
       existingCustomer,
       data,
     });
@@ -46937,11 +46867,9 @@ async function connectCustomerWallet({
       address,
       message,
       signature,
-      customerId,
       productId,
       existingCustomer,
       gateId,
-      shopDomain,
     });
     const res = await gateContextClient.read();
     console.log("connectCustomerWallet context res", res);
@@ -46970,7 +46898,6 @@ const authMachine = createMachine(
       customerId: undefined,
       productId: undefined,
       gateId: undefined,
-      shopDomain: undefined,
       linkedCustomer: null,
       walletAddress: null,
       fetchError: undefined,
@@ -46986,12 +46913,12 @@ const authMachine = createMachine(
           const { data } = event;
           console.log(
             "Received IFRAME_MESSAGE_RECEIVED event from iframe:",
-            event
+            event,
           );
           if (!data || !data.type) {
             console.warn(
               "Received invalid message for IFRAME_MESSAGE_RECEIVED:",
-              data
+              data,
             );
             return;
           }
@@ -47008,7 +46935,7 @@ const authMachine = createMachine(
             default:
               console.warn(
                 "Received unknown message type for IFRAME_MESSAGE_RECEIVED:",
-                data
+                data,
               );
               break;
           }
@@ -47084,20 +47011,13 @@ const authMachine = createMachine(
         invoke: {
           src: "connectCustomerWallet",
           input: ({
-            context: {
-              linkedCustomer,
-              customerId,
-              productId,
-              gateId,
-              shopDomain,
-            },
+            context: { linkedCustomer, customerId, productId, gateId },
             event,
           }) => ({
             linkedCustomer,
             customerId,
             productId,
             gateId,
-            shopDomain,
             data: event.data,
           }),
           onDone: {
@@ -47175,13 +47095,13 @@ const authMachine = createMachine(
     },
     actors: {
       initStoreSessionAndCustomer: fromPromise(({ input }) =>
-        initStoreSessionAndCustomer(input.customerId)
+        initStoreSessionAndCustomer(input.customerId),
       ),
       connectCustomerWallet: fromPromise(({ input }) =>
-        connectCustomerWallet(input)
+        connectCustomerWallet(input),
       ),
       disconnectCustomerWallet: fromPromise(({ input }) =>
-        disconnectCustomerWallet()
+        disconnectCustomerWallet(),
       ),
     },
     actions: {
@@ -47191,7 +47111,6 @@ const authMachine = createMachine(
       assignGateContext: assign({
         productId: ({ event }) => event.productId,
         gateId: ({ event }) => event.gateId,
-        shopDomain: ({ event }) => event.shopDomain,
       }),
       logError: ({ event }) => console.error(event),
       assignFetchError: assign({
@@ -47238,7 +47157,6 @@ const authMachine = createMachine(
               walletAddress: context.walletAddress,
               productId: context.productId,
               gateId: context.gateId,
-              shopDomain: context.shopDomain,
               customerId: context.customerId,
             },
           }),
@@ -47250,7 +47168,7 @@ const authMachine = createMachine(
       // https://stately.ai/docs/system#cheatsheet-register-an-invoked-actor-with-the-system
       startUnlockIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
-        (_) => ({ type: "AUTH_INITIALIZED" })
+        (_) => ({ type: "AUTH_INITIALIZED" }),
       ),
       sendDisconnectedStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -47272,7 +47190,7 @@ const authMachine = createMachine(
               },
             },
           },
-        })
+        }),
       ),
       sendConnectedStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -47303,13 +47221,13 @@ const authMachine = createMachine(
               },
             },
           };
-        }
+        },
       ),
       assignInitMessageToIframeSent: assign({
         initMessageToIframeSent: true,
       }),
     },
-  }
+  },
 );
 
 var _jsxFileName$2 = "/Users/sebpalluel/Documents/dev/offline/offline-unlock/extensions/offline-connect-src/src/AuthMachineProvider.jsx";
@@ -47402,8 +47320,11 @@ const _App = ({
   const {
     requirements,
     reaction,
-    id: gateId
+    configuration: {
+      id: gateConfigurationGid
+    }
   } = getGate();
+  const gateId = gateConfigurationGid.split("/").pop();
   react.exports.useEffect(() => {
     if (isChildIframeReady && isInitMessageToIframeNotSent) {
       let dataToSend = {
@@ -47442,8 +47363,7 @@ const _App = ({
         type: "SET_INIT_DATA",
         customerId: customer?.id,
         productId: product?.id,
-        gateId,
-        shopDomain: window.Shopify.shop
+        gateId
       });
     }
   }, [customer?.id, gateId, product?.id]);
@@ -47466,7 +47386,7 @@ const _App = ({
     if (!gateId || isIframeIdle) {
       return null;
     }
-    const unlockAppUrl = "https://www.staging.unlock.offline.live";
+    const unlockAppUrl = "https://localhost:8889";
     const baseUrl = `${unlockAppUrl}/en/shopify/${gateId}`;
     let src = baseUrl;
     if (walletAddress) {
@@ -47503,7 +47423,7 @@ const _App = ({
       }
     }, void 0, false, {
       fileName: _jsxFileName$1,
-      lineNumber: 113,
+      lineNumber: 116,
       columnNumber: 7
     }, void 0);
   }, [gateId, isIframeIdle]);
@@ -47520,22 +47440,22 @@ const _App = ({
           className: "offline--skeleton-content"
         }, void 0, false, {
           fileName: _jsxFileName$1,
-          lineNumber: 168,
+          lineNumber: 171,
           columnNumber: 13
         }, void 0)
       }, void 0, false, {
         fileName: _jsxFileName$1,
-        lineNumber: 167,
+        lineNumber: 170,
         columnNumber: 11
       }, void 0)]
     }, void 0, true, {
       fileName: _jsxFileName$1,
-      lineNumber: 164,
+      lineNumber: 167,
       columnNumber: 7
     }, void 0)
   }, void 0, false, {
     fileName: _jsxFileName$1,
-    lineNumber: 158,
+    lineNumber: 161,
     columnNumber: 5
   }, void 0);
 };
@@ -47556,17 +47476,17 @@ const App = ({
         product
       }, void 0, false, {
         fileName: _jsxFileName$1,
-        lineNumber: 181,
+        lineNumber: 184,
         columnNumber: 9
       }, void 0)
     }, void 0, false, {
       fileName: _jsxFileName$1,
-      lineNumber: 180,
+      lineNumber: 183,
       columnNumber: 7
     }, void 0)
   }, void 0, false, {
     fileName: _jsxFileName$1,
-    lineNumber: 179,
+    lineNumber: 182,
     columnNumber: 5
   }, void 0);
 };

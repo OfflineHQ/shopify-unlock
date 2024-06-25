@@ -38,8 +38,12 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
     if (loginUrl) window.location.href = loginUrl; // Directly setting the window location to navigate
   });
 
-  const { requirements, reaction, id: gateId } = getGate();
-
+  const {
+    requirements,
+    reaction,
+    configuration: { id: gateConfigurationGid },
+  } = getGate();
+  const gateId = gateConfigurationGid.split("/").pop();
   useEffect(() => {
     if (isChildIframeReady && isInitMessageToIframeNotSent) {
       let dataToSend = {
@@ -81,7 +85,6 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
         customerId: customer?.id,
         productId: product?.id,
         gateId,
-        shopDomain: window.Shopify.shop,
       });
     }
   }, [customer?.id, gateId, product?.id]);

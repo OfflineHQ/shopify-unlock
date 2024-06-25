@@ -1,17 +1,39 @@
-import type { LoaderFunction } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import { z } from "zod";
+import connect from "~/libs/public-api/connect.server";
+import { connectParamsSchema } from "~/libs/public-api/schema";
 import { authenticate } from "~/shopify.server";
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const { storefront, liquid } = await authenticate.public.appProxy(request);
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { storefront, session } = await authenticate.public.appProxy(request);
+  const { searchParams } = new URL(request.url);
+  const loggedInCustomerId = searchParams.get("logged_in_customer_id");
 
-  if (!storefront) {
-    return new Response();
+  if (!storefront || !loggedInCustomerId || !session) {
+    return json({ message: "Invalid request" }, { status: 403 });
   }
-  // Your API logic goes here
-  const data = {
-    message: "Hello from the public API!",
-  };
 
-  return json(data);
+  try {
+    const rawData = await request.json();
+    console.log({ rawData });
+    const validatedData = connectParamsSchema.parse(rawData);
+
+    const result = await connect({
+      ...validatedData,
+      shopDomain: session.shop,
+      customerId: loggedInCustomerId,
+    });
+
+    return result;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return json(
+        { message: "Invalid input", errors: error.errors },
+        { status: 400 },
+      );
+    }
+    console.error("Error in connect action:", error);
+    return json({ message: "Internal server error" }, { status: 500 });
+  }
 };

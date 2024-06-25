@@ -1,21 +1,17 @@
 import { assign, createMachine, fromPromise, sendTo } from "xstate";
-import {
-  gateContextClient,
-  isLoyaltyCardOwned,
-  mintLoyaltyCard,
-} from "../gate";
+import { evaluateGate as evaluateGateApi, gateContextClient } from "../gate";
 
 export const OffKeyState = {
-  Idle: "Idle", // Waiting for the off-key status to be loaded
-  Unlocked: "Unlocked", // The off-key is unlocked and can be used
-  Locked: "Locked", // The off-key is locked and cannot be used
-  Unlocking: "Unlocking", // The off-key is unlocking (being created)
-  Used: "Used", // The off-key has been used and cannot be used again in this context
+  Idle: "Idle", // Waiting for the gate status to be loaded
+  Unlocked: "Unlocked", // The gate is unlocked and perk is applied
+  Locked: "Locked", // The gate is locked and no perk is applied
+  Unlocking: "Unlocking", // The gate is unlocking (perk being evaluated)
+  Used: "Used", // The gate has been used and cannot be used again in this context (perk already used)
 };
 
 function getMatchingVault({ gateId, vaults }) {
   return vaults.find(
-    (vault) => vault.id === `gid://shopify/GateConfiguration/${gateId}`
+    (vault) => vault.id === `gid://shopify/GateConfiguration/${gateId}`,
   );
 }
 
@@ -42,18 +38,16 @@ function gateEvaluation(matchingVault) {
   };
 }
 
-export const isOffKeyOwned = async ({
+export const isGateEvaluated = async ({
   customerId,
   productId,
   gateId,
-  shopDomain,
   walletAddress,
 }) => {
-  console.log("isOffKeyOwned", {
+  console.log("isGateEvaluated", {
     customerId,
     productId,
     gateId,
-    shopDomain,
     walletAddress,
   });
   try {
@@ -61,18 +55,17 @@ export const isOffKeyOwned = async ({
       await gateContextClient.read();
     const matchingVault = getMatchingVault({ gateId, vaults });
     const evaluation = gateEvaluation(matchingVault);
-    console.log("isOffKeyOwned evaluation before", evaluation);
+    console.log("isGateEvaluated evaluation before", evaluation);
     if (evaluation.owned || evaluation.mintable) {
       return evaluation;
     }
     // for now we are only fetching from our system in case it's not detected in vault or if it is not owned or not mintable
-    const { vaults: updatedVaults } = await isLoyaltyCardOwned({
+    const { vaults: updatedVaults } = await evaluateGate({
       address: walletAddress,
       message: customerId,
       signature: walletVerificationSignature,
       productId,
       gateId,
-      shopDomain,
     });
     return gateEvaluation(getMatchingVault({ gateId, vaults: updatedVaults }));
   } catch (error) {
@@ -81,18 +74,16 @@ export const isOffKeyOwned = async ({
   }
 };
 
-export const mintOffKey = async ({
+export const evaluateGate = async ({
   customerId,
   productId,
   gateId,
-  shopDomain,
   walletAddress,
 }) => {
-  console.log("mintOffKey", {
+  console.log("evaluateGate", {
     customerId,
     productId,
     gateId,
-    shopDomain,
     walletAddress,
   });
   const { vaults, walletVerificationSignature } =
@@ -103,13 +94,12 @@ export const mintOffKey = async ({
     if (evaluation.owned || !evaluation.mintable) {
       throw new Error("Off-key is already owned or not mintable");
     }
-    const { vaults: updatedVaults } = await mintLoyaltyCard({
+    const { vaults: updatedVaults } = await evaluateGateApi({
       address: walletAddress,
       message: customerId,
       signature: walletVerificationSignature,
       productId,
       gateId,
-      shopDomain,
     });
     return gateEvaluation(getMatchingVault({ gateId, vaults: updatedVaults }));
   } catch (error) {
@@ -128,27 +118,19 @@ const offKeyMachine = createMachine(
       error: undefined,
       walletAddress: input.walletAddress,
       gateId: input.gateId,
-      shopDomain: input.shopDomain,
       productId: input.productId,
       customerId: input.customerId,
     }),
     states: {
       [OffKeyState.Idle]: {
         invoke: {
-          src: "isOffKeyOwned",
+          src: "isGateEvaluated",
           input: ({
-            context: {
-              customerId,
-              productId,
-              gateId,
-              shopDomain,
-              walletAddress,
-            },
+            context: { customerId, productId, gateId, walletAddress },
           }) => ({
             customerId,
             productId,
             gateId,
-            shopDomain,
             walletAddress,
           }),
           onDone: [
@@ -177,20 +159,13 @@ const offKeyMachine = createMachine(
       [OffKeyState.Unlocking]: {
         entry: "sendUnlockingStateToIframe",
         invoke: {
-          src: "mintOffKey",
+          src: "evaluateGate",
           input: ({
-            context: {
-              customerId,
-              productId,
-              gateId,
-              shopDomain,
-              walletAddress,
-            },
+            context: { customerId, productId, gateId, walletAddress },
           }) => ({
             customerId,
             productId,
             gateId,
-            shopDomain,
             walletAddress,
           }),
           onDone: {
@@ -225,7 +200,9 @@ const offKeyMachine = createMachine(
       offKeyNotMintable: ({ event }) => {
         console.log(
           "offKeyNotMintable",
-          !event.output?.mintable && !event.output?.owned && !event.output?.used
+          !event.output?.mintable &&
+            !event.output?.owned &&
+            !event.output?.used,
         );
         return (
           !event.output?.mintable && !event.output?.owned && !event.output?.used
@@ -236,7 +213,7 @@ const offKeyMachine = createMachine(
           "offKeyCanBeMinted 5",
           !!event.output?.mintable &&
             !event.output?.used &&
-            !event.output?.owned
+            !event.output?.owned,
         );
         return (
           !!event.output?.mintable &&
@@ -254,7 +231,7 @@ const offKeyMachine = createMachine(
         ({ context, event }) => ({
           type: "UNLOCKED",
           // TODO, maybe send more context like linked gateId, tokenId and other stuff (voucher applied etc) ?
-        })
+        }),
       ),
       sendUnlockedStateToIframe: sendTo(
         ({ system }) => {
@@ -268,7 +245,7 @@ const offKeyMachine = createMachine(
               status: OffKeyState.Unlocked,
             },
           },
-        })
+        }),
       ),
       sendLockedStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -280,7 +257,7 @@ const offKeyMachine = createMachine(
               status: OffKeyState.Locked,
             },
           },
-        })
+        }),
       ),
       sendUsedStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -292,7 +269,7 @@ const offKeyMachine = createMachine(
               status: OffKeyState.Used,
             },
           },
-        })
+        }),
       ),
       sendUnlockingStateToIframe: sendTo(
         ({ system }) => system.get("unlockIframe"),
@@ -304,14 +281,14 @@ const offKeyMachine = createMachine(
               status: OffKeyState.Unlocking,
             },
           },
-        })
+        }),
       ),
     },
     actors: {
-      isOffKeyOwned: fromPromise(({ input }) => isOffKeyOwned(input)),
-      mintOffKey: fromPromise(({ input }) => mintOffKey(input)),
+      isGateEvaluated: fromPromise(({ input }) => isGateEvaluated(input)),
+      evaluateGate: fromPromise(({ input }) => evaluateGate(input)),
     },
-  }
+  },
 );
 
 export default offKeyMachine;

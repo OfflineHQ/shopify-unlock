@@ -1,11 +1,11 @@
 import { json } from "@remix-run/node";
-import createLinkedCustomer from "./proxy-request/create-linked-customer.server";
+import getHmac from "./get-hmac.server";
 import verifySignatureWithCometh from "./proxy-request/verify-signature-with-cometh.server";
-import type { ConnectArgsSchema } from "./schema";
+import type { EvaluateGateArgsSchema } from "./schema";
 
 // TODO: connect without `ProductGateRequest` (because we would like to put a connection block into section and not only on page)
 
-export default async function connect({
+export default async function evaluateGate({
   address,
   message,
   signature,
@@ -13,21 +13,10 @@ export default async function connect({
   productGid,
   gateConfigurationGid,
   customerId,
-  existingCustomer,
-}: ConnectArgsSchema) {
-  if (!existingCustomer || !customerId || !address || !message || !signature) {
+}: EvaluateGateArgsSchema) {
+  if (!address || !message || !signature) {
     return json({ message: "Invalid request" }, { status: 403 });
   }
-
-  const existingCutomerAddress = existingCustomer.address?.toLowerCase() || "";
-
-  if (
-    existingCutomerAddress &&
-    existingCutomerAddress !== address.toLowerCase()
-  ) {
-    return json({ message: "Invalid address" }, { status: 403 });
-  }
-
   try {
     const isValidSignature = await verifySignatureWithCometh({
       address,
@@ -41,20 +30,21 @@ export default async function connect({
     else if (message !== customerId) {
       return json({ message: "Invalid customerId" }, { status: 403 });
     }
-    if (!existingCutomerAddress) {
-      await createLinkedCustomer({
-        customerId,
-        address: address.toLowerCase(),
-        shopDomain,
-      });
-    }
+    //TODO, get gate metadata with product
+    // const requiredContractAddresses = await getProductGate({
+    //   shopDomain,
+    //   productGid,
+    //   gatesHandle: process.env.OFFLINE_GATES_HANDLE,
+    // });
+    //TODO, for now we return a validated gate because we don't filter yet with segments etc.
     const payload = {
-      linkedCustomer: {
-        address,
-      },
-      walletAddress: address,
-      walletVerificationMessage: message,
-      walletVerificationSignature: signature,
+      vaults: [
+        {
+          ...getHmac(gateConfigurationGid),
+          isLoyaltyCard: true,
+          canMint: false,
+        },
+      ],
     };
     // TODO, in the context of connect with the product and gate also evaluate and return the vaults with hmac signature
     return json(payload, { status: 200 });
