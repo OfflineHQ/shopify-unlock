@@ -9,9 +9,9 @@ export const OffKeyState = {
 };
 
 // TODO: here using a public api for now but should be replaced with a private api with app proxy (see https://github.com/OfflineHQ/shopify-gates/issues/25)
-// export const shopifyUnlockBackendApiUrl = '/apps/offline';
-export const shopifyUnlockBackendApiUrl =
-  process.env.SHOPIFY_UNLOCK_BACKEND_URL;
+export const shopifyUnlockBackendApiUrl = "/apps/offline";
+// export const shopifyUnlockBackendApiUrl =
+//   process.env.SHOPIFY_UNLOCK_BACKEND_URL;
 
 export const gateContextClient = getGateContextClient({
   backingStore: "ajaxApi",
@@ -82,16 +82,16 @@ export function enableBuyButtons() {
 export async function getLinkedCustomer(customerId) {
   console.log("getLinkedCustomer", customerId);
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public-api/getLinkedCustomer`,
+    `${shopifyUnlockBackendApiUrl}/public-api/linked-customer`,
     {
-      method: "POST",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        customerId,
-        shopDomain: getShopDomain(),
-      }),
+      // body: JSON.stringify({
+      //   customerId,
+      //   shopDomain: getShopDomain(),
+      // }),
     },
   );
   if (!response.ok) {

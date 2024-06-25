@@ -1,4 +1,5 @@
 import { json } from "@remix-run/node";
+import createLinkedCustomer from "./proxy-request/create-linked-customer.server";
 import type { GetLinkedCustomerResponse } from "./proxy-request/get-linked-customer.server";
 import type { VerifySignatureWithCometh } from "./proxy-request/verify-signature-with-cometh.server";
 import verifySignatureWithCometh from "./proxy-request/verify-signature-with-cometh.server";
@@ -48,12 +49,14 @@ export default async function connect({
     else if (message !== customerId) {
       return json({ message: "Invalid customerId" }, { status: 403 });
     }
-    //       // Assuming walletSession is properly imported and available
-    // const session = await walletSession(req);
-    // session.setWallet({ address, message, signature });
-    // const sessionCookie = await session.commit();
-
-    // res.setHeader('Set-Cookie', sessionCookie);
+    if (!existingCutomerAddress) {
+      await createLinkedCustomer({
+        customerId,
+        address: address.toLowerCase(),
+        shopDomain,
+      });
+    }
+    return json({ message: "Connected" }, { status: 200 });
   } catch (error) {
     console.error("Signature verification failed:", error);
     return json({ message: "Failed to verify signature" }, { status: 500 });
