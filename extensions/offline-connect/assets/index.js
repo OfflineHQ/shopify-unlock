@@ -43258,9 +43258,9 @@ function getGateContextClient(options) {
 }
 
 // TODO: here using a public api for now but should be replaced with a private api with app proxy (see https://github.com/OfflineHQ/shopify-gates/issues/25)
-// export const shopifyUnlockBackendApiUrl = '/apps/offline';
-const shopifyUnlockBackendApiUrl =
-  "https://staging.unlock-shopify.offline.live";
+const shopifyUnlockBackendApiUrl = "/apps/offline";
+// export const shopifyUnlockBackendApiUrl =
+//   "https://management-china-sharon-tie.trycloudflare.com";
 
 const gateContextClient = getGateContextClient({
   backingStore: "ajaxApi",
@@ -43331,16 +43331,16 @@ function enableBuyButtons() {
 async function getLinkedCustomer(customerId) {
   console.log("getLinkedCustomer", customerId);
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public-api/getLinkedCustomer`,
+    `${shopifyUnlockBackendApiUrl}/public-api/linked-customer`,
     {
-      method: "POST",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        customerId,
-        shopDomain: getShopDomain(),
-      }),
+      // body: JSON.stringify({
+      //   customerId,
+      //   shopDomain: getShopDomain(),
+      // }),
     },
   );
   if (!response.ok) {
@@ -43472,10 +43472,6 @@ async function mintLoyaltyCard({
 }
 
 const getGate = () => window.myAppGates?.[0] || {};
-
-const getShopDomain = () => {
-  return window.Shopify.shop;
-};
 
 const OffKeyState = {
   Idle: "Idle", // Waiting for the off-key status to be loaded
