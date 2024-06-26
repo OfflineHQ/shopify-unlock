@@ -11,7 +11,7 @@ type = "function"
   input_query = "../offline-exclusive/src/run.graphql"
 
   [extensions.build]
-  command = "cd ../offline-exclusive && cargo wasi build --release --features prod"
+  command = "./build-offline-exclusive.sh"
   path = "../offline-exclusive/target/wasm32-wasi/release/offline-exclusive.wasm"
   watch = [ "../offline-exclusive/**", "*.toml" ]
 
