@@ -59,13 +59,13 @@ jobs:
 
       - name: Build app
         env:
-          UNLOCK_APP_URL: ${{ env.UNLOCK_APP_URL }}
-        run: pnpm run ${{ env.BUILD_COMMAND }}
+          UNLOCK_APP_URL: ${{ vars.UNLOCK_APP_URL }}
+        run: pnpm run ${{ vars.BUILD_COMMAND }}
 
       - name: Deploy to Shopify
         env:
           SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
         run: |
-          pnpm run ${{ env.DEPLOY_COMMAND }} \
+          pnpm run ${{ vars.DEPLOY_COMMAND }} \
             --force \
             --source-control-url="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
