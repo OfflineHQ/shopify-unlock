@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock"
 handle = "offline-unlock"
-application_url = "https://offline-unlock-production.herokuapp.com"
+application_url = "https://unlock-shopify.offline.live"
 embedded = true
 
 [build]
@@ -22,15 +22,15 @@ scopes = "read_discounts,read_gates,write_discounts,write_gates,write_products,r
 
 [auth]
 redirect_urls = [
-  "https://offline-unlock-production.herokuapp.com/auth/callback",
-  "https://offline-unlock-production.herokuapp.com/auth/shopify/callback",
-  "https://offline-unlock-production.herokuapp.com/api/auth/callback"
+  "https://unlock-shopify.offline.live/auth/callback",
+  "https://unlock-shopify.offline.live/auth/shopify/callback",
+  "https://unlock-shopify.offline.live/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "unstable"
 
 [app_proxy]
-url = "https://www.offline.live/api/shopify"
+url = "https://unlock-shopify.offline.live"
 subpath = "offline"
 prefix = "apps"

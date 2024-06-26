@@ -1,14 +1,5 @@
 import { iframeResizer } from "iframe-resizer";
 
-export const UnlockIframeStatus = {
-  Idle: "idle", // waiting for the session data to be loaded
-  IframeLoading: "iframe-loading", // loading the iframe
-  IframeLoaded: "iframe-loaded", // iframe is loaded but waiting for a signal from the iframe app that it is ready
-  IsReady: "is-ready", // iframe app is ready to receive messages
-  SendingMessage: "sending-message", // sending a message to the iframe app
-  Error: "error", // an error occurred during the process
-};
-
 import {
   assign,
   createMachine,
@@ -18,16 +9,25 @@ import {
   sendTo,
 } from "xstate";
 
+export const UnlockIframeStatus = {
+  Idle: "idle", // waiting for the session data to be loaded
+  IframeLoading: "iframe-loading", // loading the iframe
+  IframeLoaded: "iframe-loaded", // iframe is loaded but waiting for a signal from the iframe app that it is ready
+  IsReady: "is-ready", // iframe app is ready to receive messages
+  SendingMessage: "sending-message", // sending a message to the iframe app
+  Error: "error", // an error occurred during the process
+};
+
 const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;
 
 export const SendMessageType = {
-  READY: 'READY',
-  DISCONNECT: 'DISCONNECT',
-  SIGNATURE: 'SIGNATURE',
-  OFF_KEY_MINT: 'OFF_KEY_MINT',
-  CONNECT_STATUS: 'CONNECT_STATUS',
-  CONNECT_TO_SHOPIFY: 'CONNECT_TO_SHOPIFY',
-}
+  READY: "READY",
+  DISCONNECT: "DISCONNECT",
+  SIGNATURE: "SIGNATURE",
+  OFF_KEY_MINT: "OFF_KEY_MINT",
+  CONNECT_STATUS: "CONNECT_STATUS",
+  CONNECT_TO_SHOPIFY: "CONNECT_TO_SHOPIFY",
+};
 
 async function onMessage({ message }, self) {
   console.log("Shopify IframeResizer message:", { message, self });
@@ -102,7 +102,7 @@ function setupUnlockIframe({ unlockIframe, self }) {
             },
             onMessage: (props) => onMessage(props, self),
           },
-          "#unlockIframe"
+          "#unlockIframe",
         );
         const instance = instances?.[0]?.iFrameResizer;
         console.log("Unlock iframe instance:", instance);
@@ -120,7 +120,13 @@ function setupUnlockIframe({ unlockIframe, self }) {
 async function sendMessageToIframe({ iframeParentRef, type, value }) {
   const unlockIframe = iframeParentRef.getSnapshot()?.context?.unlockIframe;
   const childIsReady = iframeParentRef.getSnapshot()?.context?.childIsReady;
-  console.log(`sendMessageToIframe`, iframeParentRef, unlockIframe, type, value);
+  console.log(
+    `sendMessageToIframe`,
+    iframeParentRef,
+    unlockIframe,
+    type,
+    value,
+  );
   if (unlockIframe && childIsReady) {
     console.log(`Sending message to iframe for ${type}`, value);
     try {
@@ -131,55 +137,60 @@ async function sendMessageToIframe({ iframeParentRef, type, value }) {
     }
   } else {
     console.error(
-      `No unlockIframe or child not ready, message not sent for type: ${type}`
+      `No unlockIframe or child not ready, message not sent for type: ${type}`,
     );
-    throw new Error(`No unlockIframe or child not ready, message not sent for type: ${type}`);
+    throw new Error(
+      `No unlockIframe or child not ready, message not sent for type: ${type}`,
+    );
   }
 }
 
-const sendMessageMachine = createMachine({
-  id: "sendMessage",
-  initial: "sending",
-  context: ({ input }) => ({
-    iframeParentRef: input.iframeParentRef,
-    type: input.type,
-    value: input.value,
-    retries: 0,
-  }),
-  states: {
-    sending: {
-      invoke: {
-        id: "sendMessageToIframe",
-        src: "sendMessageToIframe",
-        input: ({ context }) => ({
-          iframeParentRef: context.iframeParentRef,
-          type: context.type,
-          value: context.value,
-        }),
-        onDone: "success",
-        onError: [
-          {
-            target: "retry",
-            guard: ({context}) => context.retries < 10,
-            actions: assign({ retries: ({context}) => context.retries + 1 }),
-          },
-          { target: "failure" },
-        ],
+const sendMessageMachine = createMachine(
+  {
+    id: "sendMessage",
+    initial: "sending",
+    context: ({ input }) => ({
+      iframeParentRef: input.iframeParentRef,
+      type: input.type,
+      value: input.value,
+      retries: 0,
+    }),
+    states: {
+      sending: {
+        invoke: {
+          id: "sendMessageToIframe",
+          src: "sendMessageToIframe",
+          input: ({ context }) => ({
+            iframeParentRef: context.iframeParentRef,
+            type: context.type,
+            value: context.value,
+          }),
+          onDone: "success",
+          onError: [
+            {
+              target: "retry",
+              guard: ({ context }) => context.retries < 10,
+              actions: assign({
+                retries: ({ context }) => context.retries + 1,
+              }),
+            },
+            { target: "failure" },
+          ],
+        },
       },
-    },
-    retry: {
-      after: {
-        RETRY_DELAY: "sending",
+      retry: {
+        after: {
+          RETRY_DELAY: "sending",
+        },
       },
-    },
-    success: {
-      type: "final",
-    },
-    failure: {
-      type: "final",
+      success: {
+        type: "final",
+      },
+      failure: {
+        type: "final",
+      },
     },
   },
-},
   {
     delays: {
       RETRY_DELAY: ({ context }) => {
@@ -187,9 +198,11 @@ const sendMessageMachine = createMachine({
       },
     },
     actors: {
-      sendMessageToIframe: fromPromise(({ input }) => sendMessageToIframe(input)),
+      sendMessageToIframe: fromPromise(({ input }) =>
+        sendMessageToIframe(input),
+      ),
     },
-  }
+  },
 );
 
 const unlockIframeMachine = createMachine(
@@ -275,10 +288,10 @@ const unlockIframeMachine = createMachine(
   {
     actors: {
       // setupUnlockIframe: fromPromise(({ input }) => setupUnlockIframe(input)),
-      
     },
     actions: {
-      receiveMessage: ({event, self}) => onMessage({message:event.message}, self),
+      receiveMessage: ({ event, self }) =>
+        onMessage({ message: event.message }, self),
       setChildIsReady: assign({
         childIsReady: (_) => true,
       }),
@@ -299,7 +312,7 @@ const unlockIframeMachine = createMachine(
         ({ event }) => ({
           type: "IFRAME_MESSAGE_RECEIVED",
           data: event?.data,
-        })
+        }),
       ),
       emitConnectToShopify: emit({
         type: "CONNECT_TO_SHOPIFY",
@@ -308,7 +321,7 @@ const unlockIframeMachine = createMachine(
       enqueueSendMessages: enqueueActions(({ enqueue, context, event }) => {
         const { data } = event;
         enqueue.spawnChild(sendMessageMachine, {
-          input: ({self}) => ({
+          input: ({ self }) => ({
             iframeParentRef: self,
             type: data.type,
             value: data.value,
@@ -317,7 +330,7 @@ const unlockIframeMachine = createMachine(
         });
       }),
     },
-  }
+  },
 );
 
 export default unlockIframeMachine;
