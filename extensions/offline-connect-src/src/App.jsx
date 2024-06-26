@@ -7,6 +7,8 @@ import { disableBuyButtons, enableBuyButtons, getGate } from "./gate";
 import { UnlockIframeStatus } from "./machines/unlockIframeMachine";
 import { hexToHsl } from "./utils/colors";
 
+// const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;
+
 const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
   const authActorRef = AuthMachineContext.useActorRef();
   const unlockIframeRef = authActorRef.system.get("unlockIframe");
@@ -122,6 +124,16 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
             iframeRef,
           });
         }}
+        // checkOrigin={
+        //   UNLOCK_APP_URL?.startsWith("http://localhost")
+        //     ? false
+        //     : [
+        //         UNLOCK_APP_URL,
+        //         UNLOCK_APP_URL.includes("://www.")
+        //           ? UNLOCK_APP_URL.replace("://www.", "://")
+        //           : UNLOCK_APP_URL.replace("://", "://www."),
+        //       ]
+        // }
         tabIndex="0"
         inPageLinks
         onMessage={(messageData) => {
