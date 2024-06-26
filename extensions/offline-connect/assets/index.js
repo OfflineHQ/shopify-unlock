@@ -43260,7 +43260,7 @@ function getGateContextClient(options) {
 // TODO: here using a public api for now but should be replaced with a private api with app proxy (see https://github.com/OfflineHQ/shopify-gates/issues/25)
 const shopifyUnlockBackendApiUrl = "/apps/offline";
 // export const shopifyUnlockBackendApiUrl =
-//   "https://merely-rendered-sc-switches.trycloudflare.com";
+//   "https://staging.unlock-shopify.offline.live";
 
 const gateContextClient = getGateContextClient({
   backingStore: "ajaxApi",
@@ -46517,12 +46517,12 @@ const UnlockIframeStatus = {
 };
 
 const SendMessageType = {
-  READY: 'READY',
-  DISCONNECT: 'DISCONNECT',
-  SIGNATURE: 'SIGNATURE',
-  OFF_KEY_MINT: 'OFF_KEY_MINT',
-  CONNECT_STATUS: 'CONNECT_STATUS',
-  CONNECT_TO_SHOPIFY: 'CONNECT_TO_SHOPIFY',
+  READY: "READY",
+  DISCONNECT: "DISCONNECT",
+  SIGNATURE: "SIGNATURE",
+  OFF_KEY_MINT: "OFF_KEY_MINT",
+  CONNECT_STATUS: "CONNECT_STATUS",
+  CONNECT_TO_SHOPIFY: "CONNECT_TO_SHOPIFY",
 };
 
 async function onMessage({ message }, self) {
@@ -46572,7 +46572,13 @@ async function onMessage({ message }, self) {
 async function sendMessageToIframe({ iframeParentRef, type, value }) {
   const unlockIframe = iframeParentRef.getSnapshot()?.context?.unlockIframe;
   const childIsReady = iframeParentRef.getSnapshot()?.context?.childIsReady;
-  console.log(`sendMessageToIframe`, iframeParentRef, unlockIframe, type, value);
+  console.log(
+    `sendMessageToIframe`,
+    iframeParentRef,
+    unlockIframe,
+    type,
+    value,
+  );
   if (unlockIframe && childIsReady) {
     console.log(`Sending message to iframe for ${type}`, value);
     try {
@@ -46583,55 +46589,60 @@ async function sendMessageToIframe({ iframeParentRef, type, value }) {
     }
   } else {
     console.error(
-      `No unlockIframe or child not ready, message not sent for type: ${type}`
+      `No unlockIframe or child not ready, message not sent for type: ${type}`,
     );
-    throw new Error(`No unlockIframe or child not ready, message not sent for type: ${type}`);
+    throw new Error(
+      `No unlockIframe or child not ready, message not sent for type: ${type}`,
+    );
   }
 }
 
-const sendMessageMachine = createMachine({
-  id: "sendMessage",
-  initial: "sending",
-  context: ({ input }) => ({
-    iframeParentRef: input.iframeParentRef,
-    type: input.type,
-    value: input.value,
-    retries: 0,
-  }),
-  states: {
-    sending: {
-      invoke: {
-        id: "sendMessageToIframe",
-        src: "sendMessageToIframe",
-        input: ({ context }) => ({
-          iframeParentRef: context.iframeParentRef,
-          type: context.type,
-          value: context.value,
-        }),
-        onDone: "success",
-        onError: [
-          {
-            target: "retry",
-            guard: ({context}) => context.retries < 10,
-            actions: assign({ retries: ({context}) => context.retries + 1 }),
-          },
-          { target: "failure" },
-        ],
+const sendMessageMachine = createMachine(
+  {
+    id: "sendMessage",
+    initial: "sending",
+    context: ({ input }) => ({
+      iframeParentRef: input.iframeParentRef,
+      type: input.type,
+      value: input.value,
+      retries: 0,
+    }),
+    states: {
+      sending: {
+        invoke: {
+          id: "sendMessageToIframe",
+          src: "sendMessageToIframe",
+          input: ({ context }) => ({
+            iframeParentRef: context.iframeParentRef,
+            type: context.type,
+            value: context.value,
+          }),
+          onDone: "success",
+          onError: [
+            {
+              target: "retry",
+              guard: ({ context }) => context.retries < 10,
+              actions: assign({
+                retries: ({ context }) => context.retries + 1,
+              }),
+            },
+            { target: "failure" },
+          ],
+        },
       },
-    },
-    retry: {
-      after: {
-        RETRY_DELAY: "sending",
+      retry: {
+        after: {
+          RETRY_DELAY: "sending",
+        },
       },
-    },
-    success: {
-      type: "final",
-    },
-    failure: {
-      type: "final",
+      success: {
+        type: "final",
+      },
+      failure: {
+        type: "final",
+      },
     },
   },
-},
   {
     delays: {
       RETRY_DELAY: ({ context }) => {
@@ -46639,9 +46650,11 @@ const sendMessageMachine = createMachine({
       },
     },
     actors: {
-      sendMessageToIframe: fromPromise(({ input }) => sendMessageToIframe(input)),
+      sendMessageToIframe: fromPromise(({ input }) =>
+        sendMessageToIframe(input),
+      ),
     },
-  }
+  },
 );
 
 const unlockIframeMachine = createMachine(
@@ -46727,10 +46740,10 @@ const unlockIframeMachine = createMachine(
   {
     actors: {
       // setupUnlockIframe: fromPromise(({ input }) => setupUnlockIframe(input)),
-      
     },
     actions: {
-      receiveMessage: ({event, self}) => onMessage({message:event.message}, self),
+      receiveMessage: ({ event, self }) =>
+        onMessage({ message: event.message }, self),
       setChildIsReady: assign({
         childIsReady: (_) => true,
       }),
@@ -46751,7 +46764,7 @@ const unlockIframeMachine = createMachine(
         ({ event }) => ({
           type: "IFRAME_MESSAGE_RECEIVED",
           data: event?.data,
-        })
+        }),
       ),
       emitConnectToShopify: emit({
         type: "CONNECT_TO_SHOPIFY",
@@ -46760,7 +46773,7 @@ const unlockIframeMachine = createMachine(
       enqueueSendMessages: enqueueActions(({ enqueue, context, event }) => {
         const { data } = event;
         enqueue.spawnChild(sendMessageMachine, {
-          input: ({self}) => ({
+          input: ({ self }) => ({
             iframeParentRef: self,
             type: data.type,
             value: data.value,
@@ -46769,7 +46782,7 @@ const unlockIframeMachine = createMachine(
         });
       }),
     },
-  }
+  },
 );
 
 const ShopifyCustomerStatus = {
@@ -47386,7 +47399,7 @@ const _App = ({
     if (!gateId || isIframeIdle) {
       return null;
     }
-    const unlockAppUrl = "https://localhost:8889";
+    const unlockAppUrl = "https://www.staging.unlock.offline.live";
     const baseUrl = `${unlockAppUrl}/en/shopify/${gateId}`;
     let src = baseUrl;
     if (walletAddress) {

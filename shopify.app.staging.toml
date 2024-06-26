@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "02531eab2a6cf8782a9a15b34aa7ed65"
+client_id = "9eb6e72612f27eaef4ad396f971978b1"
 extension_directories = [
   "extensions/offline-discount",
   "extensions/offline-exclusive-staging",
@@ -13,7 +13,7 @@ embedded = true
 
 [build]
 automatically_update_urls_on_dev = false
-dev_store_url = "offline-unlock.myshopify.com"
+dev_store_url = "offline-key.myshopify.com"
 include_config_on_deploy = true
 
 [access_scopes]
@@ -31,7 +31,7 @@ redirect_urls = [
 api_version = "unstable"
 
 [app_proxy]
-url = "https://staging.offline.live/api/shopify"
+url = "https://staging.unlock-shopify.offline.live"
 subpath = "offline"
 prefix = "apps"
 
