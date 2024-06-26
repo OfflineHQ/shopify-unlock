@@ -8,10 +8,7 @@ export const OffKeyState = {
   Used: "Used", // The off-key has been used and cannot be used again in this context
 };
 
-// TODO: here using a public api for now but should be replaced with a private api with app proxy (see https://github.com/OfflineHQ/shopify-gates/issues/25)
-export const shopifyUnlockBackendApiUrl = "/apps/offline";
-// export const shopifyUnlockBackendApiUrl =
-//   process.env.SHOPIFY_UNLOCK_BACKEND_URL;
+export const shopifyUnockAppProxyUrl = "/apps/offline";
 
 export const gateContextClient = getGateContextClient({
   backingStore: "ajaxApi",
@@ -81,7 +78,7 @@ export function enableBuyButtons() {
 
 export async function getLinkedCustomer() {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public-api/linked-customer`,
+    `${shopifyUnockAppProxyUrl}/public-api/linked-customer`,
     {
       method: "GET",
       headers: {
@@ -110,7 +107,7 @@ export async function connectWallet({
   gateId,
 }) {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public-api/connect`,
+    `${shopifyUnockAppProxyUrl}/public-api/connect`,
     {
       method: "POST",
       headers: {
@@ -147,7 +144,7 @@ export async function evaluateGate({
   gateId,
 }) {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public-api/evaluate-gate`,
+    `${shopifyUnockAppProxyUrl}/public-api/evaluate-gate`,
     {
       method: "POST",
       headers: {
@@ -182,7 +179,7 @@ export async function mintLoyaltyCard({
   gateId,
 }) {
   const response = await fetch(
-    `${shopifyUnlockBackendApiUrl}/public-api/mintLoyaltyCard`,
+    `${shopifyUnockAppProxyUrl}/public-api/mintLoyaltyCard`,
     {
       method: "POST",
       headers: {

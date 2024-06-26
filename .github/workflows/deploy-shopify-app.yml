@@ -57,16 +57,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Set environment variables
-        run: |
-          if [[ ${{ github.ref }} == 'refs/heads/staging' ]]; then
-            echo "BUILD_COMMAND=build:offline-connect:staging" >> $GITHUB_ENV
-            echo "DEPLOY_COMMAND=deploy:staging" >> $GITHUB_ENV
-          elif [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
-            echo "BUILD_COMMAND=build:offline-connect:prod" >> $GITHUB_ENV
-            echo "DEPLOY_COMMAND=deploy:production" >> $GITHUB_ENV
-          fi
-
       - name: Build app
         env:
           UNLOCK_APP_URL: ${{ env.UNLOCK_APP_URL }}
