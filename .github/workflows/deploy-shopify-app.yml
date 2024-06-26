@@ -70,6 +70,6 @@ jobs:
         env:
           SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
         run: |
-          pnpm shopify app ${{ env.DEPLOY_COMMAND }} \
+          pnpm run ${{ env.DEPLOY_COMMAND }} \
             --force \
             --source-control-url="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
