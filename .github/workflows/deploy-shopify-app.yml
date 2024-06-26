@@ -30,6 +30,10 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
+          target: wasm32-wasi
+
+      - name: Install cargo-wasi
+        run: cargo install cargo-wasi
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
