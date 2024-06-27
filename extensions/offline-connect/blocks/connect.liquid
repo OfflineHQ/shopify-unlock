@@ -2,7 +2,9 @@
 {
   "name": "Offline Connect",
   "target": "section",
-  "templates": ["product"],
+  "disabled_on": {
+    "templates": ["product"]
+  },
   "settings": [
     {
       "type": "header",
@@ -134,14 +136,9 @@
 }
 {% endschema %}
 
-{% assign offline_handle = app.metafields.offline.offline_handle %}
-
 <div
-  id="offline-unlock"
+  id="offline-connect"
   data-account_login_url="{{ routes.account_login_url }}"
-  data-product_id="{{ product.id }}"
-  data-product_available="{{ product.available }}"
-  data-product_title="{{ product.title }}"
   data-settings_css_variables="{{ block.settings | json | escape }}"
   data-customer_id="{{ customer.id }}"
   data-customer_email="{{ customer.email }}"
@@ -149,37 +146,5 @@
   data-customer_last_name="{{ customer.last_name }}"
 ></div>
 
-<div id="get-product-gate" data-product-id="{{ product.id }}" data-handle="{{ offline_handle }}"></div>
-
-<script async>
-  var productGate = document.getElementById('get-product-gate');
-  var productId = productGate.getAttribute('data-product-id');
-  var handle = productGate.getAttribute('data-handle');
-
-  const queryParams = '?productId=' + productId + '&handle=' + handle;
-  const proxyUrl = '/apps/offline';
-  const route = '/public-api/product-gate';
-  var apiUrl = proxyUrl + route + queryParams;
-
-  fetch(apiUrl)
-    .then((response) => response.json())
-    .then((data) => {
-      // if there is no gate, don't load the script
-      if (!data.length) {
-        return;
-      }
-      // if there is a gate assign them to client and load the script
-      window.myAppGates = data;
-      var script = document.createElement('script');
-      script.type = 'module';
-      script.src = "{{ 'index.js' | asset_url }}";
-      document.body.appendChild(script);
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = "{{ 'index.css' | asset_url }}";
-      document.head.appendChild(link);
-    })
-    .catch((error) => {
-      console.error('Error fetching product gate:', error);
-    });
-</script>
+<script async type="module" src="{{ "connect.js" | asset_url }}"></script>
+<link rel="stylesheet" href="{{ "index.css" | asset_url }}">

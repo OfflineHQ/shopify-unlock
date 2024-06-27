@@ -26,8 +26,8 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       rollupOptions: {
         input: {
-          index: "./src/index.jsx",
-          connect: "./src/connect.jsx",
+          unlock: "./src/unlock.tsx",
+          connect: "./src/connect.tsx",
         },
         output: {
           dir: "../offline-connect/assets",
