@@ -6,6 +6,7 @@ import { DeleteIcon } from "@shopify/polaris-icons";
 import type { IndexTableHeading } from "@shopify/polaris/build/ts/src/components/IndexTable";
 import type { NonEmptyArray } from "@shopify/polaris/build/ts/src/types";
 import { useEffect, useState } from "react";
+import { GateReactionType, type GateReaction } from "types";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { CampaignRowActions } from "~/libs/campaigns/campaign-row-actions";
 import deleteCampaigns, {
@@ -77,8 +78,8 @@ export default function Index() {
   ];
 
   const perkTypeName = Object.freeze({
-    discount: "Discount",
-    exclusive_access: "Exclusive Access",
+    [GateReactionType.Discount]: "Discount",
+    [GateReactionType.ExclusiveAccess]: "Exclusive Access",
   });
 
   const emptyState = (
@@ -139,11 +140,13 @@ export default function Index() {
   const campaignsMarkup = filteredCampaigns.map((gate, index) => {
     const { id, name, reaction, subjectBindings } = gate;
 
-    // const segment = (JSON.parse(requirements.value)?.conditions || [])
-    //   .map((condition) => condition.contractAddress)
-    //   .join(", ");
+    if (!reaction || !reaction.value) {
+      return null;
+    }
 
-    const perkType = JSON.parse(reaction?.value || "{}")?.type ?? "—";
+    const gateReaction = JSON.parse(reaction.value) as GateReaction;
+
+    const perkType = gateReaction.type ?? "—";
 
     const numProducts = subjectBindings?.nodes?.length ?? "—";
 

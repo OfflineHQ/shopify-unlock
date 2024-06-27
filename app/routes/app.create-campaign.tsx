@@ -18,12 +18,10 @@ import {
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
 import { useCallback, useEffect, useState } from "react";
+import { CampaignType, DiscountType, GateReactionType } from "types";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { TargetProductsOrCollections } from "~/libs/campaigns-product-collection/TargetProductsOrCollections";
 import {
-  CampaignTypeEnum,
-  DiscountTypeEnum,
-  PerkTypeEnum,
   RedemptionLimitEnum,
   campaignFormSchema,
   type CampaignFormData,
@@ -87,13 +85,13 @@ export default function CreateTokengate() {
   }, [fetcher.data]);
 
   const campaignType = useField<(typeof campaignTypeEnum)[number]>(
-    CampaignTypeEnum.Open,
+    CampaignType.Open,
   );
   const perkType = useField<(typeof perkTypeEnum)[number]>(
-    PerkTypeEnum.Discount,
+    GateReactionType.Discount,
   );
   const discountType = useField<(typeof discountTypeEnum)[number]>(
-    DiscountTypeEnum.Percentage,
+    DiscountType.Percentage,
   );
   const redemptionLimit = useField<(typeof redemptionLimitEnum)[number]>(
     RedemptionLimitEnum.NoLimit,

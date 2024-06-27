@@ -5,11 +5,17 @@ import { useEffect, useMemo } from "react";
 import { AuthMachineContext, AuthMachineProvider } from "./AuthMachineProvider";
 import { disableBuyButtons, enableBuyButtons, getGate } from "./gate";
 import { UnlockIframeStatus } from "./machines/unlockIframeMachine";
+import type { Customer, Product, SettingsCssVariables } from "./types";
 import { hexToHsl } from "./utils/colors";
 
 // const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;
 
-const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
+const App = ({
+  settingsCssVariables,
+  customer,
+  loginUrl,
+  product,
+}: AppUnlockProps) => {
   const authActorRef = AuthMachineContext.useActorRef();
   const unlockIframeRef = authActorRef.system.get("unlockIframe");
   const isChildIframeReady = useSelector(
@@ -134,7 +140,7 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
         //           : UNLOCK_APP_URL.replace("://", "://www."),
         //       ]
         // }
-        tabIndex="0"
+        tabIndex={0}
         inPageLinks
         onMessage={(messageData) => {
           console.log("Message received from iframe", messageData);
@@ -188,17 +194,24 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
   );
 };
 
+export interface AppUnlockProps {
+  settingsCssVariables: SettingsCssVariables;
+  customer?: Customer;
+  loginUrl?: string;
+  product: Product;
+}
+
 export const AppUnlock = ({
   settingsCssVariables,
   customer,
   loginUrl,
   product,
-}) => {
-  console.log("App gates:", window.myAppGate);
+}: AppUnlockProps) => {
+  console.log("App gates:", window.myAppGates);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthMachineProvider>
-        <_App
+        <App
           settingsCssVariables={settingsCssVariables}
           customer={customer}
           loginUrl={loginUrl}

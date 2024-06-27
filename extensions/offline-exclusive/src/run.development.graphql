@@ -21,10 +21,16 @@ query Input {
               configuration {
                 id
                 handle
-                reaction: metafield(namespace: "offline-gate", key: "reaction") {
+                reaction: metafield(
+                  namespace: "offline-gate"
+                  key: "reaction"
+                ) {
                   value
                 }
-                orderLimit: metafield(namespace: "offline-gate", key: "orderLimit") {
+                orderLimit: metafield(
+                  namespace: "offline-gate"
+                  key: "orderLimit"
+                ) {
                   value
                 }
               }
