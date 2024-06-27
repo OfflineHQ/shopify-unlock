@@ -1,0 +1,124 @@
+import { z } from "zod";
+import { CampaignType, DiscountType, GateReactionType } from "../../../types";
+
+// Enums
+const GateConditionLogicEnum = z.enum(["any"]);
+const DiscountTypeEnum = z.nativeEnum(DiscountType);
+const CampaignTypeEnum = z.nativeEnum(CampaignType);
+const GateReactionTypeEnum = z.nativeEnum(GateReactionType);
+
+// Base schemas
+const baseAddressSchema = z.object({
+  address: z.string().min(1),
+});
+
+const baseSignatureSchema = z.object({
+  message: z.string().min(1),
+  signature: z.string().min(1),
+});
+
+const baseProductGateSchema = z.object({
+  productId: z.string().min(1),
+  gateId: z.string().min(1),
+});
+
+// Complex schemas
+const gateConditionSchema = z.object({
+  contractAddress: z.string(),
+  tokenIds: z.array(z.string()).optional(),
+});
+
+const gateRequirementSchema = z.object({
+  logic: GateConditionLogicEnum,
+  conditions: z.array(gateConditionSchema),
+});
+
+const gateReactionSchema = z.object({
+  type: GateReactionTypeEnum,
+  name: z.string(),
+  discount: z
+    .object({
+      type: DiscountTypeEnum,
+      value: z.number(),
+    })
+    .optional(),
+});
+
+const gateConfigSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  handle: z.string(),
+  orderLimit: z.number().optional(),
+  requirements: gateRequirementSchema,
+  reactions: gateReactionSchema,
+});
+
+const customerSchema = z.object({
+  id: z.string(),
+  email: z.string().email().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+});
+
+const linkedCustomerSchema = z.object({
+  address: z.string().optional(),
+});
+
+const vaultSchema = z.object({
+  remove: z.boolean().optional(),
+  canMint: z.boolean(),
+  hmac: z.string(),
+  id: z.string(),
+});
+
+const gateContextSchema = z.object({
+  walletAddress: z.string().optional(),
+  walletVerificationMessage: z.string().optional(),
+  walletVerificationSignature: z.string().optional(),
+  linkedCustomer: linkedCustomerSchema.optional(),
+  disconnect: z.boolean().optional(),
+  noCustomer: z.boolean().optional(),
+  vaults: z.array(vaultSchema).optional(),
+});
+
+const productSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  available: z.boolean(),
+  price: z.number(),
+});
+
+const gateSchema = z.object({
+  id: z.string(),
+  active: z.boolean(),
+  configuration: gateConfigSchema,
+});
+
+// Compound schemas
+const addressSignatureSchema = baseAddressSchema.merge(baseSignatureSchema);
+const fullGateSchema = addressSignatureSchema.merge(baseProductGateSchema);
+
+// Specific schemas
+export const getLinkedCustomerSchema = z.object({});
+
+export const connectWalletSchema = fullGateSchema.extend({
+  existingCustomer: z.string(),
+});
+
+export const evaluateGateSchema = fullGateSchema;
+
+export const mintLoyaltyCardSchema = fullGateSchema;
+
+// Export types
+
+export type GetLinkedCustomerSchema = z.infer<typeof getLinkedCustomerSchema>;
+export type ConnectWalletSchema = z.infer<typeof connectWalletSchema>;
+export type EvaluateGateSchema = z.infer<typeof evaluateGateSchema>;
+export type MintLoyaltyCardSchema = z.infer<typeof mintLoyaltyCardSchema>;
+
+export type Customer = z.infer<typeof customerSchema>;
+export type LinkedCustomer = z.infer<typeof linkedCustomerSchema>;
+export type Vault = z.infer<typeof vaultSchema>;
+export type GateContext = z.infer<typeof gateContextSchema>;
+export type Product = z.infer<typeof productSchema>;
+export type Gate = z.infer<typeof gateSchema>;

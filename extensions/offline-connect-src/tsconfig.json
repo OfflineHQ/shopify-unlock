@@ -30,7 +30,8 @@
 	},
 	"include": [
 		"src",
-		"vite.config.ts"
+		"vite.config.ts",
+		"../../types.d.ts"
 	],
 	"types": [
 		"react",
@@ -38,7 +39,8 @@
 	],
 	"typeRoots": [
 		"../../node_modules/@types",
-		"../../@types"
+		"../../@types",
+		"../../types.d.ts"
 	],
 	"references": [
 		{
