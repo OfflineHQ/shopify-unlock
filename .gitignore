@@ -13,3 +13,4 @@ database.sqlite
 /extensions/offline-connect/assets/
 
 .env
+.env.*
