@@ -1,5 +1,10 @@
 import { getGateContextClient } from "@shopify/gate-context-client";
 import type { GateContext, Vault } from "./schema";
+import {
+  connectWalletSchema,
+  evaluateGateSchema,
+  getLinkedCustomerSchema,
+} from "./schema";
 
 // TODO: import from offline lib @offline/iframe
 export const OffKeyState = {
@@ -102,8 +107,9 @@ export async function getLinkedCustomer() {
     throw errorData;
   } else {
     const json = await response.json();
-    await gateContextClient.write({ linkedCustomer: json });
-    return json;
+    const validatedData = getLinkedCustomerSchema.parse(json);
+    await gateContextClient.write({ linkedCustomer: validatedData });
+    return validatedData;
   }
 }
 
@@ -146,9 +152,10 @@ export async function connectWallet({
     throw errorData;
   } else {
     const json = await response.json();
-    await gateContextClient.write(json);
-    console.log("connectApi response:", json);
-    return json;
+    const validatedData = connectWalletSchema.parse(json);
+    await gateContextClient.write(validatedData);
+    console.log("connectApi response:", validatedData);
+    return validatedData;
   }
 }
 
@@ -188,50 +195,9 @@ export async function evaluateGate({
     throw errorData;
   } else {
     const json = await response.json();
-    await gateContextClient.write(json);
-    return json;
-  }
-}
-
-export async function mintLoyaltyCard({
-  address,
-  message,
-  signature,
-  productId,
-  gateId,
-}: {
-  address: string;
-  message: string;
-  signature: string;
-  productId: string;
-  gateId: string;
-}) {
-  const response = await fetch(
-    `${shopifyUnlockAppProxyUrl}/public-api/mintLoyaltyCard`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        address,
-        message,
-        signature,
-        productId,
-        productGid: `gid://shopify/Product/${productId}`,
-        gateConfigurationGid: `gid://shopify/GateConfiguration/${gateId}`,
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error("mintLoyaltyCard error:", errorData);
-    throw errorData;
-  } else {
-    const json = await response.json();
-    await gateContextClient.write(json);
-    return json;
+    const validatedData = evaluateGateSchema.parse(json);
+    await gateContextClient.write(validatedData);
+    return validatedData;
   }
 }
 

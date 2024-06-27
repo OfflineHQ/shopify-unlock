@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { CampaignType, DiscountType, GateReactionType } from "../../../types";
+import { DiscountType, GateReactionType } from "../../../types";
 
 // Enums
 const GateConditionLogicEnum = z.enum(["any"]);
 const DiscountTypeEnum = z.nativeEnum(DiscountType);
-const CampaignTypeEnum = z.nativeEnum(CampaignType);
 const GateReactionTypeEnum = z.nativeEnum(GateReactionType);
 
 // Base schemas
@@ -75,9 +74,9 @@ const gateContextSchema = z.object({
   walletAddress: z.string().optional(),
   walletVerificationMessage: z.string().optional(),
   walletVerificationSignature: z.string().optional(),
-  linkedCustomer: linkedCustomerSchema.optional(),
   disconnect: z.boolean().optional(),
   noCustomer: z.boolean().optional(),
+  linkedCustomer: linkedCustomerSchema,
   vaults: z.array(vaultSchema).optional(),
 });
 
@@ -94,27 +93,18 @@ const gateSchema = z.object({
   configuration: gateConfigSchema,
 });
 
-// Compound schemas
-const addressSignatureSchema = baseAddressSchema.merge(baseSignatureSchema);
-const fullGateSchema = addressSignatureSchema.merge(baseProductGateSchema);
-
 // Specific schemas
-export const getLinkedCustomerSchema = z.object({});
+export const getLinkedCustomerSchema = linkedCustomerSchema;
 
-export const connectWalletSchema = fullGateSchema.extend({
-  existingCustomer: z.string(),
-});
+export const connectWalletSchema = gateContextSchema;
 
-export const evaluateGateSchema = fullGateSchema;
-
-export const mintLoyaltyCardSchema = fullGateSchema;
+export const evaluateGateSchema = connectWalletSchema;
 
 // Export types
 
 export type GetLinkedCustomerSchema = z.infer<typeof getLinkedCustomerSchema>;
 export type ConnectWalletSchema = z.infer<typeof connectWalletSchema>;
 export type EvaluateGateSchema = z.infer<typeof evaluateGateSchema>;
-export type MintLoyaltyCardSchema = z.infer<typeof mintLoyaltyCardSchema>;
 
 export type Customer = z.infer<typeof customerSchema>;
 export type LinkedCustomer = z.infer<typeof linkedCustomerSchema>;
