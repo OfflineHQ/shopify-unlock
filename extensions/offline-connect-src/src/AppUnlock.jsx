@@ -188,7 +188,12 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
   );
 };
 
-export const App = ({ settingsCssVariables, customer, loginUrl, product }) => {
+export const AppUnlock = ({
+  settingsCssVariables,
+  customer,
+  loginUrl,
+  product,
+}) => {
   console.log("App gates:", window.myAppGate);
   return (
     <QueryClientProvider client={queryClient}>

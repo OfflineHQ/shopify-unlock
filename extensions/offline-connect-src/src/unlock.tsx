@@ -1,9 +1,8 @@
-import React from "react";
 import ReactDOM from "react-dom";
 
 import "./index.css";
 
-import { App } from "./App";
+import { AppUnlock } from "./AppUnlock";
 
 console.log({ myAppGates: window.myAppGates });
 
@@ -28,7 +27,7 @@ if (window.myAppGates?.length > 0) {
     available: container.dataset.product_available === "true",
   };
   ReactDOM.createRoot(container).render(
-    <App
+    <AppUnlock
       settingsCssVariables={settingsCssVariables}
       customer={customer}
       loginUrl={container.dataset.account_login_url}
