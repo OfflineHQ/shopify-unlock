@@ -5,7 +5,8 @@ import { useEffect, useMemo } from "react";
 import { AuthMachineContext, AuthMachineProvider } from "./AuthMachineProvider";
 import { disableBuyButtons, enableBuyButtons, getGate } from "./gate";
 import { UnlockIframeStatus } from "./machines/unlockIframeMachine";
-import type { Customer, Product, SettingsCssVariables } from "./types";
+import type { Customer, Product } from "./schema";
+import type { SettingsCssVariables } from "./types";
 import { hexToHsl } from "./utils/colors";
 
 // const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;

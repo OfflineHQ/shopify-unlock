@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { gateContextClient } from "./gate";
-import type { AppConnectProps, GateContext } from "./types";
+import type { GateContext } from "./schema";
+import type { AppConnectProps } from "./types";
 
 export const AppConnect = ({
   customer,
