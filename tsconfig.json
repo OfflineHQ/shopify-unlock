@@ -28,6 +28,9 @@
     "paths": {
       "~/*": [
         "./app/*"
+      ],
+      "@types": [
+        "./types.d.ts"
       ]
     },
     "types": [
