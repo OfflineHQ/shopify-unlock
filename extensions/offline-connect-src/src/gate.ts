@@ -1,5 +1,5 @@
 import { getGateContextClient } from "@shopify/gate-context-client";
-import type { GateContext, Vault } from "./schema";
+import type { GateContext, LinkedCustomer, Vault } from "./schema";
 import {
   connectWalletSchema,
   evaluateGateSchema,
@@ -124,9 +124,9 @@ export async function connectWallet({
   address: string;
   message: string;
   signature: string;
-  existingCustomer: string;
-  productId: string;
-  gateId: string;
+  existingCustomer?: LinkedCustomer;
+  productId?: string;
+  gateId?: string;
 }) {
   const response = await fetch(
     `${shopifyUnlockAppProxyUrl}/public-api/connect`,
