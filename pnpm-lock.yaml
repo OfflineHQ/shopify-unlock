@@ -129,9 +129,6 @@ importers:
       color:
         specifier: ^4.2.3
         version: 4.2.3
-      iframe-resizer:
-        specifier: ^4.3.11
-        version: 4.4.2
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -144,6 +141,10 @@ importers:
       xstate:
         specifier: ^5.13.0
         version: 5.13.2
+    devDependencies:
+      '@types/iframe-resizer':
+        specifier: ^3.5.13
+        version: 3.5.13
 
 packages:
 
@@ -1755,6 +1756,9 @@ packages:
   '@types/hast@2.3.10':
     resolution: {integrity: sha512-McWspRw8xx8J9HurkVBfYj0xKoE25tOFlHGdx4MJ5xORQrMGZNqJhVQWaIbm6Oyla5kYOXtDiopzKRJzEOkwJw==}
 
+  '@types/iframe-resizer@3.5.13':
+    resolution: {integrity: sha512-/Np2ntlOWd/NOHs23Mj7QlNEnZ6SL02AWWdYZLm4RQNukDdpqpagfMAdin5FvQDLngR8LWfh/qUnYxuDmR8BCg==}
+
   '@types/js-yaml@4.0.9':
     resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
 
@@ -3252,10 +3256,6 @@ packages:
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
-
-  iframe-resizer@4.4.2:
-    resolution: {integrity: sha512-2SupFCq9V9osWac4q+PodF0E9QdWY5A9VdCpKrrE7HlDrcIsaTp7D6k14mkGXWoWMS9jCavYusik25wTc0YB2Q==}
-    engines: {node: '>=0.8.0'}
 
   ignore@5.3.1:
     resolution: {integrity: sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==}
@@ -7262,6 +7262,8 @@ snapshots:
     dependencies:
       '@types/unist': 2.0.10
 
+  '@types/iframe-resizer@3.5.13': {}
+
   '@types/js-yaml@4.0.9': {}
 
   '@types/json-schema@7.0.15': {}
@@ -9299,8 +9301,6 @@ snapshots:
       postcss: 8.4.38
 
   ieee754@1.2.1: {}
-
-  iframe-resizer@4.4.2: {}
 
   ignore@5.3.1: {}
 

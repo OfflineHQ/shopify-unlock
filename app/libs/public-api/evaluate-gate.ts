@@ -6,9 +6,9 @@ import {
 } from "./shared-functions.server";
 
 export default async function evaluateGate(args: EvaluateGateArgsSchema) {
-  const verificationResult = await verifySignatureAndCustomerId(args);
-  if (verificationResult) {
-    return verificationResult;
+  const verificationResultError = await verifySignatureAndCustomerId(args);
+  if (verificationResultError) {
+    return verificationResultError;
   }
 
   const payload = await getVaultsPayload(args);

@@ -1,5 +1,5 @@
-import { iframeResizer } from "iframe-resizer";
-
+import { SendMessageType, UnlockIframeStatus } from "@/types";
+import type { IFramePage } from "iframe-resizer";
 import {
   assign,
   createMachine,
@@ -9,27 +9,10 @@ import {
   sendTo,
 } from "xstate";
 
-export const UnlockIframeStatus = {
-  Idle: "idle", // waiting for the session data to be loaded
-  IframeLoading: "iframe-loading", // loading the iframe
-  IframeLoaded: "iframe-loaded", // iframe is loaded but waiting for a signal from the iframe app that it is ready
-  IsReady: "is-ready", // iframe app is ready to receive messages
-  SendingMessage: "sending-message", // sending a message to the iframe app
-  Error: "error", // an error occurred during the process
-};
-
-const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;
-
-export const SendMessageType = {
-  READY: "READY",
-  DISCONNECT: "DISCONNECT",
-  SIGNATURE: "SIGNATURE",
-  OFF_KEY_MINT: "OFF_KEY_MINT",
-  CONNECT_STATUS: "CONNECT_STATUS",
-  CONNECT_TO_SHOPIFY: "CONNECT_TO_SHOPIFY",
-};
-
-async function onMessage({ message }, self) {
+async function onMessage(
+  { message }: { message: IframeResizerMessage },
+  self: any,
+) {
   console.log("Shopify IframeResizer message:", { message, self });
   if (!message?.type) {
     console.warn("No message type found in message", message);
@@ -73,51 +56,17 @@ async function onMessage({ message }, self) {
   }
 }
 
-function setupUnlockIframe({ unlockIframe, self }) {
-  console.log("setupUnlockIframe", unlockIframe, self);
-  return new Promise((resolve, reject) => {
-    if (unlockIframe) {
-      console.log("Unlock iframe already setup");
-      resolve(unlockIframe);
-    } else {
-      console.log("Setting up Unlock iframe with:", UNLOCK_APP_URL);
-      try {
-        const instances = iframeResizer(
-          {
-            log: false,
-            minHeight: 220,
-            checkOrigin: UNLOCK_APP_URL?.startsWith("http://localhost")
-              ? false
-              : [
-                  UNLOCK_APP_URL,
-                  UNLOCK_APP_URL.includes("://www.")
-                    ? UNLOCK_APP_URL.replace("://www.", "://")
-                    : UNLOCK_APP_URL.replace("://", "://www."),
-                ],
-            heightCalculationMethod: "lowestElement",
-            onInit: (iframe) => {
-              console.log("Unlock iframe initialized", iframe, instance);
-              // onInitHandler();
-              resolve(instance);
-            },
-            onMessage: (props) => onMessage(props, self),
-          },
-          "#unlockIframe",
-        );
-        const instance = instances?.[0]?.iFrameResizer;
-        console.log("Unlock iframe instance:", instance);
-        if (!instance) {
-          throw new Error("Iframe instance not found");
-        }
-      } catch (error) {
-        console.error("Failed to initialize iframe", error);
-        reject(error);
-      }
-    }
-  });
+interface SendMessageToIframeInput {
+  iframeParentRef: IFramePage;
+  type: SendMessageType;
+  value: any;
 }
 
-async function sendMessageToIframe({ iframeParentRef, type, value }) {
+async function sendMessageToIframe({
+  iframeParentRef,
+  type,
+  value,
+}: SendMessageToIframeInput) {
   const unlockIframe = iframeParentRef.getSnapshot()?.context?.unlockIframe;
   const childIsReady = iframeParentRef.getSnapshot()?.context?.childIsReady;
   console.log(
