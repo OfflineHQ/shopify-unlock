@@ -29,9 +29,9 @@ export default async function connect(args: ConnectArgsSchema) {
     return json({ message: "Invalid address" }, { status: 403 });
   }
 
-  const verificationResult = await verifySignatureAndCustomerId(args);
-  if (verificationResult) {
-    return verificationResult;
+  const verificationResultError = await verifySignatureAndCustomerId(args);
+  if (verificationResultError) {
+    return verificationResultError;
   }
 
   if (!existingCustomerAddress) {

@@ -6,9 +6,13 @@ import authMachine from "./machines/authMachine";
 
 export const AuthMachineContext = createActorContext(authMachine, {
   // inspect,
-  system: "auth",
+  systemId: "auth",
 });
 
-export function AuthMachineProvider({ children }) {
+export function AuthMachineProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <AuthMachineContext.Provider>{children}</AuthMachineContext.Provider>;
 }
