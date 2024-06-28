@@ -158,7 +158,6 @@ const authMachine = setup({
     sendDisconnectedStateToIframe: sendTo(
       ({ system }) => system.get("unlockIframe"),
       ({ context, event }) => {
-        assertEvent(event, "SEND_MESSAGE_TO_IFRAME");
         return {
           type: "SEND_MESSAGE",
           data: {
@@ -169,9 +168,9 @@ const authMachine = setup({
                 address: context.walletAddress,
               },
               linkedCustomer: context.linkedCustomer,
-              customer: event.customer,
-              product: event.product,
-              cssVariablesAndClasses: event.cssVariablesAndClasses,
+              customer: (event as any).customer,
+              product: (event as any).product,
+              cssVariablesAndClasses: (event as any).cssVariablesAndClasses,
               offKeyStatus: {
                 status: "",
               },
