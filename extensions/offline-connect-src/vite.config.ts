@@ -16,6 +16,13 @@ export default defineConfig(({ mode }) => {
       global: "globalThis",
       "process.env.UNLOCK_APP_URL": JSON.stringify(env.UNLOCK_APP_URL),
     },
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+        "~": path.resolve(__dirname, "../../"),
+      },
+      extensions: [".js", ".ts", ".d.ts", ".jsx", ".tsx", ".json"],
+    },
     build: {
       target: "esnext",
       assetsDir: "",

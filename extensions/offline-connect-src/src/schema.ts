@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DiscountType, GateReactionType } from "../../../types";
+import { DiscountType, GateReactionType } from "~/types";
 
 // Enums
 const GateConditionLogicEnum = z.enum(["any"]);

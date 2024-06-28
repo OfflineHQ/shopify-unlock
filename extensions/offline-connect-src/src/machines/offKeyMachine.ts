@@ -2,7 +2,7 @@ import { evaluateGate as evaluateGateApi, gateContextClient } from "@/gate";
 import type { Vault } from "@/schema";
 import type { ActorRef } from "xstate";
 import { assign, fromPromise, sendTo, setup } from "xstate";
-import { OffKeyState } from "../../../../types";
+import { OffKeyState } from "~/types";
 
 // Define types for the context
 type Context = {

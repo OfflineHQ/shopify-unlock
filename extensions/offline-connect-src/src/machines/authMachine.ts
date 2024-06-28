@@ -8,8 +8,8 @@ import {
   spawnChild,
   stopChild,
 } from "xstate";
-import type { CssVariablesAndClasses } from "../../../../types";
-import { ShopifyCustomerStatus } from "../../../../types";
+import type { CssVariablesAndClasses } from "~/types";
+import { ShopifyCustomerStatus } from "~/types";
 import { connectWallet, gateContextClient, getLinkedCustomer } from "../gate";
 import type { Customer, LinkedCustomer, Product } from "../schema";
 import offKeyMachine from "./offKeyMachine";
