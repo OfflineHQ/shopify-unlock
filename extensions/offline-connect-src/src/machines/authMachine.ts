@@ -77,13 +77,16 @@ const authMachine = setup({
   },
   actions: {
     setUnlocked: assign({ isUnlocked: true }),
-    assignGateContext: ({ event }) => {
-      assertEvent(event, "SET_INIT_DATA");
-      return assign({
-        productId: event.productId,
-        gateId: event.gateId,
-      });
-    },
+    assignGateContext: assign({
+      productId: ({ event }) => {
+        assertEvent(event, "SET_INIT_DATA");
+        return event.productId;
+      },
+      gateId: ({ event }) => {
+        assertEvent(event, "SET_INIT_DATA");
+        return event.gateId;
+      },
+    }),
     logError: ({ event }) => console.error(event),
     assignFetchError: assign({
       fetchError: ({ event }) => (event as any).error,
@@ -96,10 +99,13 @@ const authMachine = setup({
       walletAddress: null,
       isUnlocked: false,
     }),
-    assignCustomerId: ({ event }) => {
-      assertEvent(event, "SET_INIT_DATA");
-      return assign({ customerId: event.customerId });
-    },
+    assignCustomerId: assign({
+      customerId: ({ event }) => {
+        assertEvent(event, "SET_INIT_DATA");
+        console.log("assignCustomerId", event.customerId);
+        return event.customerId;
+      },
+    }),
     assignConnected: assign({
       linkedCustomer: ({ event }) => (event as any).output.linkedCustomer,
       walletAddress: ({ event }) => (event as any).output.walletAddress,

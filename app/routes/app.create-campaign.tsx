@@ -17,8 +17,8 @@ import {
   TextField,
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
+import { CampaignType, DiscountType, GateReactionType } from "@types";
 import { useCallback, useEffect, useState } from "react";
-import { CampaignType, DiscountType, GateReactionType } from "types";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { TargetProductsOrCollections } from "~/libs/campaigns-product-collection/TargetProductsOrCollections";
 import {
