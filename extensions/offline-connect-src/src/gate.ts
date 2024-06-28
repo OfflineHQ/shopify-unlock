@@ -19,13 +19,24 @@ export const gateContextClient: OfflineGateContextClient =
     backingStore: "ajaxApi",
     // @ts-ignore
     shopifyGateContextGenerator: async (data: GateContext) => {
+      console.log("shopifyGateContextGenerator", data);
       try {
-        const existing = await gateContextClient.read();
         if (data.disconnect) {
-          return data.noCustomer
-            ? {}
-            : { linkedCustomer: existing?.linkedCustomer };
+          const disconnectData: GateContext = {
+            walletAddress: undefined,
+            walletVerificationMessage: undefined,
+            walletVerificationSignature: undefined,
+            linkedCustomer: {
+              address: data.noCustomer
+                ? undefined
+                : data.linkedCustomer?.address,
+            },
+            vaults: [],
+          };
+          console.log("disconnectData", disconnectData);
+          return disconnectData;
         }
+        const existing = await gateContextClient.read();
         console.log("existing gate context", { existing, data });
 
         // Merge existing and new data
@@ -92,7 +103,6 @@ export async function getLinkedCustomer() {
       },
     },
   );
-  console.log("getLinkedCustomer response:", response);
   if (!response.ok) {
     const errorData = await response.json();
     console.error("getLinkedCustomer error:", errorData);
@@ -100,6 +110,7 @@ export async function getLinkedCustomer() {
   } else {
     const json = await response.json();
     const validatedData = getLinkedCustomerSchema.parse(json);
+    console.log("getLinkedCustomer response:", validatedData);
     await gateContextClient.write({ linkedCustomer: validatedData });
     return validatedData;
   }
@@ -145,8 +156,8 @@ export async function connectWallet({
   } else {
     const json = await response.json();
     const validatedData = connectWalletSchema.parse(json);
-    await gateContextClient.write(validatedData);
     console.log("connectApi response:", validatedData);
+    await gateContextClient.write(validatedData);
     return validatedData;
   }
 }
@@ -188,6 +199,7 @@ export async function evaluateGate({
   } else {
     const json = await response.json();
     const validatedData = evaluateGateSchema.parse(json);
+    console.log("evaluateGate response:", validatedData);
     await gateContextClient.write(validatedData);
     return validatedData;
   }

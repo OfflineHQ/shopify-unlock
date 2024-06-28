@@ -6,21 +6,6 @@ const GateConditionLogicEnum = z.enum(["any"]);
 const DiscountTypeEnum = z.nativeEnum(DiscountType);
 const GateReactionTypeEnum = z.nativeEnum(GateReactionType);
 
-// Base schemas
-const baseAddressSchema = z.object({
-  address: z.string().min(1),
-});
-
-const baseSignatureSchema = z.object({
-  message: z.string().min(1),
-  signature: z.string().min(1),
-});
-
-const baseProductGateSchema = z.object({
-  productId: z.string().min(1),
-  gateId: z.string().min(1),
-});
-
 // Complex schemas
 const gateConditionSchema = z.object({
   contractAddress: z.string(),

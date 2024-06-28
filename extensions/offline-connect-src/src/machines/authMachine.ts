@@ -70,10 +70,12 @@ const authMachine = setup({
         return connectCustomerWallet(input);
       },
     ),
-    disconnectCustomerWallet: fromPromise(async () => {
-      // Implementation remains the same
-      return disconnectCustomerWallet();
-    }),
+    disconnectCustomerWallet: fromPromise(
+      async ({ input }: { input: { linkedCustomer: LinkedCustomer } }) => {
+        // Implementation remains the same
+        return disconnectCustomerWallet(input.linkedCustomer);
+      },
+    ),
   },
   actions: {
     setUnlocked: assign({ isUnlocked: true }),
@@ -380,6 +382,14 @@ const authMachine = setup({
     [ShopifyCustomerStatus.Disconnecting]: {
       invoke: {
         src: "disconnectCustomerWallet",
+        input: ({ context: { linkedCustomer }, event }) => {
+          if (!linkedCustomer) {
+            throw new Error("linkedCustomer is required");
+          }
+          return {
+            linkedCustomer,
+          };
+        },
         onDone: {
           target: ShopifyCustomerStatus.Disconnected,
           actions: [
@@ -447,6 +457,8 @@ async function initStoreSessionAndCustomer(customerId: string | undefined) {
         disconnect: true,
         noCustomer: true,
         linkedCustomer: {},
+        walletAddress: "",
+        vaults: [],
       });
       sessionUpdated = true;
     }
@@ -529,7 +541,28 @@ async function connectCustomerWallet({
   }
 }
 
-async function disconnectCustomerWallet() {
+async function disconnectCustomerWallet(linkedCustomer: LinkedCustomer) {
   console.log("disconnectCustomerWallet");
-  await gateContextClient.write({ disconnect: true, linkedCustomer: {} });
+  try {
+    const response = await fetch("/cart/clear.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.ok) {
+      await gateContextClient.write({
+        disconnect: true,
+        linkedCustomer,
+        walletAddress: "",
+        vaults: [],
+      });
+      // Soft reload the page
+      window.location.reload();
+    } else {
+      console.error("Failed to clear cart:", response.statusText);
+    }
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+  }
 }
