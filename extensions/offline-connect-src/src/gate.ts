@@ -6,14 +6,6 @@ import {
   getLinkedCustomerSchema,
 } from "./schema";
 
-// TODO: import from offline lib @offline/iframe
-export const OffKeyState = {
-  Unlocked: "Unlocked", // The off-key is unlocked and can be used
-  Locked: "Locked", // The off-key is locked and cannot be used
-  Unlocking: "Unlocking", // The off-key is unlocking (being created)
-  Used: "Used", // The off-key has been used and cannot be used again in this context
-};
-
 export const shopifyUnlockAppProxyUrl = "/apps/offline";
 
 interface OfflineGateContextClient {
