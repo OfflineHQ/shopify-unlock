@@ -1,5 +1,3 @@
-import type { AppConnectProps } from "@/types";
-import { ShopifyCustomerStatus } from "@/types";
 import type { ActorRefFrom } from "xstate";
 import {
   assertEvent,
@@ -10,6 +8,8 @@ import {
   spawnChild,
   stopChild,
 } from "xstate";
+import type { CssVariablesAndClasses } from "../../../../types";
+import { ShopifyCustomerStatus } from "../../../../types";
 import { connectWallet, gateContextClient, getLinkedCustomer } from "../gate";
 import type { Customer, LinkedCustomer, Product } from "../schema";
 import offKeyMachine from "./offKeyMachine";
@@ -32,9 +32,9 @@ const authMachine = setup({
     events: {} as
       | {
           type: "SET_INIT_DATA";
-          customerId: string;
-          productId: string;
-          gateId: string;
+          customerId?: string;
+          productId?: string;
+          gateId?: string;
         }
       | {
           type: "CONNECT_WALLET";
@@ -46,7 +46,7 @@ const authMachine = setup({
           type: "SEND_MESSAGE_TO_IFRAME";
           customer?: Customer;
           product?: Product;
-          cssVariablesAndClasses?: AppConnectProps["settingsCssVariables"];
+          cssVariablesAndClasses?: CssVariablesAndClasses;
         }
       | { type: "IFRAME_MESSAGE_RECEIVED"; data: { type: string; value?: any } }
       | { type: "UNLOCKED" },
@@ -114,6 +114,7 @@ const authMachine = setup({
     // assignReconnected: assign({
     //   isReconnected: true,
     // }),
+    // @ts-ignore
     spawnIframeActor: spawnChild(unlockIframeMachine, {
       id: "unlockIframe",
       systemId: "unlockIframe",
@@ -122,9 +123,11 @@ const authMachine = setup({
       }),
     }),
     spawnOffKeyActor: assign({
+      // @ts-ignore
       brandOffKeyRef: ({ spawn, context, self }) =>
         !context.brandOffKeyRef
-          ? spawn(offKeyMachine, {
+          ? // @ts-ignore
+            spawn(offKeyMachine, {
               id: "brandOffKey",
               systemId: "brandOffKey",
               input: {

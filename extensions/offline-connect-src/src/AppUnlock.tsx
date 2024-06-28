@@ -1,12 +1,14 @@
 import IframeResizer from "@iframe-resizer/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useSelector } from "@xstate/react";
+import type { IFramePage } from "iframe-resizer";
 import { useEffect, useMemo } from "react";
+import type { SettingsCssVariables } from "../../../types";
 import { AuthMachineContext, AuthMachineProvider } from "./AuthMachineProvider";
 import { disableBuyButtons, enableBuyButtons, getGate } from "./gate";
-import { UnlockIframeStatus } from "./machines/unlockIframeMachine";
+import type { UnlockIframeActor } from "./machines/unlockIframeMachine";
 import type { Customer, Product } from "./schema";
-import type { SettingsCssVariables } from "./types";
+import { UnlockIframeStatus } from "./types";
 import { hexToHsl } from "./utils/colors";
 
 // const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;
@@ -18,16 +20,15 @@ const App = ({
   product,
 }: AppUnlockProps) => {
   const authActorRef = AuthMachineContext.useActorRef();
-  const unlockIframeRef = authActorRef.system.get("unlockIframe");
+  const unlockIframeRef = authActorRef.system.get(
+    "unlockIframe",
+  ) as UnlockIframeActor;
   const isChildIframeReady = useSelector(
     unlockIframeRef,
     (snapshot) => snapshot.context.childIsReady,
   );
   const walletAddress = AuthMachineContext.useSelector(
     (snapshot) => snapshot.context.walletAddress,
-  );
-  const isReconnected = AuthMachineContext.useSelector(
-    (snapshot) => snapshot.context.isReconnected,
   );
   const isInitMessageToIframeNotSent = AuthMachineContext.useSelector(
     (snapshot) => !snapshot.context.initMessageToIframeSent,
@@ -48,7 +49,6 @@ const App = ({
   });
 
   const {
-    requirements,
     reaction,
     configuration: { id: gateConfigurationGid },
   } = getGate();
@@ -125,7 +125,7 @@ const App = ({
       <IframeResizer
         license="GPLv3"
         className="offline--iframe"
-        forwardRef={(iframeRef) => {
+        forwardRef={(iframeRef: IFramePage) => {
           unlockIframeRef.send({
             type: "IFRAME_LOADED",
             iframeRef,
