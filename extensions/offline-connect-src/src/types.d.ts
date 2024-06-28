@@ -1,4 +1,4 @@
-import type { SettingsCssVariables } from "../../../types";
+import type { SettingsCssVariables } from "~/types";
 
 export interface AppConnectProps {
   customer?: Customer;

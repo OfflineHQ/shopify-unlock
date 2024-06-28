@@ -1,14 +1,14 @@
+import { UnlockIframeStatus } from "@/types";
 import IframeResizer from "@iframe-resizer/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useSelector } from "@xstate/react";
 import type { IFramePage } from "iframe-resizer";
 import { useEffect, useMemo } from "react";
-import type { SettingsCssVariables } from "../../../types";
+import type { SettingsCssVariables } from "~/types";
 import { AuthMachineContext, AuthMachineProvider } from "./AuthMachineProvider";
 import { disableBuyButtons, enableBuyButtons, getGate } from "./gate";
 import type { UnlockIframeActor } from "./machines/unlockIframeMachine";
 import type { Customer, Product } from "./schema";
-import { UnlockIframeStatus } from "./types";
 import { hexToHsl } from "./utils/colors";
 
 // const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;
