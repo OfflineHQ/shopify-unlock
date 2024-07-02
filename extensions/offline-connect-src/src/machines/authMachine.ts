@@ -1,7 +1,11 @@
+import { from, interval } from "rxjs";
+import { map, switchMap } from "rxjs/operators";
 import type { ActorRefFrom } from "xstate";
+
 import {
   assertEvent,
   assign,
+  fromObservable,
   fromPromise,
   sendTo,
   setup,
@@ -11,9 +15,30 @@ import {
 import type { CssVariablesAndClasses } from "~/types";
 import { ShopifyCustomerStatus } from "~/types";
 import { connectWallet, gateContextClient, getLinkedCustomer } from "../gate";
-import type { Customer, LinkedCustomer, Product } from "../schema";
+import {
+  connectedSchema,
+  type Customer,
+  type LinkedCustomer,
+  type Product,
+} from "../schema";
 import offKeyMachine from "./offKeyMachine";
 import unlockIframeMachine from "./unlockIframeMachine";
+
+const pollConnectionState = fromObservable(({ input }) => {
+  return interval(2000).pipe(
+    switchMap(() => from(gateContextClient.read())),
+    map((res) => {
+      const event = {
+        type: "CONNECTION_STATE_UPDATED",
+        walletAddress: res?.walletAddress,
+        linkedCustomer: res?.linkedCustomer,
+        walletVerificationMessage: res?.walletVerificationMessage,
+        walletVerificationSignature: res?.walletVerificationSignature,
+      };
+      return event;
+    }),
+  );
+});
 
 const authMachine = setup({
   types: {
@@ -49,7 +74,14 @@ const authMachine = setup({
           cssVariablesAndClasses?: CssVariablesAndClasses;
         }
       | { type: "IFRAME_MESSAGE_RECEIVED"; data: { type: string; value?: any } }
-      | { type: "UNLOCKED" },
+      | { type: "UNLOCKED" }
+      | {
+          type: "CONNECTION_STATE_UPDATED";
+          walletAddress: string | null;
+          linkedCustomer: LinkedCustomer | null;
+          walletVerificationMessage: string | null;
+          walletVerificationSignature: string | null;
+        },
     input: {} as {
       customerId: string;
       productId: string;
@@ -76,6 +108,7 @@ const authMachine = setup({
         return disconnectCustomerWallet(input.linkedCustomer);
       },
     ),
+    pollConnectionState,
   },
   actions: {
     setUnlocked: assign({ isUnlocked: true }),
@@ -104,7 +137,6 @@ const authMachine = setup({
     assignCustomerId: assign({
       customerId: ({ event }) => {
         assertEvent(event, "SET_INIT_DATA");
-        console.log("assignCustomerId", event.customerId);
         return event.customerId;
       },
     }),
@@ -207,6 +239,16 @@ const authMachine = setup({
     assignInitMessageToIframeSent: assign({
       initMessageToIframeSent: true,
     }),
+    setConnectedFromPoll: assign({
+      walletAddress: ({ event }) => {
+        assertEvent(event, "CONNECTION_STATE_UPDATED");
+        return event.walletAddress;
+      },
+      linkedCustomer: ({ event }) => {
+        assertEvent(event, "CONNECTION_STATE_UPDATED");
+        return event.linkedCustomer;
+      },
+    }),
   },
   guards: {
     isConnected: ({ event }) => (event as any)?.output?.walletAddress,
@@ -215,8 +257,18 @@ const authMachine = setup({
     initMessageToIframeNotSent: ({ context }) =>
       !context.initMessageToIframeSent,
     offKeyActorNotSpawned: ({ context }) => !context.brandOffKeyRef,
+    connectionPollConnected: ({ event }) => {
+      assertEvent(event, "CONNECTION_STATE_UPDATED");
+      return (
+        !!event.walletAddress &&
+        !!event.linkedCustomer &&
+        !!event.walletVerificationMessage &&
+        !!event.walletVerificationSignature
+      );
+    },
   },
 }).createMachine({
+  /** @xstate-layout N4IgpgJg5mDOIC5QEMCuAXAFgYgJIDEAlAQQFkBRAfQoGUbiBxKw8gYXNwDVyARAbQAMAXUSgADgHtYAS3TSJAO1EgAHogCMAJgA0IAJ4bNAXxO6FEiHGVosyyTLmLlahJoCcAOjcAOACwBmAHYAVl0DBHV1fw9fYP8tYJMTIA */
   id: "auth",
   initial: ShopifyCustomerStatus.Idle,
   context: {
@@ -230,6 +282,7 @@ const authMachine = setup({
     connectError: undefined,
     brandOffKeyRef: null,
     isUnlocked: false,
+    connectionPollRef: null,
   },
   // for systemId check https://dev.to/ibrocodes/unleashing-the-power-of-actors-in-frontend-application-development-a9b
   entry: ["spawnIframeActor"],
@@ -322,6 +375,25 @@ const authMachine = setup({
       },
     },
     [ShopifyCustomerStatus.Disconnected]: {
+      invoke: {
+        src: "pollConnectionState",
+        id: "connectionPoller",
+        onSnapshot: {
+          actions: ({ event, self }) => {
+            if (!event.snapshot.context) {
+              return;
+            }
+            const res = connectedSchema.safeParse(event.snapshot.context);
+            if (!res.success) {
+              return;
+            }
+            self.send({
+              type: "CONNECTION_STATE_UPDATED",
+              ...res.data,
+            });
+          },
+        },
+      },
       on: {
         CONNECT_WALLET: ShopifyCustomerStatus.Connecting,
         SEND_MESSAGE_TO_IFRAME: {
@@ -331,6 +403,13 @@ const authMachine = setup({
           ],
           guard: "initMessageToIframeNotSent",
         },
+        CONNECTION_STATE_UPDATED: [
+          {
+            guard: "connectionPollConnected",
+            target: ShopifyCustomerStatus.Connected,
+            actions: ["setConnectedFromPoll"],
+          },
+        ],
       },
     },
     [ShopifyCustomerStatus.Connecting]: {
