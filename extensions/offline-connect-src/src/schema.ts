@@ -65,6 +65,13 @@ const gateContextSchema = z.object({
   vaults: z.array(vaultSchema).optional(),
 });
 
+export const connectedSchema = z.object({
+  walletAddress: z.string().min(1),
+  walletVerificationMessage: z.string().min(1),
+  walletVerificationSignature: z.string().min(1),
+  linkedCustomer: linkedCustomerSchema,
+});
+
 const productSchema = z.object({
   id: z.string(),
   title: z.string(),
