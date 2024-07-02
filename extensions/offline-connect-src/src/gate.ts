@@ -1,5 +1,10 @@
 import { getGateContextClient } from "@shopify/gate-context-client";
-import type { GateContext, LinkedCustomer, Vault } from "./schema";
+import type {
+  GateContectWrite,
+  GateContext,
+  LinkedCustomer,
+  Vault,
+} from "./schema";
 import {
   connectWalletSchema,
   evaluateGateSchema,
@@ -10,7 +15,7 @@ export const shopifyUnlockAppProxyUrl = "/apps/offline";
 
 interface OfflineGateContextClient {
   read: () => Promise<GateContext | null>;
-  write: (data: GateContext) => Promise<void>;
+  write: (data: GateContectWrite) => Promise<void>;
 }
 
 // @ts-ignore
