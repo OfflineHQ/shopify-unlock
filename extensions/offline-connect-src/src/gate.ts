@@ -198,6 +198,7 @@ export async function evaluateGate({
     throw errorData;
   } else {
     const json = await response.json();
+    console.log("evaluateGate json", { json });
     const validatedData = evaluateGateSchema.parse(json);
     console.log("evaluateGate response:", validatedData);
     await gateContextClient.write(validatedData);

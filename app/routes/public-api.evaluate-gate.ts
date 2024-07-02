@@ -2,7 +2,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { z } from "zod";
 import evaluateGate from "~/libs/public-api/evaluate-gate";
-import { evaluateGateArgsSchema } from "~/libs/public-api/schema";
+import { evaluateGateParamsSchema } from "~/libs/public-api/schema";
 import { authenticate } from "~/shopify.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -17,14 +17,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   try {
     const rawData = await request.json();
     console.log({ rawData });
-    const validatedData = evaluateGateArgsSchema.parse(rawData);
+    const validatedData = evaluateGateParamsSchema.parse(rawData);
 
     const result = await evaluateGate({
       ...validatedData,
       shopDomain: session.shop,
       customerId: loggedInCustomerId,
     });
-
     return result;
   } catch (error) {
     if (error instanceof z.ZodError) {
