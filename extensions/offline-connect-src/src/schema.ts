@@ -83,7 +83,11 @@ export const getLinkedCustomerSchema = linkedCustomerSchema;
 
 export const connectWalletSchema = gateContextSchema;
 
-export const evaluateGateSchema = connectWalletSchema;
+export const evaluateGateSchema = z
+  .object({
+    vaults: z.array(vaultSchema),
+  })
+  .strict();
 
 // Export types
 

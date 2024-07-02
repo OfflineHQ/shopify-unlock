@@ -75,17 +75,11 @@ export const isGateEvaluated = async ({
       gateId,
       vaults: context?.vaults || [],
     });
-    const evaluation = gateEvaluation(matchingVault);
-    console.log("isGateEvaluated evaluation before", evaluation);
-    if (evaluation.owned || evaluation.mintable) {
-      return evaluation;
+    if (matchingVault) {
+      return gateEvaluation(matchingVault);
     }
-    return evaluateGate({
-      walletAddress,
-      customerId,
-      productId,
-      gateId,
-    });
+    // If there's no matching vault just return that we can mint
+    return { owned: false, mintable: true, used: false };
   } catch (error) {
     console.error("Error checking if off-key is owned", error);
     throw error;
@@ -113,9 +107,11 @@ export const evaluateGate = async ({
       gateId,
       vaults: context?.vaults || [],
     });
-    const evaluation = gateEvaluation(matchingVault);
-    if (evaluation.owned || !evaluation.mintable) {
-      throw new Error("Off-key is already owned or not mintable");
+    if (matchingVault) {
+      const evaluation = gateEvaluation(matchingVault);
+      if (evaluation.owned || evaluation.used) {
+        throw new Error("Off-key is already owned or used");
+      }
     }
     const { vaults: updatedVaults } = await evaluateGateApi({
       address: walletAddress,
@@ -123,6 +119,9 @@ export const evaluateGate = async ({
       signature: context?.walletVerificationSignature,
       productId,
       gateId,
+    });
+    console.log("evaluateGateApi", {
+      updatedVaults,
     });
     return gateEvaluation(
       getMatchingVault({ gateId, vaults: updatedVaults || [] }),
