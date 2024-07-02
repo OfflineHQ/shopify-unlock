@@ -99,5 +99,6 @@ export type Customer = z.infer<typeof customerSchema>;
 export type LinkedCustomer = z.infer<typeof linkedCustomerSchema>;
 export type Vault = z.infer<typeof vaultSchema>;
 export type GateContext = z.infer<typeof gateContextSchema>;
+export type GateContectWrite = Partial<GateContext>;
 export type Product = z.infer<typeof productSchema>;
 export type Gate = z.infer<typeof gateSchema>;
