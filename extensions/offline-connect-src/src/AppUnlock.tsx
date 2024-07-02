@@ -11,8 +11,6 @@ import type { UnlockIframeActor } from "./machines/unlockIframeMachine";
 import type { Customer, Product } from "./schema";
 import { hexToHsl } from "./utils/colors";
 
-// const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;
-
 const App = ({
   settingsCssVariables,
   customer,
@@ -131,16 +129,6 @@ const App = ({
             iframeRef,
           });
         }}
-        // checkOrigin={
-        //   UNLOCK_APP_URL?.startsWith("http://localhost")
-        //     ? false
-        //     : [
-        //         UNLOCK_APP_URL,
-        //         UNLOCK_APP_URL.includes("://www.")
-        //           ? UNLOCK_APP_URL.replace("://www.", "://")
-        //           : UNLOCK_APP_URL.replace("://", "://www."),
-        //       ]
-        // }
         tabIndex={0}
         inPageLinks
         onMessage={(messageData) => {
@@ -159,20 +147,6 @@ const App = ({
         src={src}
         style={{ width: "100%", height: "220px" }}
       />
-      // <iframe
-      //   title="Offline Unlock"
-      //   id="unlockIframe"
-      //   className="offline--iframe"
-      //   allowFullScreen
-      //   tabIndex="0" /* Make iframe focusable */
-      //   width="100%"
-      //   src={src}
-      //   onLoad={() => {
-      //     console.log("Shopify Host, iframe loaded");
-      //     unlockIframeRef.send({ type: "IFRAME_LOADED" });
-      //     // setupOfflineIframe();
-      //   }}
-      // />
     );
   }, [gateId, isIframeIdle]); // make sure to load the iframe only once unless gateId changes
 

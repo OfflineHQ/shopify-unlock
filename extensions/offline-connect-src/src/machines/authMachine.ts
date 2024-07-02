@@ -133,7 +133,7 @@ const authMachine = setup({
     spawnOffKeyActor: assign({
       // @ts-ignore
       brandOffKeyRef: ({ spawn, context, self }) =>
-        !context.brandOffKeyRef
+        !context.brandOffKeyRef && context.gateId && context.productId
           ? // @ts-ignore
             spawn(offKeyMachine, {
               id: "brandOffKey",
