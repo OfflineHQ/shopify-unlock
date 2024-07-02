@@ -1,14 +1,18 @@
-// import { createBrowserInspector } from "@statelyai/inspect";
+import { createBrowserInspector } from "@statelyai/inspect";
 import { createActorContext } from "@xstate/react";
 import authMachine from "./machines/authMachine";
 
-// const { inspect } = createBrowserInspector();
+const { inspect } = createBrowserInspector();
 
 export const AuthMachineContext = createActorContext(authMachine, {
-  // inspect,
-  system: "auth",
+  inspect,
+  systemId: "auth",
 });
 
-export function AuthMachineProvider({ children }) {
+export function AuthMachineProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <AuthMachineContext.Provider>{children}</AuthMachineContext.Provider>;
 }

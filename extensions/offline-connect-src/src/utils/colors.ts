@@ -1,4 +1,4 @@
-export function hexToHsla(hex) {
+export function hexToHsla(hex: string) {
   if (!hex) hex = "#00000000";
   let r = parseInt(hex.substring(1, 3), 16) / 255;
   let g = parseInt(hex.substring(3, 5), 16) / 255;
@@ -34,15 +34,16 @@ export function hexToHsla(hex) {
         break;
     }
 
+    h = h ?? 0; // Ensure h is defined
     h /= 6;
   }
 
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(
-    l * 100
+    l * 100,
   )}% / ${a}`;
 }
 
-export function hexToHsl(hex) {
+export function hexToHsl(hex: string) {
   const hsla = hexToHsla(hex);
-  return hsla.substring(0, hsla.lastIndexOf('/'));
+  return hsla.substring(0, hsla.lastIndexOf("/"));
 }

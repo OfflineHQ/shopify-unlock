@@ -19,6 +19,9 @@ const GET_PRODUCT_GATE_QUERY = `#graphql
             key: "reaction") {
               value
           }
+          orderLimit: metafield(namespace: "offline-gate", key: "orderLimit") {
+            value
+          }
         }
       }
     }

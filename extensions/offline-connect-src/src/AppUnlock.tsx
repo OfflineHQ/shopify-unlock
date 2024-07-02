@@ -1,26 +1,32 @@
+import { UnlockIframeStatus } from "@/types";
 import IframeResizer from "@iframe-resizer/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useSelector } from "@xstate/react";
+import type { IFramePage } from "iframe-resizer";
 import { useEffect, useMemo } from "react";
+import type { SettingsCssVariables } from "~/types";
 import { AuthMachineContext, AuthMachineProvider } from "./AuthMachineProvider";
 import { disableBuyButtons, enableBuyButtons, getGate } from "./gate";
-import { UnlockIframeStatus } from "./machines/unlockIframeMachine";
+import type { UnlockIframeActor } from "./machines/unlockIframeMachine";
+import type { Customer, Product } from "./schema";
 import { hexToHsl } from "./utils/colors";
 
-// const UNLOCK_APP_URL = process.env.UNLOCK_APP_URL;
-
-const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
+const App = ({
+  settingsCssVariables,
+  customer,
+  loginUrl,
+  product,
+}: AppUnlockProps) => {
   const authActorRef = AuthMachineContext.useActorRef();
-  const unlockIframeRef = authActorRef.system.get("unlockIframe");
+  const unlockIframeRef = authActorRef.system.get(
+    "unlockIframe",
+  ) as UnlockIframeActor;
   const isChildIframeReady = useSelector(
     unlockIframeRef,
     (snapshot) => snapshot.context.childIsReady,
   );
   const walletAddress = AuthMachineContext.useSelector(
     (snapshot) => snapshot.context.walletAddress,
-  );
-  const isReconnected = AuthMachineContext.useSelector(
-    (snapshot) => snapshot.context.isReconnected,
   );
   const isInitMessageToIframeNotSent = AuthMachineContext.useSelector(
     (snapshot) => !snapshot.context.initMessageToIframeSent,
@@ -41,7 +47,6 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
   });
 
   const {
-    requirements,
     reaction,
     configuration: { id: gateConfigurationGid },
   } = getGate();
@@ -118,23 +123,13 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
       <IframeResizer
         license="GPLv3"
         className="offline--iframe"
-        forwardRef={(iframeRef) => {
+        forwardRef={(iframeRef: IFramePage) => {
           unlockIframeRef.send({
             type: "IFRAME_LOADED",
             iframeRef,
           });
         }}
-        // checkOrigin={
-        //   UNLOCK_APP_URL?.startsWith("http://localhost")
-        //     ? false
-        //     : [
-        //         UNLOCK_APP_URL,
-        //         UNLOCK_APP_URL.includes("://www.")
-        //           ? UNLOCK_APP_URL.replace("://www.", "://")
-        //           : UNLOCK_APP_URL.replace("://", "://www."),
-        //       ]
-        // }
-        tabIndex="0"
+        tabIndex={0}
         inPageLinks
         onMessage={(messageData) => {
           console.log("Message received from iframe", messageData);
@@ -152,20 +147,6 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
         src={src}
         style={{ width: "100%", height: "220px" }}
       />
-      // <iframe
-      //   title="Offline Unlock"
-      //   id="unlockIframe"
-      //   className="offline--iframe"
-      //   allowFullScreen
-      //   tabIndex="0" /* Make iframe focusable */
-      //   width="100%"
-      //   src={src}
-      //   onLoad={() => {
-      //     console.log("Shopify Host, iframe loaded");
-      //     unlockIframeRef.send({ type: "IFRAME_LOADED" });
-      //     // setupOfflineIframe();
-      //   }}
-      // />
     );
   }, [gateId, isIframeIdle]); // make sure to load the iframe only once unless gateId changes
 
@@ -188,12 +169,24 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
   );
 };
 
-export const App = ({ settingsCssVariables, customer, loginUrl, product }) => {
-  console.log("App gates:", window.myAppGate);
+export interface AppUnlockProps {
+  settingsCssVariables: SettingsCssVariables;
+  customer?: Customer;
+  loginUrl?: string;
+  product: Product;
+}
+
+export const AppUnlock = ({
+  settingsCssVariables,
+  customer,
+  loginUrl,
+  product,
+}: AppUnlockProps) => {
+  console.log("App gates:", window.myAppGates);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthMachineProvider>
-        <_App
+        <App
           settingsCssVariables={settingsCssVariables}
           customer={customer}
           loginUrl={loginUrl}

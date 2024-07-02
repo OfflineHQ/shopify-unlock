@@ -1,14 +1,14 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "856a9b0ebc152239f6a6ce4743e0c0ce"
+client_id = "c63bcb7cffdc32d2618c7241c50ca1ff"
 extension_directories = [
   "extensions/offline-discount",
   "extensions/offline-exclusive-development",
   "extensions/offline-connect"
 ]
-name = "Offline Unlock Remix"
-handle = "offline-unlock-remix"
-application_url = "https://diana-calendar-role-licenses.trycloudflare.com"
+name = "Offline Unlock Development"
+handle = "offline-unlock-development"
+application_url = "https://serving-point-cubic-eating.trycloudflare.com"
 embedded = true
 
 [build]
@@ -18,19 +18,19 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_discounts,read_gates,read_locales,write_discounts,write_gates,write_products"
+scopes = "read_discounts,read_gates,read_locales,read_themes,write_discounts,write_gates,write_products"
 
 [auth]
 redirect_urls = [
-  "https://diana-calendar-role-licenses.trycloudflare.com/auth/callback",
-  "https://diana-calendar-role-licenses.trycloudflare.com/auth/shopify/callback",
-  "https://diana-calendar-role-licenses.trycloudflare.com/api/auth/callback"
+  "https://serving-point-cubic-eating.trycloudflare.com/auth/callback",
+  "https://serving-point-cubic-eating.trycloudflare.com/auth/shopify/callback",
+  "https://serving-point-cubic-eating.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "unstable"
 
 [app_proxy]
-url = "https://diana-calendar-role-licenses.trycloudflare.com"
+url = "https://serving-point-cubic-eating.trycloudflare.com"
 subpath = "offline"
 prefix = "apps"
