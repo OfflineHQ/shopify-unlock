@@ -1,11 +1,3 @@
-import type { SettingsCssVariables } from "~/types";
-
-export interface AppConnectProps {
-  customer?: Customer;
-  loginUrl?: string;
-  settingsCssVariables?: SettingsCssVariables;
-}
-
 declare global {
   interface Window {
     myAppGates: Gate[];

@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Development"
 handle = "offline-unlock-development"
-application_url = "https://condos-patients-rolls-mechanics.trycloudflare.com"
+application_url = "https://serving-point-cubic-eating.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,15 +22,15 @@ scopes = "read_discounts,read_gates,read_locales,read_themes,write_discounts,wri
 
 [auth]
 redirect_urls = [
-  "https://condos-patients-rolls-mechanics.trycloudflare.com/auth/callback",
-  "https://condos-patients-rolls-mechanics.trycloudflare.com/auth/shopify/callback",
-  "https://condos-patients-rolls-mechanics.trycloudflare.com/api/auth/callback"
+  "https://serving-point-cubic-eating.trycloudflare.com/auth/callback",
+  "https://serving-point-cubic-eating.trycloudflare.com/auth/shopify/callback",
+  "https://serving-point-cubic-eating.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "unstable"
 
 [app_proxy]
-url = "https://condos-patients-rolls-mechanics.trycloudflare.com"
+url = "https://serving-point-cubic-eating.trycloudflare.com"
 subpath = "offline"
 prefix = "apps"
