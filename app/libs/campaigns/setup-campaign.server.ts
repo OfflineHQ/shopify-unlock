@@ -1,7 +1,9 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
+import type { DiscountType, GateReaction, GateRequirement } from "types";
+import { GateConditionLogic, GateReactionType } from "types";
 import setupProductDiscount from "../campaigns-discount/setup-product-discount.server";
 import { getProductsGatesMinimal } from "./get-products-gates.server";
-import { PerkTypeEnum, type CampaignFormData } from "./schema";
+import { type CampaignFormData } from "./schema";
 import setupCampaignProductSubject from "./setup-campaign-product-subject.server";
 
 const CREATE_GATE_CONFIGURATION_MUTATION = `#graphql
@@ -65,9 +67,9 @@ export default async function setupCampaign({
     throw new Error("App namespace is required");
   }
   const exclusiveAccess =
-    campaignForm.perkType === PerkTypeEnum.ExclusiveAccess;
-  const gateConfigurationRequirements = {
-    logic: "ANY",
+    campaignForm.perkType === GateReactionType.ExclusiveAccess;
+  const gateConfigurationRequirements: GateRequirement = {
+    logic: GateConditionLogic.Any,
     conditions: [
       {
         contractAddress: "",
@@ -75,17 +77,23 @@ export default async function setupCampaign({
       },
     ],
   };
-  const gateConfigurationReaction = exclusiveAccess
+  if (
+    !exclusiveAccess &&
+    (!campaignForm.discountType || !campaignForm.discount)
+  ) {
+    throw new Error("Discount type and value are required");
+  }
+  const gateConfigurationReaction: GateReaction = exclusiveAccess
     ? {
         name: campaignForm.name,
-        type: "exclusive_access",
+        type: GateReactionType.ExclusiveAccess,
       }
     : {
         name: campaignForm.name,
-        type: "discount",
+        type: GateReactionType.Discount,
         discount: {
-          type: campaignForm.discountType,
-          value: campaignForm.discount,
+          type: campaignForm.discountType as DiscountType,
+          value: campaignForm.discount as number,
         },
       };
   const gateConfiguration = await graphql(CREATE_GATE_CONFIGURATION_MUTATION, {

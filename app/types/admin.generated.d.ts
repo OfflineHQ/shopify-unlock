@@ -157,7 +157,7 @@ export type GetProductGateQuery = { product?: AdminTypes.Maybe<{ gates: Array<(
       Pick<AdminTypes.GateSubject, 'id' | 'active'>
       & { configuration: (
         Pick<AdminTypes.GateConfiguration, 'id' | 'name' | 'handle'>
-        & { requirements?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>>, reaction?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>> }
+        & { requirements?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>>, reaction?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>>, orderLimit?: AdminTypes.Maybe<Pick<AdminTypes.Metafield, 'value'>> }
       ) }
     )> }> };
 
@@ -168,7 +168,7 @@ interface GeneratedQueryTypes {
   "#graphql\n  query GetGateConfigurations($query: String!, $first: Int!) {\n    gateConfigurations(query: $query, first: $first) {\n      nodes {\n        id\n        name\n        handle\n        requirements: metafield(namespace: \"offline-gate\",\n          key: \"requirements\") {\n            value\n        }\n        reaction: metafield(namespace: \"offline-gate\",\n          key: \"reaction\") {\n            value\n        }\n        discountId: metafield(namespace: \"offline-gate\",\n          key: \"discount-id\") {\n            value\n        }\n        subjectBindings(first: $first, includeInactive: true) {\n          nodes {\n            id\n            active\n\t    subject {\n\t\t... on Product {\n\t\t\ttitle\n\t\t\tid\n\t\t}\n\t    }\n          }\n        }\n        createdAt\n        updatedAt\n      }\n    }\n  }\n": {return: GetGateConfigurationsQuery, variables: GetGateConfigurationsQueryVariables},
   "#graphql\nquery RetrieveProductsGatesMinimal($queryString: String!, $first: Int!){\n  products(query: $queryString, first: $first) {\n    nodes {\n      id\n      gates(includeInactive: true) {\n        id\n        active\n        configuration {\n          handle\n        }\n      }\n    }\n  }\n}\n": {return: RetrieveProductsGatesMinimalQuery, variables: RetrieveProductsGatesMinimalQueryVariables},
   "#graphql\n  query GetShopLocales {\n\tshopLocales {\n\t\tlocale\n    name\n\t\tprimary\n\t\tpublished\n    }\n  }\n": {return: GetShopLocalesQuery, variables: GetShopLocalesQueryVariables},
-  "#graphql\n  query GetProductGate($productGid: ID!) {\n\tproduct(id: $productGid) {\n      gates(includeInactive: true) {\n        id\n        active\n        configuration {\n          id\n          name\n          handle\n          requirements: metafield(namespace: \"offline-gate\",\n            key: \"requirements\") {\n              value\n          }\n          reaction: metafield(namespace: \"offline-gate\",\n            key: \"reaction\") {\n              value\n          }\n        }\n      }\n    }\n  }": {return: GetProductGateQuery, variables: GetProductGateQueryVariables},
+  "#graphql\n  query GetProductGate($productGid: ID!) {\n\tproduct(id: $productGid) {\n      gates(includeInactive: true) {\n        id\n        active\n        configuration {\n          id\n          name\n          handle\n          requirements: metafield(namespace: \"offline-gate\",\n            key: \"requirements\") {\n              value\n          }\n          reaction: metafield(namespace: \"offline-gate\",\n            key: \"reaction\") {\n              value\n          }\n          orderLimit: metafield(namespace: \"offline-gate\", key: \"orderLimit\") {\n            value\n          }\n        }\n      }\n    }\n  }": {return: GetProductGateQuery, variables: GetProductGateQueryVariables},
 }
 
 interface GeneratedMutationTypes {

@@ -1,6 +1,6 @@
 {% schema %}
 {
-  "name": "Offline Connect",
+  "name": "Offline Unlock",
   "target": "section",
   "templates": ["product"],
   "settings": [
@@ -142,6 +142,7 @@
   data-product_id="{{ product.id }}"
   data-product_available="{{ product.available }}"
   data-product_title="{{ product.title }}"
+  data-product_price="{{ product.price }}"
   data-settings_css_variables="{{ block.settings | json | escape }}"
   data-customer_id="{{ customer.id }}"
   data-customer_email="{{ customer.email }}"
@@ -172,7 +173,7 @@
       window.myAppGates = data;
       var script = document.createElement('script');
       script.type = 'module';
-      script.src = "{{ 'index.js' | asset_url }}";
+      script.src = "{{ 'unlock.js' | asset_url }}";
       document.body.appendChild(script);
       var link = document.createElement('link');
       link.rel = 'stylesheet';
