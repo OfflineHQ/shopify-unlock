@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Development"
 handle = "offline-unlock-development"
-application_url = "https://kill-plot-lcd-apnic.trycloudflare.com"
+application_url = "https://half-warming-jpeg-stunning.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,15 +22,15 @@ scopes = "read_discounts,read_gates,read_locales,read_themes,write_discounts,wri
 
 [auth]
 redirect_urls = [
-  "https://kill-plot-lcd-apnic.trycloudflare.com/auth/callback",
-  "https://kill-plot-lcd-apnic.trycloudflare.com/auth/shopify/callback",
-  "https://kill-plot-lcd-apnic.trycloudflare.com/api/auth/callback"
+  "https://half-warming-jpeg-stunning.trycloudflare.com/auth/callback",
+  "https://half-warming-jpeg-stunning.trycloudflare.com/auth/shopify/callback",
+  "https://half-warming-jpeg-stunning.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "unstable"
 
 [app_proxy]
-url = "https://kill-plot-lcd-apnic.trycloudflare.com"
+url = "https://half-warming-jpeg-stunning.trycloudflare.com"
 subpath = "offline"
 prefix = "apps"
