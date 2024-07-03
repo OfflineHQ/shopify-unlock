@@ -16,7 +16,6 @@ EXPOSE 3000
 WORKDIR /app
 COPY . .
 
-ENV NODE_ENV=production
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -29,5 +28,7 @@ RUN pnpm run build
 
 # Remove dev dependencies
 RUN pnpm prune --prod
+
+ENV NODE_ENV=production
 
 CMD ["pnpm", "run", "docker-start"]
