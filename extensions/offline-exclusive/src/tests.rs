@@ -2,12 +2,10 @@ use super::*;
 use shopify_function::{run_function_with_input, Result};
 use std::env;
 
-
 // Setup function to set the environment variable before running tests
 fn setup() {
     env::set_var("OFFLINE_GATES_SHOPIFY_SECRET", "secret-key");
 }
-
 
 #[test]
 fn test_errors_without_valid_gate_context() -> Result<()> {
@@ -61,7 +59,6 @@ fn test_errors_without_valid_gate_context() -> Result<()> {
     assert_eq!(result, expected);
     Ok(())
 }
-
 
 #[test]
 fn test_no_errors_valid_gate_context() -> Result<()> {
@@ -198,10 +195,13 @@ fn test_valid_hmac_with_single_product_variant_under_order_limit() -> Result<()>
             }
         "#,
     )?;
-    assert!(result.errors.is_empty(), "Expected no errors, but found some: {:?}", result.errors);
+    assert!(
+        result.errors.is_empty(),
+        "Expected no errors, but found some: {:?}",
+        result.errors
+    );
     Ok(())
 }
-
 
 #[test]
 fn test_valid_hmac_with_multiple_product_variants_under_order_limit() -> Result<()> {
@@ -269,7 +269,11 @@ fn test_valid_hmac_with_multiple_product_variants_under_order_limit() -> Result<
             }
         "#,
     )?;
-    assert!(result.errors.is_empty(), "Expected no errors, but found some: {:?}", result.errors);
+    assert!(
+        result.errors.is_empty(),
+        "Expected no errors, but found some: {:?}",
+        result.errors
+    );
     Ok(())
 }
 
@@ -340,7 +344,10 @@ fn test_mixed_hmac_validity_with_multiple_product_variants() -> Result<()> {
             }
         "#,
     )?;
-    assert!(!result.errors.is_empty(), "Expected errors for products with invalid HMACs, but none were found.");
+    assert!(
+        !result.errors.is_empty(),
+        "Expected errors for products with invalid HMACs, but none were found."
+    );
     Ok(())
 }
 
@@ -385,7 +392,11 @@ fn test_valid_hmac_with_single_product_variant_at_order_limit() -> Result<()> {
             }
         "#,
     )?;
-    assert!(result.errors.is_empty(), "Expected no errors, but found some: {:?}", result.errors);
+    assert!(
+        result.errors.is_empty(),
+        "Expected no errors, but found some: {:?}",
+        result.errors
+    );
     Ok(())
 }
 
@@ -522,7 +533,11 @@ fn test_empty_cart() -> Result<()> {
             }
         "#,
     )?;
-    assert!(result.errors.is_empty(), "Expected no errors for an empty cart, but found some: {:?}", result.errors);
+    assert!(
+        result.errors.is_empty(),
+        "Expected no errors for an empty cart, but found some: {:?}",
+        result.errors
+    );
     Ok(())
 }
 
@@ -593,7 +608,10 @@ fn test_valid_hmac_with_multiple_product_variants_some_over_order_limit() -> Res
             }
         "#,
     )?;
-    assert!(!result.errors.is_empty(), "Expected errors for product variants exceeding the order limit, but none were found.");
+    assert!(
+        !result.errors.is_empty(),
+        "Expected errors for product variants exceeding the order limit, but none were found."
+    );
     Ok(())
 }
 
@@ -649,6 +667,10 @@ fn test_cart_with_ungated_product_variant() -> Result<()> {
             }
         "#,
     )?;
-    assert!(result.errors.is_empty(), "Expected no errors, even with an ungated product in the cart, but found some: {:?}", result.errors);
+    assert!(
+        result.errors.is_empty(),
+        "Expected no errors, even with an ungated product in the cart, but found some: {:?}",
+        result.errors
+    );
     Ok(())
 }

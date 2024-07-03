@@ -8,19 +8,27 @@ ARG OFFLINE_WEB_API_URL
 ENV OFFLINE_WEB_API_URL=$OFFLINE_WEB_API_URL
 ARG OFFLINE_GATES_HANDLE
 ENV OFFLINE_GATES_HANDLE=$OFFLINE_GATES_HANDLE
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 
 EXPOSE 3000
 
 WORKDIR /app
 COPY . .
 
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Install all dependencies
+RUN pnpm install
+
+# Build the application
+RUN pnpm run build
+
+# Remove dev dependencies
+RUN pnpm prune --prod
+
 ENV NODE_ENV=production
 
-RUN npm install --omit=dev
-# Remove CLI packages since we don't need them in production by default.
-# Remove this line if you want to run CLI commands in your container.
-RUN npm remove @shopify/app @shopify/cli
-RUN npm run build
-
-
-CMD ["npm", "run", "docker-start"]
+CMD ["pnpm", "run", "docker-start"]

@@ -1,55 +1,62 @@
 import IframeResizer from "@iframe-resizer/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useSelector } from "@xstate/react";
+import type { IFramePage } from "iframe-resizer";
 import { useEffect, useMemo } from "react";
+import { ShopifyCustomerStatus, type SettingsCssVariables } from "~/types";
 import { AuthMachineContext, AuthMachineProvider } from "./AuthMachineProvider";
-import { disableBuyButtons, enableBuyButtons, getGate } from "./gate";
-import { UnlockIframeStatus } from "./machines/unlockIframeMachine";
+import type { UnlockIframeActor } from "./machines/unlockIframeMachine";
+import type { Customer } from "./schema";
+import { UnlockIframeStatus } from "./types";
 import { hexToHsl } from "./utils/colors";
 
-const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
+export interface AppConnectProps {
+  customer?: Customer;
+  loginUrl?: string;
+  settingsCssVariables: SettingsCssVariables;
+}
+
+const App = ({ settingsCssVariables, customer, loginUrl }: AppConnectProps) => {
   const authActorRef = AuthMachineContext.useActorRef();
-  const unlockIframeRef = authActorRef.system.get("unlockIframe");
+  const unlockIframeRef = authActorRef.system.get(
+    "unlockIframe",
+  ) as UnlockIframeActor;
   const isChildIframeReady = useSelector(
     unlockIframeRef,
-    (snapshot) => snapshot.context.childIsReady
+    (snapshot) => snapshot.context.childIsReady,
   );
   const walletAddress = AuthMachineContext.useSelector(
-    (snapshot) => snapshot.context.walletAddress
-  );
-  const isReconnected = AuthMachineContext.useSelector(
-    (snapshot) => snapshot.context.isReconnected
+    (snapshot) => snapshot.context.walletAddress,
   );
   const isInitMessageToIframeNotSent = AuthMachineContext.useSelector(
-    (snapshot) => !snapshot.context.initMessageToIframeSent
-  );
-  const isUnlocked = AuthMachineContext.useSelector(
-    (snapshot) => snapshot.context.isUnlocked
+    (snapshot) => !snapshot.context.initMessageToIframeSent,
   );
   const isIframeIdle = useSelector(unlockIframeRef, (snapshot) =>
-    snapshot.matches(UnlockIframeStatus.Idle)
+    snapshot.matches(UnlockIframeStatus.Idle),
+  );
+
+  const isConnected = useSelector(authActorRef, (snapshot) =>
+    snapshot.matches(ShopifyCustomerStatus.Connected),
   );
 
   console.log("authActorRef:", authActorRef);
   console.log("unlockIframeRef", unlockIframeRef);
   console.log("isIframeIdle:", isIframeIdle);
+  console.log("isConnected:", isConnected);
 
   unlockIframeRef.on("CONNECT_TO_SHOPIFY", () => {
     if (loginUrl) window.location.href = loginUrl; // Directly setting the window location to navigate
   });
 
-  const { requirements, reaction, id: gateId } = getGate();
-
   useEffect(() => {
     if (isChildIframeReady && isInitMessageToIframeNotSent) {
       let dataToSend = {
         customer,
-        product,
         cssVariablesAndClasses: {
           cssVariables: {
             "--primary": hexToHsl(settingsCssVariables.offline_primary_color),
             "--secondary": hexToHsl(
-              settingsCssVariables.offline_secondary_color
+              settingsCssVariables.offline_secondary_color,
             ),
             "--radius": settingsCssVariables.offline_border_radius,
             "--off-btn-height": settingsCssVariables.offline_button_height,
@@ -74,37 +81,21 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
   }, [isChildIframeReady, isInitMessageToIframeNotSent]);
 
   useEffect(() => {
-    console.log("App init data test67", { customer, product, gateId });
-    if (product?.id && gateId) {
-      authActorRef.send({
-        type: "SET_INIT_DATA",
-        customerId: customer?.id,
-        productId: product?.id,
-        gateId,
-        shopDomain: window.Shopify.shop,
-      });
-    }
-  }, [customer?.id, gateId, product?.id]);
-
-  useEffect(() => {
-    console.log("isUnlocked effect: ", isUnlocked, reaction);
-    if (reaction?.type === "exclusive_access") {
-      if (isUnlocked) {
-        enableBuyButtons();
-      } else {
-        disableBuyButtons();
-      }
-    }
-  }, [gateId, reaction?.type, isUnlocked]);
+    console.log("App init data connect", { customer });
+    authActorRef.send({
+      type: "SET_INIT_DATA",
+      customerId: customer?.id,
+    });
+  }, [customer?.id]);
 
   // Memoize the iframe to prevent re-renders
   const walletConnectIframe = useMemo(() => {
-    console.log({ gateId, unlockIframeRef, isIframeIdle });
-    if (!gateId || isIframeIdle) {
+    if (isIframeIdle) {
       return null;
     }
     const unlockAppUrl = process.env.UNLOCK_APP_URL;
-    const baseUrl = `${unlockAppUrl}/en/shopify/${gateId}`;
+    //TODO. Find new URL for simple connect ?
+    const baseUrl = `${unlockAppUrl}/en/shopify/`;
     let src = baseUrl;
     if (walletAddress) {
       src += `/${walletAddress}`;
@@ -113,13 +104,13 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
       <IframeResizer
         license="GPLv3"
         className="offline--iframe"
-        forwardRef={(iframeRef) => {
+        forwardRef={(iframeRef: IFramePage) => {
           unlockIframeRef.send({
             type: "IFRAME_LOADED",
             iframeRef,
           });
         }}
-        tabIndex="0"
+        tabIndex={0}
         inPageLinks
         onMessage={(messageData) => {
           console.log("Message received from iframe", messageData);
@@ -137,22 +128,8 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
         src={src}
         style={{ width: "100%", height: "220px" }}
       />
-      // <iframe
-      //   title="Offline Unlock"
-      //   id="unlockIframe"
-      //   className="offline--iframe"
-      //   allowFullScreen
-      //   tabIndex="0" /* Make iframe focusable */
-      //   width="100%"
-      //   src={src}
-      //   onLoad={() => {
-      //     console.log("Shopify Host, iframe loaded");
-      //     unlockIframeRef.send({ type: "IFRAME_LOADED" });
-      //     // setupOfflineIframe();
-      //   }}
-      // />
     );
-  }, [gateId, isIframeIdle]); // make sure to load the iframe only once unless gateId changes
+  }, [isIframeIdle]); // make sure to load the iframe only once
 
   return (
     <div
@@ -173,15 +150,19 @@ const _App = ({ settingsCssVariables, customer, loginUrl, product }) => {
   );
 };
 
-export const App = ({ settingsCssVariables, customer, loginUrl, product }) => {
+export const AppConnect = ({
+  settingsCssVariables,
+  customer,
+  loginUrl,
+}: AppConnectProps) => {
+  console.log("App gates:", window.myAppGates);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthMachineProvider>
-        <_App
+        <App
           settingsCssVariables={settingsCssVariables}
           customer={customer}
           loginUrl={loginUrl}
-          product={product}
         />
       </AuthMachineProvider>
     </QueryClientProvider>

@@ -29,6 +29,10 @@ export default async function getCampaigns({
           key: "discount-id") {
             value
         }
+        orderLimit: metafield(namespace: "offline-gate",
+          key: "orderLimit") {
+            value
+        }
         subjectBindings(first: $first, includeInactive: true) {
           nodes {
             id

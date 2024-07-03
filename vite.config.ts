@@ -1,4 +1,5 @@
 import { vitePlugin as remix } from "@remix-run/dev";
+import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -50,7 +51,7 @@ export default defineConfig(({ mode }) => {
       hmr: hmrConfig,
       fs: {
         // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information
-        allow: ["app", "node_modules"],
+        allow: ["app", "node_modules", "types.d.ts"],
       },
     },
     plugins: [
@@ -59,6 +60,12 @@ export default defineConfig(({ mode }) => {
       }),
       tsconfigPaths(),
     ],
+    resolve: {
+      alias: {
+        "@types": path.resolve(__dirname, "./types.d.ts"),
+      },
+      extensions: [".js", ".ts", ".d.ts", ".jsx", ".tsx", ".json"],
+    },
     define: {
       "process.env.SHOPIFY_API_KEY": env.SHOPIFY_API_KEY
         ? JSON.stringify(env.SHOPIFY_API_KEY)

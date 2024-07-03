@@ -1,10 +1,22 @@
 import { createHmac } from "crypto";
 
-function createShopifyProxySignature(params, secret) {
-  const keysParams = Object.keys(params).reduce((acc, key) => {
-    acc[key] = params[key];
-    return acc;
-  }, {});
+interface ShopifyProxyParams {
+  [key: string]: string | string[];
+}
+
+function createShopifyProxySignature(
+  params: ShopifyProxyParams,
+  secret: string,
+): string {
+  const keysParams: Record<string, string> = Object.keys(params).reduce(
+    (acc, key) => {
+      acc[key] = Array.isArray(params[key])
+        ? (params[key] as string[]).join(",")
+        : (params[key] as string);
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
   const encodedParams = new URLSearchParams(keysParams).toString();
   const hmac = createHmac("sha256", secret);
@@ -13,30 +25,34 @@ function createShopifyProxySignature(params, secret) {
   return hmac.digest("base64");
 }
 
-function populateQueryParams(params) {
+function populateQueryParams(params: ShopifyProxyParams): URLSearchParams {
   const queryParams = new URLSearchParams();
   for (const key in params) {
     if (Array.isArray(params[key])) {
-      params[key].forEach((value) => {
+      (params[key] as string[]).forEach((value) => {
         queryParams.append(key, value);
       });
     } else {
-      queryParams.append(key, params[key]);
+      queryParams.append(key, params[key] as string);
     }
   }
   return queryParams;
 }
 
-async function makeShopifyProxyRequest(path, params, method = "GET") {
-  const timestamp = Date.now();
-  const requestParams = {
+export async function makeShopifyProxyRequest<T>(
+  path: string,
+  params: ShopifyProxyParams,
+  method: string = "GET",
+): Promise<T> {
+  const timestamp = Date.now().toString();
+  const requestParams: ShopifyProxyParams = {
     ...params,
     timestamp,
   };
 
   const signature = createShopifyProxySignature(
     requestParams,
-    process.env.SHOPIFY_API_SECRET,
+    process.env.SHOPIFY_API_SECRET as string,
   );
 
   const queryParams = populateQueryParams({
@@ -44,9 +60,7 @@ async function makeShopifyProxyRequest(path, params, method = "GET") {
     signature,
   });
 
-  const url = `${
-    process.env.OFFLINE_WEB_API_URL
-  }${path}?${queryParams.toString()}`;
+  const url = `${process.env.OFFLINE_WEB_API_URL}${path}?${queryParams.toString()}`;
 
   console.log(`Making Shopify proxy request: ${method} ${url}`);
 
