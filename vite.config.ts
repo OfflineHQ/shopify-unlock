@@ -43,6 +43,10 @@ export default defineConfig(({ mode }) => {
   if (!env.OFFLINE_WEB_API_URL)
     throw new Error("OFFLINE_WEB_API_URL is required");
 
+  if (!process.env.SHOPIFY_API_EXTERNAL_SECRET) {
+    throw new Error("SHOPIFY_API_EXTERNAL_SECRET is required");
+  }
+
   if (!env.OFFLINE_GATES_HANDLE)
     throw new Error("OFFLINE_GATES_HANDLE is required");
   return {
