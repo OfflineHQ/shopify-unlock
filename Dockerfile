@@ -21,7 +21,13 @@ ENV NODE_ENV=production
 # Install pnpm
 RUN npm install -g pnpm
 
-RUN pnpm install --prod
+# Install all dependencies
+RUN pnpm install
+
+# Build the application
 RUN pnpm run build
+
+# Remove dev dependencies
+RUN pnpm prune --prod
 
 CMD ["pnpm", "run", "docker-start"]
