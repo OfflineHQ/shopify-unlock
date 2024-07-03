@@ -45,7 +45,7 @@ const customerSchema = z.object({
 });
 
 const linkedCustomerSchema = z.object({
-  address: z.string().optional(),
+  address: z.string().nullable().optional(),
 });
 
 const vaultSchema = z.object({
