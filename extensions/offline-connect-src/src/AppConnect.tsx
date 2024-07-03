@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useSelector } from "@xstate/react";
 import type { IFramePage } from "iframe-resizer";
 import { useEffect, useMemo } from "react";
-import type { SettingsCssVariables } from "~/types";
+import { ShopifyCustomerStatus, type SettingsCssVariables } from "~/types";
 import { AuthMachineContext, AuthMachineProvider } from "./AuthMachineProvider";
 import type { UnlockIframeActor } from "./machines/unlockIframeMachine";
 import type { Customer } from "./schema";
@@ -35,9 +35,14 @@ const App = ({ settingsCssVariables, customer, loginUrl }: AppConnectProps) => {
     snapshot.matches(UnlockIframeStatus.Idle),
   );
 
+  const isConnected = useSelector(authActorRef, (snapshot) =>
+    snapshot.matches(ShopifyCustomerStatus.Connected),
+  );
+
   console.log("authActorRef:", authActorRef);
   console.log("unlockIframeRef", unlockIframeRef);
   console.log("isIframeIdle:", isIframeIdle);
+  console.log("isConnected:", isConnected);
 
   unlockIframeRef.on("CONNECT_TO_SHOPIFY", () => {
     if (loginUrl) window.location.href = loginUrl; // Directly setting the window location to navigate

@@ -13,7 +13,7 @@
     "env": "shopify app env",
     "start": "remix-serve ./build/server/index.js",
     "start:dev": "remix-serve ./build/server/index.js --mode development",
-    "docker-start": "npm run setup && npm run start",
+    "docker-start": "pnpm run setup && pnpm run start",
     "setup": "npx prisma generate && npx prisma migrate deploy",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "shopify": "shopify",
@@ -22,9 +22,9 @@
     "vite": "vite",
     "deploy:staging": "shopify app deploy --config staging",
     "deploy:production": "shopify app deploy --config production",
-    "build:offline-connect:dev": "npm --prefix extensions/offline-connect-src run build:dev",
-    "build:offline-connect:staging": "npm --prefix extensions/offline-connect-src run build:staging",
-    "build:offline-connect:prod": "npm --prefix extensions/offline-connect-src run build:prod"
+    "build:offline-connect:dev": "pnpm --prefix extensions/offline-connect-src run build:dev",
+    "build:offline-connect:staging": "pnpm --prefix extensions/offline-connect-src run build:staging",
+    "build:offline-connect:prod": "pnpm --prefix extensions/offline-connect-src run build:prod"
   },
   "type": "module",
   "engines": {
