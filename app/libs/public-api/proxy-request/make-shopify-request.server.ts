@@ -52,7 +52,7 @@ export async function makeShopifyProxyRequest<T>(
 
   const signature = createShopifyProxySignature(
     requestParams,
-    process.env.SHOPIFY_API_SECRET as string,
+    process.env.SHOPIFY_API_EXTERNAL_SECRET as string,
   );
 
   const queryParams = populateQueryParams({
