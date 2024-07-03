@@ -20,7 +20,6 @@ opt-level = 'z'
 strip = true
 
 [features]
-default = ["dev"]
 dev = []
 staging = []
 prod = []

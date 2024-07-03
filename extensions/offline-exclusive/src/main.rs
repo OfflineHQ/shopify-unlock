@@ -9,6 +9,9 @@ use hmac::{Hmac, Mac};
 use serde::Deserialize;
 use sha2::Sha256;
 
+use output::FunctionError;
+use output::FunctionResult;
+
 // #[cfg(feature = "dev")]
 const SECRET_KEY: &str = "gqIjvMryDG8pGDeSUb0dIhoBde6BkOaM0Qxbuhze3jk=";
 
@@ -29,8 +32,6 @@ generate_types!(
     query_path = "src/run.graphql",
     schema_path = "./schema.graphql"
 );
-
-use output::{FunctionError, FunctionResult};
 
 const CART_TARGET: &str = "cart";
 
