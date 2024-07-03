@@ -9,10 +9,9 @@ use hmac::{Hmac, Mac};
 use serde::Deserialize;
 use sha2::Sha256;
 
-use output::FunctionError;
-
 // #[cfg(feature = "dev")]
 const SECRET_KEY: &str = "gqIjvMryDG8pGDeSUb0dIhoBde6BkOaM0Qxbuhze3jk=";
+
 #[cfg(feature = "dev")]
 generate_types!(
     query_path = "src/run.development.graphql",
@@ -30,6 +29,8 @@ generate_types!(
     query_path = "src/run.graphql",
     schema_path = "./schema.graphql"
 );
+
+use output::{FunctionError, FunctionResult};
 
 const CART_TARGET: &str = "cart";
 
@@ -78,7 +79,7 @@ impl ToString for StringNumberOrNumber {
 }
 
 #[shopify_function]
-fn run(input: input::ResponseData) -> Result<output::FunctionResult> {
+fn run(input: input::ResponseData) -> Result<FunctionResult> {
     let locale = input.localization.language.iso_code.as_str();
     let cart_lines = &input.cart.lines;
     let gate_context = parse_gate_context_from_cart_attribute(&input.cart.attribute);
@@ -109,6 +110,13 @@ fn run(input: input::ResponseData) -> Result<output::FunctionResult> {
                 order_limit: parse_order_limit(&gate_configuration.order_limit),
             };
 
+            let purchase_limit: Option<i64> = gate_reaction.order_limit.try_into().ok();
+            if purchase_limit.is_none() || purchase_limit.unwrap_or(0) <= 0 {
+                continue;
+            }
+
+            let purchase_limit = purchase_limit.unwrap();
+
             if !gate_unlocked {
                 errors.push(FunctionError {
                     localized_message: "You don't have access to this product.".to_owned(),
@@ -118,7 +126,6 @@ fn run(input: input::ResponseData) -> Result<output::FunctionResult> {
             }
 
             if let Some(line) = cart_lines.iter().find(|line| matches!(&line.merchandise, input::InputCartLinesMerchandise::ProductVariant(variant) if variant.id == product_variant.id)) {
-                let purchase_limit: i64 = gate_reaction.order_limit.try_into().expect("Failed to convert purchase limit to i64");
                 if line.quantity > purchase_limit {
                     errors.push(FunctionError {
                         localized_message: format!("You can only order up to {} with your account!", purchase_limit),
@@ -129,7 +136,7 @@ fn run(input: input::ResponseData) -> Result<output::FunctionResult> {
         }
     }
 
-    Ok(output::FunctionResult { errors })
+    Ok(FunctionResult { errors })
 }
 
 fn parse_gate_context_from_cart_attribute(
