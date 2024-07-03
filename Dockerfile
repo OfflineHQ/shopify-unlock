@@ -21,11 +21,7 @@ ENV NODE_ENV=production
 # Install pnpm
 RUN npm install -g pnpm
 
-# Use pnpm instead of npm
 RUN pnpm install --prod
-# Remove CLI packages since we don't need them in production by default.
-# Remove this line if you want to run CLI commands in your container.
-RUN pnpm remove @shopify/app @shopify/cli
 RUN pnpm run build
 
 CMD ["pnpm", "run", "docker-start"]
