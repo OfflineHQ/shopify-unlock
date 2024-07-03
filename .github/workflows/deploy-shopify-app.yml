@@ -1,0 +1,71 @@
+name: Deploy Shopify App
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+
+env:
+  SHOPIFY_CLI_PARTNERS_TOKEN: ${{ secrets.SHOPIFY_CLI_PARTNERS_TOKEN }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "21.6.2"
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          target: wasm32-wasi
+
+      - name: Install cargo-wasi
+        run: cargo install cargo-wasi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm modules
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build app
+        env:
+          UNLOCK_APP_URL: ${{ vars.UNLOCK_APP_URL }}
+        run: pnpm run ${{ vars.BUILD_COMMAND }}
+
+      - name: Deploy to Shopify
+        env:
+          SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
+        run: |
+          pnpm run ${{ vars.DEPLOY_COMMAND }} \
+            --force \
+            --source-control-url="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"

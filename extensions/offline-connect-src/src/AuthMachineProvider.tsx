@@ -2,13 +2,17 @@
 import { createActorContext } from "@xstate/react";
 import authMachine from "./machines/authMachine";
 
-// const { inspect } = createBrowserInspector();
+// export const inspector = createBrowserInspector();
 
 export const AuthMachineContext = createActorContext(authMachine, {
-  // inspect,
-  system: "auth",
+  // inspect: inspector.inspect,
+  systemId: "auth",
 });
 
-export function AuthMachineProvider({ children }) {
+export function AuthMachineProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <AuthMachineContext.Provider>{children}</AuthMachineContext.Provider>;
 }

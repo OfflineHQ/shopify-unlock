@@ -1,4 +1,5 @@
 {
 	"editor.formatOnSave": true,
-	"graphql-config.load.filePath": ".graphqlrc.ts"
+	"graphql-config.load.filePath": ".graphqlrc.ts",
+	"typescript.tsdk": "node_modules/typescript/lib"
 }
