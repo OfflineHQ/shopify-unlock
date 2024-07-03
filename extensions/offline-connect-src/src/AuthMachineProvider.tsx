@@ -1,11 +1,11 @@
-import { createBrowserInspector } from "@statelyai/inspect";
+// import { createBrowserInspector } from "@statelyai/inspect";
 import { createActorContext } from "@xstate/react";
 import authMachine from "./machines/authMachine";
 
-const { inspect } = createBrowserInspector();
+// export const inspector = createBrowserInspector();
 
 export const AuthMachineContext = createActorContext(authMachine, {
-  inspect,
+  // inspect: inspector.inspect,
   systemId: "auth",
 });
 
