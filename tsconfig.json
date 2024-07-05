@@ -1,6 +1,6 @@
 {
   "include": [
-    "types.d.ts",
+    "types.ts",
     "env.d.ts",
     "**/*.ts",
     "**/*.tsx"
@@ -29,8 +29,11 @@
       "~/*": [
         "./app/*"
       ],
+      "@/*": [
+        "./src/*"
+      ],
       "@types": [
-        "./types.d.ts"
+        "./types.ts"
       ]
     },
     "types": [

@@ -36,6 +36,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (!storefront || !productId) {
     return new Response();
   }
+  // TODO: HERE if put storefront.graphql cannot access the metadata, inform Shopify support
   const response = await admin.graphql(GET_PRODUCT_GATE_QUERY, {
     variables: {
       productGid: "gid://shopify/Product/" + productId,
@@ -44,8 +45,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const body = await response.json();
   const gates = body.data?.product?.gates || [];
   console.log({ gates, handle });
+  console.log({ gateReaction: gates[0].configuration.requirements });
   const gatesFromHandle = gates.filter(
-    (gate) => gate.configuration.handle === handle,
+    (gate: any) => gate.configuration.handle === handle,
   );
   return json(gatesFromHandle);
 };

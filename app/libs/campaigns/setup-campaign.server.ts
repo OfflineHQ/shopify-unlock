@@ -1,10 +1,15 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
-import type { DiscountType, GateReaction, GateRequirement } from "types";
-import { GateConditionLogic, GateReactionType } from "types";
 import setupProductDiscount from "../campaigns-discount/setup-product-discount.server";
 import { getProductsGatesMinimal } from "./get-products-gates.server";
 import { type CampaignFormData } from "./schema";
 import setupCampaignProductSubject from "./setup-campaign-product-subject.server";
+import {
+  GateReactionType,
+  GateRequirement,
+  GateConditionLogic,
+  GateReaction,
+  DiscountType,
+} from "@/types";
 
 const CREATE_GATE_CONFIGURATION_MUTATION = `#graphql
   mutation CreateGateConfiguration($name: String!, $requirements: String!, $reaction: String!, $orderLimit: String, $gatesHandle: String) {

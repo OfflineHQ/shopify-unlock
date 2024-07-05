@@ -22,20 +22,22 @@
 		"noFallthroughCasesInSwitch": true,
 		"allowSyntheticDefaultImports": true,
 		"forceConsistentCasingInFileNames": true,
-		"baseUrl": ".",
+		"baseUrl": "../..",
 		"paths": {
 			"@/*": [
-				"./src/*"
+				"./extensions/offline-connect-src/src/*"
 			],
 			"~/*": [
-				"../../*"
+				"./src/*"
 			]
 		}
 	},
 	"include": [
 		"src",
 		"vite.config.ts",
-		"../../types.d.ts"
+		"../../types.ts",
+		"../../src",
+		"../../tailwind.config.js"
 	],
 	"types": [
 		"react",
@@ -44,7 +46,7 @@
 	"typeRoots": [
 		"../../node_modules/@types",
 		"../../@types",
-		"../../types.d.ts"
+		"../../src/types.ts"
 	],
 	"references": [
 		{

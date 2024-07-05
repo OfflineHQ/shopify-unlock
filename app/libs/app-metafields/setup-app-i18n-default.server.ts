@@ -4,8 +4,8 @@ import type {
   I18nContentMetafieldsQueryArgs,
   I18nMetafieldValues,
 } from "~/libs/i18n/types";
-import { NAMESPACE } from "./common";
 import createAppMetafields from "./create-app-metafields.server";
+import { NAMESPACE } from "./common";
 
 export async function setupAppI18nDefaults<K extends I18nMetafieldKey>({
   graphql,

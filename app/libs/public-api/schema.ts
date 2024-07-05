@@ -30,22 +30,24 @@ const baseConnectSchema = z.object({
   signature: z.string().min(1),
 });
 
-export const connectParamsSchema = baseConnectSchema
-  .extend(productGateRequestSchema.shape)
-  .extend({ existingCustomer: existingCustomerSchema });
-
-export const connectArgsSchema = connectParamsSchema.extend(
-  storefrontRequestSchema.shape,
+export const connectParamsSchema = baseConnectSchema.extend(
+  productGateRequestSchema.shape,
 );
+
+export const connectArgsSchema = connectParamsSchema
+  .extend(storefrontRequestSchema.shape)
+  .extend({ existingCustomer: existingCustomerSchema });
 
 export type ConnectParamsSchema = z.infer<typeof connectParamsSchema>;
 export type ConnectArgsSchema = z.infer<typeof connectArgsSchema>;
 
 // Evaluate Gate
 
-export const evaluateGateParamsSchema = baseConnectSchema.extend(
-  requiredProductGateRequestSchema.shape,
-);
+export const evaluateGateParamsSchema = z
+  .object({
+    address: baseConnectSchema.shape.address,
+  })
+  .extend(requiredProductGateRequestSchema.shape);
 export const evaluateGateArgsSchema = evaluateGateParamsSchema.extend(
   storefrontRequestSchemaWithCustomerId.shape,
 );

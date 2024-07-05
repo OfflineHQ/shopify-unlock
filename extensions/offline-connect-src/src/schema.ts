@@ -34,7 +34,7 @@ const gateConfigSchema = z.object({
   handle: z.string(),
   orderLimit: z.number().optional(),
   requirements: gateRequirementSchema,
-  reactions: gateReactionSchema,
+  reaction: gateReactionSchema,
 });
 
 const customerSchema = z.object({
@@ -45,7 +45,7 @@ const customerSchema = z.object({
 });
 
 const linkedCustomerSchema = z.object({
-  address: z.string().nullable().optional(),
+  address: z.string().nullable(),
 });
 
 const vaultSchema = z.object({
@@ -60,8 +60,6 @@ const gateContextSchema = z.object({
   walletVerificationMessage: z.string().optional(),
   walletVerificationSignature: z.string().optional(),
   disconnect: z.boolean().optional(),
-  noCustomer: z.boolean().optional(),
-  linkedCustomer: linkedCustomerSchema,
   vaults: z.array(vaultSchema).optional(),
 });
 

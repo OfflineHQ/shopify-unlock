@@ -1,30 +1,38 @@
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import {
   Box,
-  Button,
   Card,
-  Divider,
+  InlineStack,
   Layout,
   Page,
   PageActions,
   Tabs,
   Text,
 } from "@shopify/polaris";
+import { useForm } from "@shopify/react-form";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import getAppI18nMetafield from "~/libs/app-metafields/get-app-i18n-metafield.server";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import type { ExclusiveFormDataType } from "~/libs/campaigns-exclusive/i18n-form";
 import {
   ExclusiveTranslationForm,
-  useExclusiveForm,
+  useExclusiveFormFields,
 } from "~/libs/campaigns-exclusive/i18n-form";
 import { setupI18nExclusiveDefaults } from "~/libs/campaigns-exclusive/setup-i18n-exclusive-default.server";
 import { I18nMetafieldKey } from "~/libs/i18n/schema";
 import { convertFromMetafieldValueToI18nForm } from "~/libs/i18n/utils";
 import getShopLocales from "~/libs/shop/get-shop-locales.server";
+import { setupI18nSignupContentDefaults } from "~/libs/signup/setup-i18n-signup-content-default.server";
+import {
+  SignUpForm,
+  SignupFormDataType,
+  SignupFormModalPreview,
+  useSignupFormFields,
+} from "~/libs/signup/signup-form";
 import { authenticate } from "~/shopify.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -40,21 +48,31 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     (a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0),
   );
 
-  const exclusiveError = await getAppI18nMetafield(
-    admin.graphql,
-    I18nMetafieldKey.EXCLUSIVE_ERROR,
-  );
+  const [exclusiveError, signupContent] = await Promise.all([
+    getAppI18nMetafield(admin.graphql, I18nMetafieldKey.EXCLUSIVE_ERROR),
+    getAppI18nMetafield(admin.graphql, I18nMetafieldKey.SIGNUP_CONTENT),
+  ]);
 
-  const i18nExclusiveErrorFields = convertFromMetafieldValueToI18nForm(
-    I18nMetafieldKey.EXCLUSIVE_ERROR,
-    exclusiveError,
-    languages,
+  const [i18nExclusiveErrorFields, i18nSignupContentFields] = await Promise.all(
+    [
+      convertFromMetafieldValueToI18nForm(
+        I18nMetafieldKey.EXCLUSIVE_ERROR,
+        exclusiveError,
+        languages,
+      ),
+      convertFromMetafieldValueToI18nForm(
+        I18nMetafieldKey.SIGNUP_CONTENT,
+        signupContent,
+        languages,
+      ),
+    ],
   );
 
   return json({
     appId,
     languages,
     i18nExclusiveErrorFields,
+    i18nSignupContentFields,
   });
 };
 
@@ -63,12 +81,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const formData = (await request.json()) as {
     appId: string;
-  } & ExclusiveFormDataType;
-  await setupI18nExclusiveDefaults({
-    graphql: admin.graphql,
-    ownerId: formData.appId,
-    exclusiveErrorForm: formData.exclusiveError,
-  });
+  } & ExclusiveFormDataType &
+    SignupFormDataType;
+  await Promise.all([
+    setupI18nExclusiveDefaults({
+      graphql: admin.graphql,
+      ownerId: formData.appId,
+      exclusiveErrorForm: formData.exclusiveError,
+    }),
+    setupI18nSignupContentDefaults({
+      graphql: admin.graphql,
+      ownerId: formData.appId,
+      signupContentForm: formData.signupContent,
+    }),
+  ]);
+  console.log({ formData });
   return json({
     status: "success",
   });
@@ -77,8 +104,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Settings() {
   const shopify = useAppBridge();
   const navigate = useNavigate();
-  const { languages, i18nExclusiveErrorFields, appId } =
-    useLoaderData<typeof loader>();
+  const {
+    languages,
+    i18nExclusiveErrorFields,
+    appId,
+    i18nSignupContentFields,
+  } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const isSubmitting = fetcher.state === "submitting";
 
@@ -95,9 +126,17 @@ export default function Settings() {
     (selectedTabIndex: number) => setSelected(selectedTabIndex),
     [],
   );
-  const { fields, submit, reset, dirty } = useExclusiveForm(
+
+  const { signUpFormFields } = useSignupFormFields(i18nSignupContentFields);
+  const { exclusiveFormFields } = useExclusiveFormFields(
     i18nExclusiveErrorFields,
-    async (formData) => {
+  );
+  const { fields, submit, reset, dirty } = useForm({
+    fields: {
+      ...exclusiveFormFields,
+      ...signUpFormFields,
+    },
+    onSubmit: async (formData) => {
       fetcher.submit(
         { ...formData, appId },
         {
@@ -107,7 +146,7 @@ export default function Settings() {
       );
       return { status: "success" };
     },
-  );
+  });
 
   const tabs = useMemo(
     () =>
@@ -138,46 +177,67 @@ export default function Settings() {
     >
       <Layout>
         <Layout.Section>
-          <Form data-save-bar onSubmit={submit}>
-            <Card roundedAbove="sm">
-              <Text as="h2" variant="headingLg">
-                Default Campaigns Text
-              </Text>
-              <Box paddingBlockStart="200" paddingBlockEnd="400">
-                <Text as="p" variant="bodyLg" tone="subdued">
-                  Define the default text for your campaigns with translation
-                  for each language supported on your store.
+          <TooltipProvider
+            disableHoverableContent
+            delayDuration={500}
+            skipDelayDuration={0}
+          >
+            <Form data-save-bar onSubmit={submit}>
+              <Card>
+                <Text as="h2" variant="headingLg">
+                  Default Campaigns Content
                 </Text>
-              </Box>
-              <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
-                <Divider />
-                <ExclusiveTranslationForm
-                  language={languages[selected]}
-                  index={selected}
-                  fields={fields}
-                />
-              </Tabs>
-            </Card>
-            <PageActions
-              primaryAction={
-                <Button
-                  variant="primary"
-                  submit
-                  loading={isSubmitting}
-                  disabled={isSubmitting}
+                <Box paddingBlockStart="400" paddingBlockEnd="400">
+                  <Text as="p" variant="bodyMd">
+                    Define the default content for your campaigns with
+                    translation for each language supported on your store.
+                  </Text>
+                </Box>
+                <Tabs
+                  tabs={tabs}
+                  selected={selected}
+                  onSelect={handleTabChange}
                 >
-                  Save
-                </Button>
-              }
-              secondaryActions={[
-                {
-                  content: "Reset",
-                  onAction: reset,
-                  disabled: isSubmitting || !dirty,
-                },
-              ]}
-            />
-          </Form>
+                  <InlineStack gap="800">
+                    <Box maxWidth="30rem">
+                      <SignUpForm
+                        language={languages[selected]}
+                        index={selected}
+                        fields={fields}
+                      />
+                    </Box>
+                    <Box>
+                      <SignupFormModalPreview
+                        language={languages[selected]}
+                        index={selected}
+                        fields={fields}
+                      />
+                    </Box>
+                  </InlineStack>
+                  <ExclusiveTranslationForm
+                    language={languages[selected]}
+                    index={selected}
+                    fields={fields}
+                  />
+                </Tabs>
+              </Card>
+              <PageActions
+                primaryAction={{
+                  content: "Save",
+                  loading: isSubmitting,
+                  disabled: isSubmitting,
+                  onAction: submit,
+                }}
+                secondaryActions={[
+                  {
+                    content: "Reset",
+                    disabled: isSubmitting || !dirty,
+                    onAction: reset,
+                  },
+                ]}
+              />
+            </Form>
+          </TooltipProvider>
         </Layout.Section>
       </Layout>
     </Page>

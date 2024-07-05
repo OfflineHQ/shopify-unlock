@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Development"
 handle = "offline-unlock-development"
-application_url = "https://half-warming-jpeg-stunning.trycloudflare.com"
+application_url = "https://counsel-status-keywords-remained.trycloudflare.com"
 embedded = true
 
 [build]
@@ -18,19 +18,19 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_discounts,read_gates,read_locales,read_themes,write_discounts,write_gates,write_products"
+scopes = "read_customers,read_discounts,read_gates,read_locales,read_themes,unauthenticated_read_gates,unauthenticated_read_product_listings,write_customers,write_discounts,write_gates,write_products"
 
 [auth]
 redirect_urls = [
-  "https://half-warming-jpeg-stunning.trycloudflare.com/auth/callback",
-  "https://half-warming-jpeg-stunning.trycloudflare.com/auth/shopify/callback",
-  "https://half-warming-jpeg-stunning.trycloudflare.com/api/auth/callback"
+  "https://counsel-status-keywords-remained.trycloudflare.com/auth/callback",
+  "https://counsel-status-keywords-remained.trycloudflare.com/auth/shopify/callback",
+  "https://counsel-status-keywords-remained.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "unstable"
 
 [app_proxy]
-url = "https://half-warming-jpeg-stunning.trycloudflare.com"
+url = "https://counsel-status-keywords-remained.trycloudflare.com"
 subpath = "offline"
 prefix = "apps"
