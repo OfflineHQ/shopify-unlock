@@ -66,7 +66,7 @@
       "type": "text",
       "id": "offline_button_height",
       "label": "Button Height",
-      "default": "3rem"
+      "default": "48px"
     },
     {
       "type": "text",
@@ -129,6 +129,12 @@
         }
       ],
       "default": "helveticaNeue"
+    },
+    {
+      "type": "text",
+      "id": "trigger_selector",
+      "label": "Trigger Selector",
+      "default": "#offline-connect-trigger"
     }
   ]
 }
@@ -136,23 +142,31 @@
 
 {% assign offline_handle = app.metafields.offline.offline_handle %}
 
+{% assign formatted_original_price = product.price | money_with_currency %}
+
 <div
   id="offline-unlock"
-  data-account_login_url="{{ routes.account_login_url }}"
   data-product_id="{{ product.id }}"
   data-product_available="{{ product.available }}"
   data-product_title="{{ product.title }}"
   data-product_price="{{ product.price }}"
-  data-settings_css_variables="{{ block.settings | json | escape }}"
   data-customer_id="{{ customer.id }}"
   data-customer_email="{{ customer.email }}"
   data-customer_first_name="{{ customer.first_name }}"
   data-customer_last_name="{{ customer.last_name }}"
+  data-customer_wallet_address="{{ customer.metafields.offline.wallet_address }}"
+  data-locale="{{ localization.language.iso_code }}"
+  data-formatted_original_price="{{ formatted_original_price }}"
 ></div>
 
 <div id="get-product-gate" data-product-id="{{ product.id }}" data-handle="{{ offline_handle }}"></div>
 
-<script async>
+<script>
+  var Shopify = Shopify || {};
+  Shopify.money_format = '{{ shop.money_format }}';
+</script>
+
+<script>
   var productGate = document.getElementById('get-product-gate');
   var productId = productGate.getAttribute('data-product-id');
   var handle = productGate.getAttribute('data-handle');
@@ -162,25 +176,149 @@
   const route = '/public-api/product-gate';
   var apiUrl = proxyUrl + route + queryParams;
 
+  Shopify.formatMoney = function(cents, format) {
+    if (typeof cents == 'string') {
+      cents = cents.replace('.', '');
+    }
+    var value = '';
+    var placeholderRegex = /\{\{\s*(\w+)\s*\}\}/;
+    var formatString = (format || this.money_format);
+
+    function defaultOption(opt, def) {
+      return (typeof opt == 'undefined' ? def : opt);
+    }
+
+    function formatWithDelimiters(number, precision, thousands, decimal) {
+      precision = defaultOption(precision, 2);
+      thousands = defaultOption(thousands, ',');
+      decimal = defaultOption(decimal, '.');
+      if (isNaN(number) || number == null) {
+        return 0;
+      }
+      number = (number / 100.0).toFixed(precision);
+      var parts = number.split('.'),
+          dollars = parts[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + thousands),
+          cents = parts[1] ? (decimal + parts[1]) : '';
+      return dollars + cents;
+    }
+
+    switch (formatString.match(placeholderRegex)[1]) {
+      case 'amount':
+        value = formatWithDelimiters(cents, 2);
+        break;
+      case 'amount_no_decimals':
+        value = formatWithDelimiters(cents, 0);
+        break;
+      case 'amount_with_comma_separator':
+        value = formatWithDelimiters(cents, 2, '.', ',');
+        break;
+      case 'amount_no_decimals_with_comma_separator':
+        value = formatWithDelimiters(cents, 0, '.', ',');
+        break;
+    }
+    return formatString.replace(placeholderRegex, value);
+  };
+
   fetch(apiUrl)
     .then((response) => response.json())
     .then((data) => {
-      // if there is no gate, don't load the script
       if (!data.length) {
         return;
       }
-      // if there is a gate assign them to client and load the script
-      window.myAppGates = data;
-      var script = document.createElement('script');
-      script.type = 'module';
-      script.src = "{{ 'unlock.js' | asset_url }}";
-      document.body.appendChild(script);
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = "{{ 'index.css' | asset_url }}";
-      document.head.appendChild(link);
+    // Store the gate data
+      window.myAppGates = data.map((gate) => {
+        return {
+          ...gate,
+          configuration: {
+            ...gate.configuration,
+            reaction: JSON.parse(gate.configuration.reaction.value || "{}"),
+            requirements: JSON.parse(gate.configuration.requirements.value || "{}"),
+          },
+        };
+      });
+
+      // Render the button or anchor
+      var unlockContainer = document.getElementById('offline-unlock');
+      {% if customer %}
+        {% if customer.metafields.offline.wallet_address %}
+          var script = document.createElement('script');
+          script.src = "{{ 'unlock.js' | asset_url }}";
+          script.type = "module";
+          script.defer = true;
+          document.head.appendChild(script);
+        {% else %}
+          unlockContainer.innerHTML = `
+            <button
+              id="offline-connect-trigger"
+              class="offline-unlock-button button button--full-width button--secondary"
+              data-settings_css_variables="{{ block.settings | json | escape }}"
+              data-product_id="{{ product.id }}"
+              data-product_available="{{ product.available }}"
+              data-product_title="{{ product.title }}"
+              data-product_price="{{ product.price }}"
+            >
+              {{ block.settings.button_text | escape }}
+            </button>
+          `;
+
+          // Add styles inline
+          var style = document.createElement('style');
+          style.textContent = `
+            .offline-unlock-button {
+              background-color: {{ block.settings.offline_primary_color }};
+              color: {{ block.settings.offline_secondary_color }};
+              border-radius: {{ block.settings.offline_border_radius }};
+              height: {{ block.settings.offline_button_height }};
+              font-size: {{ block.settings.offline_button_font_size }};
+              letter-spacing: {{ block.settings.offline_button_letter_spacing }};
+              padding: {{ block.settings.offline_button_padding }};
+              max-width: {{ block.settings.offline_max_width }};
+              font-family: {{ block.settings.offline_font_family }}, sans-serif;
+            }
+          `;
+          document.head.appendChild(style);
+
+          setupTriggerObserver();
+        {% endif %}
+      {% else %}
+        unlockContainer.innerHTML = `
+          <a
+            href="{{ routes.account_login_url }}"
+            id="offline-connect-login"
+            class="offline-unlock-button button button--full-width button--secondary"
+          >
+            Log in to Unlock
+          </a>
+        `;
+      {% endif %}
     })
     .catch((error) => {
       console.error('Error fetching product gate:', error);
     });
+
+  function setupTriggerObserver() {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList') {
+          const triggerContainer = document.querySelector('{{ block.settings.trigger_selector }}');
+          if (triggerContainer) {
+            const product = {
+              id: triggerContainer.dataset.product_id,
+              title: triggerContainer.dataset.product_title,
+              price: triggerContainer.dataset.product_price,
+            };
+            window.dispatchEvent(new CustomEvent('offlineTriggerModalSetup', { detail: product }));
+            observer.disconnect();
+            break;
+          }
+        }
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  {% if customer and customer.metafields.offline.wallet_address == blank %}
+    setupTriggerObserver();
+  {% endif %}
 </script>

@@ -1,6 +1,5 @@
 import { Box, FormLayout, Text, TextField } from "@shopify/polaris";
-import type { SubmitResult } from "@shopify/react-form";
-import { notEmptyString, useForm, useList } from "@shopify/react-form";
+import { notEmptyString, useList } from "@shopify/react-form";
 import type { I18nExclusiveError, I18nFieldsType } from "~/libs/i18n/schema";
 import { I18nMetafieldKey } from "~/libs/i18n/schema";
 import type { I18nMetafieldForm } from "~/libs/i18n/types";
@@ -13,30 +12,26 @@ export type ExclusiveFormDataType = {
   [I18nMetafieldKey.EXCLUSIVE_ERROR]: I18nMetafieldForm[I18nMetafieldKey.EXCLUSIVE_ERROR];
 };
 
-export function useExclusiveForm(
+export function useExclusiveFormFields(
   initialFields: ExclusiveErrorFieldsType[],
-  onSubmit: (formData: ExclusiveFormDataType) => Promise<SubmitResult>,
 ) {
-  const { fields, submit, reset, ...rest } = useForm({
-    fields: {
-      [I18nMetafieldKey.EXCLUSIVE_ERROR]: useList({
-        list: initialFields,
-        validates: {
-          noAccess: notEmptyString("Required"),
-          limitReached: [
-            notEmptyString("Required"),
-            (value) =>
-              value.includes("{}")
-                ? undefined
-                : "{} is required to indicate the order limit",
-          ],
-        },
-      }),
-    },
-    onSubmit,
-  });
+  const exclusiveFormFields = {
+    [I18nMetafieldKey.EXCLUSIVE_ERROR]: useList({
+      list: initialFields,
+      validates: {
+        noAccess: notEmptyString("Required"),
+        limitReached: [
+          notEmptyString("Required"),
+          (value) =>
+            value.includes("{}")
+              ? undefined
+              : "{} is required to indicate the order limit",
+        ],
+      },
+    }),
+  };
 
-  return { fields, submit, reset, ...rest };
+  return { exclusiveFormFields };
 }
 
 export function ExclusiveTranslationForm({
@@ -46,16 +41,14 @@ export function ExclusiveTranslationForm({
 }: {
   language: { locale: string; primary: boolean };
   index: number;
-  fields: ReturnType<typeof useExclusiveForm>["fields"];
+  fields: ReturnType<typeof useExclusiveFormFields>["exclusiveFormFields"];
 }) {
   return (
-    <>
-      <Box paddingBlockStart="400">
-        <Text as="h3" variant="headingSm">
-          Exclusive (Limited) Access Error Text
-        </Text>
-      </Box>
-      <Box paddingBlock="200">
+    <Box paddingBlockStart="400">
+      <Text as="h3" variant="headingSm">
+        Exclusive (Limited) Access Error Text
+      </Text>
+      <Box paddingBlockStart="200" paddingBlockEnd="400">
         <FormLayout>
           <TextField
             label="No Access"
@@ -71,6 +64,6 @@ export function ExclusiveTranslationForm({
           />
         </FormLayout>
       </Box>
-    </>
+    </Box>
   );
 }

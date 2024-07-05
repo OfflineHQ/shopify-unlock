@@ -41,7 +41,7 @@ export type GateConfig = {
   handle: string;
   orderLimit?: number;
   requirements: GateRequirement;
-  reactions: GateReaction;
+  reaction: GateReaction;
 };
 
 export enum ShopifyCustomerStatus {

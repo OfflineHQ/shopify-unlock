@@ -1,4 +1,4 @@
-import { CampaignType, DiscountType, GateReactionType } from "types";
+import { CampaignType, GateReactionType, DiscountType } from "@/types";
 import { z } from "zod";
 
 // Define classical enums

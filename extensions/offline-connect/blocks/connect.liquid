@@ -68,7 +68,7 @@
       "type": "text",
       "id": "offline_button_height",
       "label": "Button Height",
-      "default": "3rem"
+      "default": "48px"
     },
     {
       "type": "text",
@@ -133,18 +133,26 @@
       "default": "helveticaNeue"
     }
   ]
+  // ... other settings ...
 }
 {% endschema %}
 
-<div
-  id="offline-connect"
-  data-account_login_url="{{ routes.account_login_url }}"
-  data-settings_css_variables="{{ block.settings | json | escape }}"
-  data-customer_id="{{ customer.id }}"
-  data-customer_email="{{ customer.email }}"
-  data-customer_first_name="{{ customer.first_name }}"
-  data-customer_last_name="{{ customer.last_name }}"
-></div>
-
-<script async type="module" src="{{ "connect.js" | asset_url }}"></script>
-<link rel="stylesheet" href="{{ "index.css" | asset_url }}">
+{% if customer %}
+  {% unless customer.metafields.offline.wallet_address %}
+    <button
+      id="offline-connect-trigger"
+      class="offline-connect-button button button--full-width button--secondary"
+      data-settings_css_variables="{{ block.settings | json | escape }}"
+    >
+      Connect Wallet
+    </button>
+  {% endunless %}
+{% else %}
+  <a
+    href="{{ routes.account_login_url }}"
+    id="offline-connect-login"
+    class="offline-connect-button button button--full-width button--secondary"
+  >
+    Log in to Connect
+  </a>
+{% endif %}

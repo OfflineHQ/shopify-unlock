@@ -1,3 +1,4 @@
+import { CampaignType, GateReactionType } from "@/types";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
@@ -17,7 +18,6 @@ import {
   TextField,
 } from "@shopify/polaris";
 import { useField, useForm } from "@shopify/react-form";
-import { CampaignType, DiscountType, GateReactionType } from "@types";
 import { useCallback, useEffect, useState } from "react";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { TargetProductsOrCollections } from "~/libs/campaigns-product-collection/TargetProductsOrCollections";
@@ -32,7 +32,11 @@ import {
 } from "~/libs/campaigns/schema";
 import setupCampaign from "~/libs/campaigns/setup-campaign.server";
 import { authenticate } from "~/shopify.server";
-import type { Collection, Product } from "~/types/admin.types";
+import {
+  DiscountType,
+  type Collection,
+  type Product,
+} from "~/types/admin.types";
 // import { TokengatesResourcePicker } from "../components/TokengatesResourcePicker";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

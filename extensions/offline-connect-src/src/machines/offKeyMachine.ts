@@ -1,12 +1,12 @@
 import { evaluateGate as evaluateGateApi, gateContextClient } from "@/gate";
 import type { Vault } from "@/schema";
 import type { ActorRef } from "xstate";
-import { assign, fromPromise, sendTo, setup } from "xstate";
+import { assign, fromPromise, setup } from "xstate";
 import { OffKeyState } from "~/types";
 
 // Define types for the context
-type Context = {
-  authParentRef: ActorRef<any, any, any>;
+export type Context = {
+  authParentRef?: ActorRef<any, any, any>;
   error: unknown;
   walletAddress: string;
   gateId: string;
@@ -172,17 +172,11 @@ const offKeyMachine = setup({
     logError: assign({
       error: ({ event }) => (event as any).error,
     }),
-    sendUnlockedStateToAuthParent: sendTo(
-      ({ context }) => context.authParentRef,
-      () => ({
-        type: "UNLOCKED",
-      }),
-    ),
-    sendUnlockedStateToIframe: sendTo(
-      ({ system }) => {
-        return system.get("unlockIframe");
-      },
-      () => ({
+    sendUnlockedStateToAuthParent: ({ context, self }) => {
+      context.authParentRef?.send({ type: "UNLOCKED" });
+    },
+    sendUnlockedStateToIframe: ({ context, self }) => {
+      self.system.get("unlockIframe")?.send({
         type: "SEND_MESSAGE",
         data: {
           type: "OFF_KEY_STATE",
@@ -190,11 +184,10 @@ const offKeyMachine = setup({
             status: OffKeyState.Unlocked,
           },
         },
-      }),
-    ),
-    sendLockedStateToIframe: sendTo(
-      ({ system }) => system.get("unlockIframe"),
-      () => ({
+      });
+    },
+    sendLockedStateToIframe: ({ self }) => {
+      self.system.get("unlockIframe")?.send({
         type: "SEND_MESSAGE",
         data: {
           type: "OFF_KEY_STATE",
@@ -202,11 +195,10 @@ const offKeyMachine = setup({
             status: OffKeyState.Locked,
           },
         },
-      }),
-    ),
-    sendUsedStateToIframe: sendTo(
-      ({ system }) => system.get("unlockIframe"),
-      () => ({
+      });
+    },
+    sendUsedStateToIframe: ({ self }) => {
+      self.system.get("unlockIframe")?.send({
         type: "SEND_MESSAGE",
         data: {
           type: "OFF_KEY_STATE",
@@ -214,11 +206,10 @@ const offKeyMachine = setup({
             status: OffKeyState.Used,
           },
         },
-      }),
-    ),
-    sendUnlockingStateToIframe: sendTo(
-      ({ system }) => system.get("unlockIframe"),
-      () => ({
+      });
+    },
+    sendUnlockingStateToIframe: ({ self }) => {
+      self.system.get("unlockIframe")?.send({
         type: "SEND_MESSAGE",
         data: {
           type: "OFF_KEY_STATE",
@@ -226,8 +217,8 @@ const offKeyMachine = setup({
             status: OffKeyState.Unlocking,
           },
         },
-      }),
-    ),
+      });
+    },
   },
 }).createMachine({
   id: "offKey",

@@ -1,5 +1,9 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
-import type { RetrieveProductsGatesMinimalQuery } from "~/types/admin.generated";
+import type {
+  CreateGateSubjectMutation,
+  RetrieveProductsGatesMinimalQuery,
+  UpdateGateSubjectMutation,
+} from "~/types/admin.generated";
 
 const CREATE_GATE_SUBJECT_MUTATION = `#graphql
   mutation createGateSubject ($gateConfigurationId: ID!, $subject: ID!){
@@ -109,8 +113,11 @@ export default async function setupCampaignProductSubject({
     if (!r || !r.data) {
       throw new Error("Failed to create gate subject");
     }
-    if (r.data.userErrors?.length > 0) {
-      throw new Error(r.data.userErrors[0].message);
+    const userErrors =
+      (r.data as CreateGateSubjectMutation).gateSubjectCreate?.userErrors ||
+      (r.data as UpdateGateSubjectMutation).gateSubjectUpdate?.userErrors;
+    if (userErrors && userErrors?.length > 0) {
+      throw new Error(userErrors[0].message);
     }
   }
 }

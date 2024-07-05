@@ -6,7 +6,6 @@ import { DeleteIcon } from "@shopify/polaris-icons";
 import type { IndexTableHeading } from "@shopify/polaris/build/ts/src/components/IndexTable";
 import type { NonEmptyArray } from "@shopify/polaris/build/ts/src/types";
 import { useEffect, useState } from "react";
-import { GateReactionType, type GateReaction } from "types";
 import setupAppNamespace from "~/libs/app-metafields/setup-app-namespace.server";
 import { CampaignRowActions } from "~/libs/campaigns/campaign-row-actions";
 import deleteCampaigns, {
@@ -16,6 +15,7 @@ import type { GetCampaignRes } from "~/libs/campaigns/get-campaigns.server";
 import getCampaigns from "~/libs/campaigns/get-campaigns.server";
 import { ActionsEnum } from "~/libs/campaigns/types";
 import { authenticate } from "../shopify.server";
+import { GateReactionType, GateReaction } from "@/types";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin } = await authenticate.admin(request);

@@ -5,22 +5,21 @@ import type {
   I18nExclusiveText,
   I18nFieldsType,
   I18nMetafieldKey,
+  I18nSignupContent,
 } from "./schema";
 
 export type Languages = Pick<ShopLocale, "primary" | "locale" | "published">;
 
-// [{"locale":"EN","noAccess":"asfgasf","limitReached":"{}","published":true,"primary" :true},{"locale":"DE","noAccess":"asfasgasg","limitReached":"{}","published":false,"primary":false},{"locale":"FR","noAccess":"adgsg","l imitReached":"{}","published":true,"primary":false}]
-
-// Abstract types
-
 export interface I18nMetafieldValues {
   [I18nMetafieldKey.EXCLUSIVE_ERROR]: I18nContentMap<I18nExclusiveError>;
   [I18nMetafieldKey.EXCLUSIVE_TEXT]: I18nContentMap<I18nExclusiveText>;
+  [I18nMetafieldKey.SIGNUP_CONTENT]: I18nContentMap<I18nSignupContent>;
 }
 
 export interface I18nMetafieldForm {
   [I18nMetafieldKey.EXCLUSIVE_ERROR]: (I18nFieldsType & I18nExclusiveError)[];
   [I18nMetafieldKey.EXCLUSIVE_TEXT]: (I18nFieldsType & I18nExclusiveText)[];
+  [I18nMetafieldKey.SIGNUP_CONTENT]: (I18nFieldsType & I18nSignupContent)[];
 }
 
 export type I18nContentMap<T> = {

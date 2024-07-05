@@ -16,7 +16,7 @@ export async function setupI18nExclusiveDefaults({
   exclusiveErrorForm,
   ownerId,
 }: I18nExclusiveDefaults) {
-  const exclusiveError = convertFromI18nFormToMetafieldValue(
+  const exclusiveError = await convertFromI18nFormToMetafieldValue(
     I18nMetafieldKey.EXCLUSIVE_ERROR,
     exclusiveErrorForm,
   );

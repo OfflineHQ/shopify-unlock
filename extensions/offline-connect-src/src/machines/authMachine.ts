@@ -14,13 +14,9 @@ import {
 } from "xstate";
 import type { CssVariablesAndClasses } from "~/types";
 import { ShopifyCustomerStatus } from "~/types";
-import { connectWallet, gateContextClient, getLinkedCustomer } from "../gate";
-import {
-  connectedSchema,
-  type Customer,
-  type LinkedCustomer,
-  type Product,
-} from "../schema";
+import { connectWallet, gateContextClient } from "../gate";
+import type { Customer, GateContext, LinkedCustomer, Product } from "../schema";
+import { connectedSchema } from "../schema";
 import offKeyMachine from "./offKeyMachine";
 import unlockIframeMachine from "./unlockIframeMachine";
 
@@ -31,7 +27,6 @@ const pollConnectionState = fromObservable(({ input }) => {
       const event = {
         type: "CONNECTION_STATE_UPDATED",
         walletAddress: res?.walletAddress,
-        linkedCustomer: res?.linkedCustomer,
         walletVerificationMessage: res?.walletVerificationMessage,
         walletVerificationSignature: res?.walletVerificationSignature,
       };
@@ -60,6 +55,7 @@ const authMachine = setup({
           customerId?: string;
           productId?: string;
           gateId?: string;
+          linkedCustomer: LinkedCustomer;
         }
       | {
           type: "CONNECT_WALLET";
@@ -72,6 +68,9 @@ const authMachine = setup({
           customer?: Customer;
           product?: Product;
           cssVariablesAndClasses?: CssVariablesAndClasses;
+          additionalData?: {
+            signUpCTAText: string;
+          };
         }
       | { type: "IFRAME_MESSAGE_RECEIVED"; data: { type: string; value?: any } }
       | { type: "UNLOCKED" }
@@ -91,23 +90,25 @@ const authMachine = setup({
   },
   actors: {
     initStoreSessionAndCustomer: fromPromise(
-      async ({ input }: { input: { customerId: string | undefined } }) => {
-        // Implementation remains the same
-        return initStoreSessionAndCustomer(input.customerId);
+      async ({
+        input,
+      }: {
+        input: {
+          customerId: string | undefined;
+          linkedCustomer: LinkedCustomer | null;
+        };
+      }) => {
+        return initStoreSessionAndCustomer(input);
       },
     ),
     connectCustomerWallet: fromPromise(
       async ({ input }: { input: ConnectCustomerWalletInput }) => {
-        // Implementation remains the same
         return connectCustomerWallet(input);
       },
     ),
-    disconnectCustomerWallet: fromPromise(
-      async ({ input }: { input: { linkedCustomer: LinkedCustomer } }) => {
-        // Implementation remains the same
-        return disconnectCustomerWallet(input.linkedCustomer);
-      },
-    ),
+    disconnectCustomerWallet: fromPromise(async () => {
+      return disconnectCustomerWallet();
+    }),
     pollConnectionState,
   },
   actions: {
@@ -138,6 +139,12 @@ const authMachine = setup({
       customerId: ({ event }) => {
         assertEvent(event, "SET_INIT_DATA");
         return event.customerId;
+      },
+    }),
+    assignLinkedCustomer: assign({
+      linkedCustomer: ({ event }) => {
+        assertEvent(event, ["SET_INIT_DATA"]);
+        return event.linkedCustomer;
       },
     }),
     assignConnected: assign({
@@ -205,6 +212,7 @@ const authMachine = setup({
               customer: (event as any).customer,
               product: (event as any).product,
               cssVariablesAndClasses: (event as any).cssVariablesAndClasses,
+              additionalData: (event as any).additionalData,
               offKeyStatus: {
                 status: "",
               },
@@ -225,6 +233,7 @@ const authMachine = setup({
           customer: (event as any).customer,
           product: (event as any).product,
           cssVariablesAndClasses: (event as any).cssVariablesAndClasses,
+          additionalData: (event as any).additionalData,
         };
         console.log("sendConnectedStateToIframe", dataToSend);
         return {
@@ -268,7 +277,7 @@ const authMachine = setup({
     },
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QEMCuAXAFgYgJIDEAlAQQFkBRAfQoGUbiBxKw8gYXNwDVyARAbQAMAXUSgADgHtYAS3TSJAO1EgAHogCMAJgA0IAJ4bNAXxO6FEiHGVosyyTLmLlahJoCcAOjcAOACwBmAHYAVl0DBHV1fw9fYP8tYJMTIA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QEMCuAXAFgYgJIDEAlAQQFkBRAfQoGUbiBxKw8gYXNwDVyARAbQAMAXUSgADgHtYAS3TSJAO1EgAHogCMAJgA0IAJ4bNAXxO6FEiHGVosyyTLmLlahJoCcAOjcAOACwBmAFYAdn91APVvADYQ3QMEdXV-D19AsN8opICY4O8TEyA */
   id: "auth",
   initial: ShopifyCustomerStatus.Idle,
   context: {
@@ -326,15 +335,21 @@ const authMachine = setup({
       on: {
         SET_INIT_DATA: {
           target: ShopifyCustomerStatus.Initializing,
-          actions: ["reset", "assignCustomerId", "assignGateContext"],
+          actions: [
+            "reset",
+            "assignCustomerId",
+            "assignLinkedCustomer",
+            "assignGateContext",
+          ],
         },
       },
     },
     [ShopifyCustomerStatus.Initializing]: {
       invoke: {
         src: "initStoreSessionAndCustomer",
-        input: ({ context: { customerId } }) => ({
+        input: ({ context: { customerId, linkedCustomer } }) => ({
           customerId,
+          linkedCustomer,
         }),
         onDone: [
           {
@@ -345,11 +360,7 @@ const authMachine = setup({
           {
             target: ShopifyCustomerStatus.Connected,
             guard: "isConnected",
-            actions: [
-              "assignConnected",
-              // "assignReconnected",
-              "startUnlockIframe",
-            ],
+            actions: ["assignConnected", "startUnlockIframe"],
           },
           {
             target: ShopifyCustomerStatus.Disconnected,
@@ -508,77 +519,73 @@ export type AuthActor = ActorRefFrom<AuthMachine>;
 
 export default authMachine;
 
-async function initStoreSessionAndCustomer(customerId: string | undefined) {
+async function initStoreSessionAndCustomer({
+  customerId,
+  linkedCustomer,
+}: {
+  customerId: string | undefined;
+  linkedCustomer: LinkedCustomer | null;
+}) {
   try {
-    console.log("initStoreSessionAndCustomer before gateContextClient", {
+    console.log("Initializing store session and customer", { customerId });
+
+    const currentContext = await gateContextClient.read();
+    console.log("Current context", currentContext);
+
+    const needsReset = shouldResetSession({
       customerId,
-      gateContextClient,
-    });
-    let walletAddress;
-    let linkedCustomer;
-    let associatedCustomerId;
-    const res = await gateContextClient.read();
-    if (res) {
-      walletAddress = res.walletAddress;
-      linkedCustomer = res.linkedCustomer;
-      associatedCustomerId = res.walletVerificationMessage;
-    }
-    console.log("initStoreSessionAndCustomer", {
-      customerId,
-      associatedCustomerId,
-      walletAddress,
+      context: currentContext,
       linkedCustomer,
     });
-    let sessionUpdated = false;
-    // If the customer ID is different from the associated customer ID, we completely reset the store session (wallet, vaults and linkedCustomer)
-    if (customerId !== associatedCustomerId) {
-      await gateContextClient.write({
-        disconnect: true,
-        noCustomer: true,
-        linkedCustomer: {},
-        walletAddress: "",
-        vaults: [],
-      });
-      sessionUpdated = true;
+    console.log("needsReset", needsReset);
+
+    if (needsReset) {
+      //TODO, may need to remove item from cart if correspond to the one with gate.
+      await resetSession();
     }
-    try {
-      if (
-        customerId &&
-        (!linkedCustomer ||
-          sessionUpdated ||
-          (walletAddress && linkedCustomer?.address !== walletAddress))
-      ) {
-        await getLinkedCustomer();
-        sessionUpdated = true;
-      }
-    } catch (error) {
-      // TODO: check for what to do in case of error from our api, auto-heal in some cases ?
-      console.error(
-        "initStoreSessionAndCustomer getLinkedCustomer error:",
-        error,
-      );
-      throw error;
-    }
-    if (sessionUpdated) {
-      const res = await gateContextClient.read();
-      console.log("initStoreSessionAndCustomer after gateContextClient", {
-        res,
-      });
-      return {
-        walletAddress: res?.walletAddress,
-        linkedCustomer: res?.linkedCustomer,
-        customerId,
-      };
-    }
+    const updatedContext = needsReset
+      ? await gateContextClient.read()
+      : currentContext;
+    console.log("updatedContext", updatedContext);
     return {
-      walletAddress,
+      walletAddress: updatedContext?.walletAddress,
       linkedCustomer,
-      customerId: associatedCustomerId,
+      customerId: customerId || updatedContext?.walletVerificationMessage,
     };
   } catch (error) {
-    console.error("initStoreSessionAndCustomer error:", error);
+    console.error("Error initializing store session and customer:", error);
     throw error;
   }
+}
+
+function shouldResetSession({
+  customerId,
+  context,
+  linkedCustomer,
+}: {
+  customerId: string | undefined;
+  context: GateContext | null;
+  linkedCustomer: LinkedCustomer | null;
+}): boolean {
+  // We need to reset the session if:
+  return (
+    // - The customerId is different from the one in the context (validated on walletVerificationMessage)
+    (context?.walletVerificationMessage &&
+      customerId !== context?.walletVerificationMessage) ||
+    // - The walletAddress from the context is different from the one in the linkedCustomer
+    (context?.walletAddress &&
+      context?.walletAddress !== linkedCustomer?.address) ||
+    false
+  );
+}
+
+async function resetSession() {
+  await gateContextClient.write({
+    disconnect: true,
+    walletAddress: "",
+    vaults: [],
+  });
+  console.log("Session reset");
 }
 
 interface ConnectCustomerWalletInput {
@@ -605,14 +612,13 @@ async function connectCustomerWallet({
       message,
       signature,
       productId,
-      existingCustomer,
       gateId,
     });
     const res = await gateContextClient.read();
     console.log("connectCustomerWallet context res", res);
     return {
       walletAddress: res?.walletAddress,
-      linkedCustomer: res?.linkedCustomer,
+      linkedCustomer: { address: res?.walletAddress },
     };
   } catch (error) {
     console.error("connectCustomerWallet error:", error);
@@ -620,7 +626,7 @@ async function connectCustomerWallet({
   }
 }
 
-async function disconnectCustomerWallet(linkedCustomer: LinkedCustomer) {
+async function disconnectCustomerWallet() {
   console.log("disconnectCustomerWallet");
   try {
     const response = await fetch("/cart/clear.js", {
@@ -632,7 +638,6 @@ async function disconnectCustomerWallet(linkedCustomer: LinkedCustomer) {
     if (response.ok) {
       await gateContextClient.write({
         disconnect: true,
-        linkedCustomer,
         walletAddress: "",
         vaults: [],
       });

@@ -1,6 +1,9 @@
 declare global {
   interface Window {
     myAppGates: Gate[];
+    offlineConnect: {
+      openModal: () => void;
+    };
   }
 }
 

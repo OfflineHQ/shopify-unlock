@@ -6,7 +6,8 @@ import { evaluateGateParamsSchema } from "~/libs/public-api/schema";
 import { authenticate } from "~/shopify.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { storefront, session } = await authenticate.public.appProxy(request);
+  const { admin, storefront, session } =
+    await authenticate.public.appProxy(request);
   const { searchParams } = new URL(request.url);
   const loggedInCustomerId = searchParams.get("logged_in_customer_id");
 
@@ -19,7 +20,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.log({ rawData });
     const validatedData = evaluateGateParamsSchema.parse(rawData);
 
-    const result = await evaluateGate({
+    const result = await evaluateGate(admin.graphql, {
       ...validatedData,
       shopDomain: session.shop,
       customerId: loggedInCustomerId,
