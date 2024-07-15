@@ -135,6 +135,18 @@
       "id": "trigger_selector",
       "label": "Trigger Selector",
       "default": "#offline-connect-trigger"
+    },
+    {
+      "type": "text",
+      "id": "offline_signup_button_classes",
+      "label": "Sign Up Button Classes",
+      "default": "product-form__buttons"
+    },
+    {
+      "type": "text",
+      "id": "offline_login_button_classes",
+      "label": "Login Button Classes",
+      "default": "product-form__buttons"
     }
   ]
 }
@@ -247,17 +259,18 @@
           script.defer = true;
           document.head.appendChild(script);
         {% else %}
+        {% comment %} TODO: remove class product-form__buttons and replace with custom classes from settings {% endcomment %}
           unlockContainer.innerHTML = `
             <button
               id="offline-connect-trigger"
-              class="offline-unlock-button button button--full-width button--secondary"
+              class="offline-unlock-button button button--full-width button--secondary {{ block.settings.offline_signup_button_classes }}"
               data-settings_css_variables="{{ block.settings | json | escape }}"
               data-product_id="{{ product.id }}"
               data-product_available="{{ product.available }}"
               data-product_title="{{ product.title }}"
               data-product_price="{{ product.price }}"
             >
-              {{ block.settings.button_text | escape }}
+              Sign up to our club
             </button>
           `;
 
@@ -285,7 +298,7 @@
           <a
             href="{{ routes.account_login_url }}"
             id="offline-connect-login"
-            class="offline-unlock-button button button--full-width button--secondary"
+            class="offline-unlock-button button button--full-width button--secondary {{ block.settings.offline_login_button_classes }}"
           >
             Log in to Unlock
           </a>
