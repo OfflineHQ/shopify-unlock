@@ -1,0 +1,82 @@
+{% schema %}
+{
+  "name": "Offline Connect",
+  "target": "body",
+  "settings": [
+    {
+      "type": "text",
+      "id": "trigger_selector",
+      "label": "Trigger Element Selector",
+      "default": "#offline-connect-trigger",
+      "info": "CSS selector for the element that will trigger the connection modal"
+    }
+  ]
+}
+{% endschema %}
+
+{% if customer.id and customer.metafields.offline.wallet_address == blank %}
+  <div
+    id="offline-connect-modal"
+    data-customer_id="{{ customer.id }}"
+    data-account_login_url="{{ routes.account_login_url }}"
+    data-settings_css_variables="{{ block.settings | json | escape }}"
+    data-customer_id="{{ customer.id }}"
+    data-customer_email="{{ customer.email }}"
+    data-customer_first_name="{{ customer.first_name }}"
+    data-customer_last_name="{{ customer.last_name }}"
+    data-trigger_selector="{{ block.settings.trigger_selector | json | escape }}"
+    data-locale="{{ localization.language.iso_code }}"
+    data-customer_wallet_address="{{ customer.metafields.offline.wallet_address }}"
+    data-signup_content="{{ app.metafields.offline.signupContent.value | json | escape }}"
+  ></div>
+
+  <script async type="module" src="{{ "connect-modal.js" | asset_url }}"></script>
+  {{ 'globals.css' | asset_url | stylesheet_tag }}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const triggerSelector = {{ block.settings.trigger_selector | json }};
+
+      // Function to set up the click event
+      function setupTriggerClick(element) {
+        element.addEventListener('click', function(event) {
+          event.preventDefault();
+          if (window.offlineConnect && window.offlineConnect.openModal) {
+            window.offlineConnect.openModal();
+          }
+        });
+      }
+
+      // Set up event delegation on the document
+      document.addEventListener('click', function(event) {
+        if (event.target.matches(triggerSelector)) {
+          event.preventDefault();
+          if (window.offlineConnect && window.offlineConnect.openModal) {
+            window.offlineConnect.openModal();
+          }
+        }
+      });
+
+      // Check for existing trigger
+      const existingTrigger = document.querySelector(triggerSelector);
+      if (existingTrigger) {
+        setupTriggerClick(existingTrigger);
+      }
+
+      // Set up MutationObserver for dynamically added triggers
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === Node.ELEMENT_NODE && node.matches(triggerSelector)) {
+                setupTriggerClick(node);
+              }
+            });
+          }
+        });
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
+{% endif %}

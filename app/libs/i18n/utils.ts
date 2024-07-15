@@ -7,30 +7,31 @@ import type {
   Languages,
 } from "./types";
 
-export function convertFromI18nFormToMetafieldValue<K extends I18nMetafieldKey>(
-  key: K,
-  i18nMetafieldForm: I18nMetafieldForm[K],
-) {
-  i18nMetafieldFormSchema(key).parse(i18nMetafieldForm); // Validate the input using Zod
+export async function convertFromI18nFormToMetafieldValue<
+  K extends I18nMetafieldKey,
+>(key: K, i18nMetafieldForm: I18nMetafieldForm[K]) {
+  await i18nMetafieldFormSchema(key).parseAsync(i18nMetafieldForm); // Validate the input using Zod
 
   let metafieldValue: I18nMetafieldValues[K] = {};
   for (const item of i18nMetafieldForm) {
     const { locale, published, primary, ...rest } = item;
     metafieldValue[locale] = rest as any;
   }
-  i18nMetafieldValueSchema(key).parse(metafieldValue); // Validate the output using Zod
+  await i18nMetafieldValueSchema(key).parseAsync(metafieldValue); // Validate the output using Zod
   return metafieldValue;
 }
 
-export function convertFromMetafieldValueToI18nForm<K extends I18nMetafieldKey>(
+export async function convertFromMetafieldValueToI18nForm<
+  K extends I18nMetafieldKey,
+>(
   key: K,
   metafieldValue: I18nMetafieldValues[K] | null,
   languages: Languages[],
 ) {
-  return languages.map((language) => {
+  const promises = languages.map(async (language) => {
     const locale = language.locale.toUpperCase() as LanguageCode;
     const { published, primary } = language;
-    const translations = i18nMetafieldValueSchema(key).parse(
+    const translations = await i18nMetafieldValueSchema(key).parseAsync(
       metafieldValue?.[locale] || {},
     );
     return {
@@ -39,5 +40,7 @@ export function convertFromMetafieldValueToI18nForm<K extends I18nMetafieldKey>(
       primary,
       ...translations,
     };
-  }) as I18nMetafieldForm[K];
+  });
+
+  return Promise.all(promises) as Promise<I18nMetafieldForm[K]>;
 }

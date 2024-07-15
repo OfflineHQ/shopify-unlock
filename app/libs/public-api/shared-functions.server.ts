@@ -3,9 +3,7 @@ import getHmac from "./get-hmac.server";
 import verifySignatureWithCometh from "./proxy-request/verify-signature-with-cometh.server";
 import type { ConnectArgsSchema, EvaluateGateArgsSchema } from "./schema";
 
-export async function verifySignatureAndCustomerId(
-  args: EvaluateGateArgsSchema | ConnectArgsSchema,
-) {
+export async function verifySignatureAndCustomerId(args: ConnectArgsSchema) {
   const { address, message, signature, customerId } = args;
 
   if (!address || !message || !signature) {
@@ -32,12 +30,25 @@ export async function verifySignatureAndCustomerId(
   }
 }
 
-export async function getVaultsPayload(
-  args: Pick<
-    EvaluateGateArgsSchema,
-    "gateConfigurationGid" | "shopDomain" | "productGid"
-  >,
-) {
+interface VerifyCustomerAddressArgs
+  extends Pick<EvaluateGateArgsSchema, "address"> {
+  existingCustomerAddress: string | null;
+}
+
+export function verifyCustomerAddress({
+  address,
+  existingCustomerAddress,
+}: VerifyCustomerAddressArgs) {
+  if (
+    existingCustomerAddress &&
+    existingCustomerAddress.toLowerCase() !== address.toLowerCase()
+  ) {
+    return json({ message: "Invalid address" }, { status: 403 });
+  }
+  return null;
+}
+
+export async function getVaultsPayload(args: EvaluateGateArgsSchema) {
   const { gateConfigurationGid, shopDomain, productGid } = args;
 
   // TODO: Implement actual logic to get gate metadata with product

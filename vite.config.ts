@@ -55,7 +55,7 @@ export default defineConfig(({ mode }) => {
       hmr: hmrConfig,
       fs: {
         // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information
-        allow: ["app", "node_modules", "types.d.ts"],
+        allow: ["app", "node_modules", "types.ts", "src"],
       },
     },
     plugins: [
@@ -67,8 +67,12 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@types": path.resolve(__dirname, "./types.d.ts"),
+        "@": path.resolve(__dirname, "./src"),
       },
       extensions: [".js", ".ts", ".d.ts", ".jsx", ".tsx", ".json"],
+    },
+    optimizeDeps: {
+      include: ["@emoji-mart/data", "@udecode/plate-emoji", "lucide-react"],
     },
     define: {
       "process.env.SHOPIFY_API_KEY": env.SHOPIFY_API_KEY

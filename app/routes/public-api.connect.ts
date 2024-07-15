@@ -1,12 +1,14 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { z } from "zod";
+import getCustomerWalletAddress from "~/libs/customers/get-customer-metafield-wallet.server";
 import connect from "~/libs/public-api/connect.server";
 import { connectParamsSchema } from "~/libs/public-api/schema";
 import { authenticate } from "~/shopify.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { storefront, session } = await authenticate.public.appProxy(request);
+  const { admin, storefront, session } =
+    await authenticate.public.appProxy(request);
   const { searchParams } = new URL(request.url);
   const loggedInCustomerId = searchParams.get("logged_in_customer_id");
 
@@ -18,9 +20,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const rawData = await request.json();
     console.log({ rawData });
     const validatedData = connectParamsSchema.parse(rawData);
-
-    const result = await connect({
+    const address = await getCustomerWalletAddress({
+      graphql: admin.graphql,
+      customerId: loggedInCustomerId,
+    });
+    const result = await connect(admin.graphql, {
       ...validatedData,
+      existingCustomer: { address },
       shopDomain: session.shop,
       customerId: loggedInCustomerId,
     });

@@ -6,7 +6,7 @@ interface GetLinkedCustomer {
 }
 
 export interface GetLinkedCustomerResponse {
-  address?: string;
+  address: string | null;
 }
 
 export default async function getLinkedCustomer({
@@ -17,5 +17,9 @@ export default async function getLinkedCustomer({
     shop: shopDomain,
   };
   const path = `/customer/${customerId}`;
-  return makeShopifyProxyRequest<GetLinkedCustomerResponse>(path, params);
+  const res = await makeShopifyProxyRequest<GetLinkedCustomerResponse>(
+    path,
+    params,
+  );
+  return { address: res?.address || null };
 }

@@ -1,15 +1,7 @@
 import { getGateContextClient } from "@shopify/gate-context-client";
-import type {
-  GateContectWrite,
-  GateContext,
-  LinkedCustomer,
-  Vault,
-} from "./schema";
-import {
-  connectWalletSchema,
-  evaluateGateSchema,
-  getLinkedCustomerSchema,
-} from "./schema";
+import { DiscountType } from "~/types";
+import type { GateContectWrite, GateContext, Vault } from "./schema";
+import { connectWalletSchema, evaluateGateSchema } from "./schema";
 
 export const shopifyUnlockAppProxyUrl = "/apps/offline";
 
@@ -31,11 +23,6 @@ export const gateContextClient: OfflineGateContextClient =
             walletAddress: undefined,
             walletVerificationMessage: undefined,
             walletVerificationSignature: undefined,
-            linkedCustomer: {
-              address: data.noCustomer
-                ? undefined
-                : data.linkedCustomer?.address,
-            },
             vaults: [],
           };
           console.log("disconnectData", disconnectData);
@@ -98,41 +85,16 @@ export function enableBuyButtons() {
   });
 }
 
-export async function getLinkedCustomer() {
-  const response = await fetch(
-    `${shopifyUnlockAppProxyUrl}/public-api/linked-customer`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error("getLinkedCustomer error:", errorData);
-    throw errorData;
-  } else {
-    const json = await response.json();
-    const validatedData = getLinkedCustomerSchema.parse(json);
-    console.log("getLinkedCustomer response:", validatedData);
-    await gateContextClient.write({ linkedCustomer: validatedData });
-    return validatedData;
-  }
-}
-
 export async function connectWallet({
   address,
   message,
   signature,
-  existingCustomer,
   productId,
   gateId,
 }: {
   address: string;
   message: string;
   signature: string;
-  existingCustomer?: LinkedCustomer;
   productId?: string;
   gateId?: string;
 }) {
@@ -150,7 +112,6 @@ export async function connectWallet({
         address,
         message,
         signature,
-        existingCustomer,
       }),
     },
   );
@@ -212,3 +173,73 @@ export async function evaluateGate({
 }
 
 export const getGate = () => window.myAppGates?.[0] || {};
+
+export function updatePriceDisplay(
+  discount: {
+    type: DiscountType;
+    value: number;
+  },
+  formattedOriginalPrice: string,
+) {
+  const priceContainers = document.querySelectorAll(".price");
+  console.log("priceContainers", priceContainers);
+  priceContainers.forEach((priceContainer) => {
+    const regularPriceElement = priceContainer.querySelector(
+      ".price__regular .price-item--regular",
+    );
+    const salePriceElement = priceContainer.querySelector(
+      ".price__sale .price-item--sale",
+    );
+
+    if (regularPriceElement && salePriceElement) {
+      const originalPrice = parseFloat(
+        formattedOriginalPrice.replace(/[^0-9,.-]+/g, "").replace(",", "."),
+      );
+      let discountedPrice = originalPrice;
+
+      if (discount.type === DiscountType.Percentage) {
+        discountedPrice = originalPrice * (1 - discount.value / 100);
+      } else if (discount.type === DiscountType.Amount) {
+        discountedPrice = Math.max(0, originalPrice - discount.value);
+      }
+
+      // Update classes
+      priceContainer.classList.add("price--on-sale", "price--show-badge");
+
+      // Update regular price (slashed)
+      const slashedRegularPriceSpan = priceContainer.querySelector(
+        ".price__sale s.price-item--regular",
+      );
+      if (slashedRegularPriceSpan) {
+        slashedRegularPriceSpan.textContent = formattedOriginalPrice;
+      }
+
+      // Update sale price
+      const formattedDiscountedPrice = (window as any).Shopify.formatMoney(
+        Math.round(discountedPrice * 100),
+      );
+      salePriceElement.textContent = formattedDiscountedPrice;
+
+      // Update or add the badge
+      let badgeElement = priceContainer.querySelector(
+        ".badge.price__badge-sale",
+      );
+      if (!badgeElement) {
+        badgeElement = document.createElement("span");
+        badgeElement.className = "badge price__badge-sale color-scheme-5";
+        priceContainer.appendChild(badgeElement);
+      }
+      badgeElement.textContent = "Unlocked";
+
+      // Show sale price container and hide regular price container
+      const regularPriceContainer: HTMLElement | null =
+        priceContainer.querySelector(".price__regular");
+      const salePriceContainer: HTMLElement | null =
+        priceContainer.querySelector(".price__sale");
+      if (regularPriceContainer && salePriceContainer) {
+        regularPriceContainer.style.display = "none";
+        salePriceContainer.style.display = "block";
+      }
+    }
+  });
+}

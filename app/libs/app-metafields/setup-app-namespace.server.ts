@@ -1,12 +1,12 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
-import { NAMESPACE } from "./common";
 import createAppMetafields from "./create-app-metafields.server";
+import { NAMESPACE } from "./common";
 
 const GET_APP_NAMESPACE_METAFIELDS = `#graphql
-query GetAppNamespaceMetafields {
+query GetAppNamespaceMetafield($namespace: String!) {
   currentAppInstallation {
     id
-    metafield(key: "offline_handle", namespace: "offline") {
+    metafield(key: "offline_handle", namespace: $namespace) {
       key
       value
     }
@@ -18,7 +18,11 @@ export default async function setupAppNamespace(graphql: AdminGraphqlClient) {
   if (!process.env.OFFLINE_GATES_HANDLE) {
     throw new Error("OFFLINE_GATES_HANDLE is not set");
   }
-  const res = await graphql(GET_APP_NAMESPACE_METAFIELDS);
+  const res = await graphql(GET_APP_NAMESPACE_METAFIELDS, {
+    variables: {
+      namespace: NAMESPACE,
+    },
+  });
   const resJson = await res.json();
   if (!resJson?.data?.currentAppInstallation) {
     throw new Error("App not installed");

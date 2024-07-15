@@ -27,6 +27,7 @@ export default function App() {
         </Link>
         <Link to="/app/settings">Settings</Link>
         <Link to="/app/create-campaign">Create Campaign</Link>
+        <Link to="/app/customers">Customers</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>

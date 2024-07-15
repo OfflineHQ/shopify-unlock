@@ -1,5 +1,7 @@
 import react from "@vitejs/plugin-react";
+import autoprefixer from "autoprefixer";
 import path from "path";
+import tailwindcss from "tailwindcss";
 import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
@@ -18,9 +20,19 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        "~": path.resolve(__dirname, "../../"),
+        "~": path.resolve(__dirname, "../../src"),
       },
       extensions: [".js", ".ts", ".d.ts", ".jsx", ".tsx", ".json"],
+    },
+    css: {
+      postcss: {
+        plugins: [
+          tailwindcss({
+            config: path.resolve(__dirname, "./tailwind.config.extension.ts"),
+          }),
+          autoprefixer(),
+        ],
+      },
     },
     build: {
       target: "esnext",
@@ -33,13 +45,15 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           unlock: "./src/unlock.tsx",
-          connect: "./src/connect.tsx",
+          "connect-modal": "./src/connect-modal.tsx",
+          globals: "../../src/styles/globals.css",
         },
         output: {
           dir: "../offline-connect/assets",
           entryFileNames: "[name].js",
-          assetFileNames: "index.[ext]",
+          assetFileNames: "[name].[ext]",
         },
+        plugins: [],
         external: [],
       },
     },
