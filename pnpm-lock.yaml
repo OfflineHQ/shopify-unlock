@@ -253,8 +253,8 @@ importers:
   extensions/offline-connect-src:
     dependencies:
       '@iframe-resizer/react':
-        specifier: ^5.1.5
-        version: 5.1.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 5.1.4
+        version: 5.1.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@shopify/gate-context-client':
         specifier: ^1.0.1
         version: 1.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1397,11 +1397,11 @@ packages:
     resolution: {integrity: sha512-d2CGZR2o7fS6sWB7DG/3a95bGKQyHMACZ5aW8qGkkqQpUoZV6C0X7Pc7l4ZNMZkfNBf4VWNe9E1jRsf0G146Ew==}
     engines: {node: '>=18.18'}
 
-  '@iframe-resizer/core@5.1.5':
-    resolution: {integrity: sha512-uu0Ptk+R7vYY7R9HFsc5R4+p68rgGxrsWIq2sK9oanJPBtQ2P9pMYoRseM8F4AfOONHOeHxGByWeBmw7LTXmdA==}
+  '@iframe-resizer/core@5.1.4':
+    resolution: {integrity: sha512-Mp5ehWpG0PgloQ1iJJb/1s0hXjh6RkHZu35W7sVJFdViCbR4GPcKfjHmaB4tC8cHpLd69qaew/iOqv8zY2sZlQ==}
 
-  '@iframe-resizer/react@5.1.5':
-    resolution: {integrity: sha512-klGfad00ZiVHIplWYJ04ACp8vU6xa5ujLSWEJOFcc8SqQyJv7T0UtxuUGPiEXvSGeaP5HgFvYFzua7YOw/blIg==}
+  '@iframe-resizer/react@5.1.4':
+    resolution: {integrity: sha512-aa8CV47qKq2IFSLSdqqZG1qxchp0ZMm7CfW4x2msGCiukK4+L7nSje5XPQTiX5pg7S8lB/KQfU68URKno710sQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
@@ -7765,12 +7765,11 @@ snapshots:
 
   '@humanwhocodes/retry@0.3.0': {}
 
-  '@iframe-resizer/core@5.1.5': {}
+  '@iframe-resizer/core@5.1.4': {}
 
-  '@iframe-resizer/react@5.1.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@iframe-resizer/react@5.1.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@babel/runtime': 7.24.7
-      '@iframe-resizer/core': 5.1.5
+      '@iframe-resizer/core': 5.1.4
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       warning: 4.0.3

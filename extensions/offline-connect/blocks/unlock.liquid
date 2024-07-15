@@ -273,24 +273,6 @@
               Sign up to our club
             </button>
           `;
-
-          // Add styles inline
-          var style = document.createElement('style');
-          style.textContent = `
-            .offline-unlock-button {
-              background-color: {{ block.settings.offline_primary_color }};
-              color: {{ block.settings.offline_secondary_color }};
-              border-radius: {{ block.settings.offline_border_radius }};
-              height: {{ block.settings.offline_button_height }};
-              font-size: {{ block.settings.offline_button_font_size }};
-              letter-spacing: {{ block.settings.offline_button_letter_spacing }};
-              padding: {{ block.settings.offline_button_padding }};
-              max-width: {{ block.settings.offline_max_width }};
-              font-family: {{ block.settings.offline_font_family }}, sans-serif;
-            }
-          `;
-          document.head.appendChild(style);
-
           setupTriggerObserver();
         {% endif %}
       {% else %}
