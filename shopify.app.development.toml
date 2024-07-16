@@ -8,7 +8,7 @@ extension_directories = [
 ]
 name = "Offline Unlock Development"
 handle = "offline-unlock-development"
-application_url = "https://counsel-status-keywords-remained.trycloudflare.com"
+application_url = "https://beads-purchasing-hq-semester.trycloudflare.com"
 embedded = true
 
 [build]
@@ -22,15 +22,15 @@ scopes = "read_customers,read_discounts,read_gates,read_locales,read_themes,unau
 
 [auth]
 redirect_urls = [
-  "https://counsel-status-keywords-remained.trycloudflare.com/auth/callback",
-  "https://counsel-status-keywords-remained.trycloudflare.com/auth/shopify/callback",
-  "https://counsel-status-keywords-remained.trycloudflare.com/api/auth/callback"
+  "https://beads-purchasing-hq-semester.trycloudflare.com/auth/callback",
+  "https://beads-purchasing-hq-semester.trycloudflare.com/auth/shopify/callback",
+  "https://beads-purchasing-hq-semester.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "unstable"
 
 [app_proxy]
-url = "https://counsel-status-keywords-remained.trycloudflare.com"
+url = "https://beads-purchasing-hq-semester.trycloudflare.com"
 subpath = "offline"
 prefix = "apps"

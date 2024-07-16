@@ -1,5 +1,6 @@
 import IframeResizer from "@iframe-resizer/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { cn } from "@udecode/cn";
 import { useSelector } from "@xstate/react";
 import type { IFramePage } from "iframe-resizer";
 import { useEffect, useMemo } from "react";
@@ -10,7 +11,6 @@ import type { UnlockIframeActor } from "./machines/unlockIframeMachine";
 import type { Customer, Product } from "./schema";
 import { UnlockIframeStatus } from "./types";
 import { hexToHsl } from "./utils/colors";
-import { cn } from "@udecode/cn";
 
 export interface AppConnectProps {
   customer: Customer;
@@ -137,6 +137,7 @@ const App = ({
             iframeRef,
           });
         }}
+        allow="publickey-credentials-get; publickey-credentials-create"
         height={settingsCssVariables.offline_button_height}
         tabIndex={0}
         inPageLinks
