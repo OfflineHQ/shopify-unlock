@@ -5,14 +5,14 @@
 > [!IMPORTANT]  
 > Offline development has been stopped on July 2024 and the project is no longer maintained.
 
-> **Note:** This is the repository for **Shopify Unlock (Offline Unlock)**, our token-gating system on Shopify. This app plays a critical role in the Shopify integration within the Offline ecosystem.
+> [!NOTE]  
+> This is the repository for **Shopify Unlock (Offline Unlock)**, our token-gating system on Shopify. This app plays a critical role in the Shopify integration within the Offline ecosystem.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Features](#features)
 - [Relationship to the Marketplace Repository](#relationship-to-the-marketplace-repository)
 - [Quick Start](#quick-start)
   - [Prerequisites](#prerequisites)
@@ -26,16 +26,17 @@
 - [Resources](#resources)
 - [License](#license)
 
+## ✨ Features
+
+- 👛 **Web3 Wallet Integration**: Seamlessly connect via a web3 wallet using **Cometh Connect** for Single Sign-On (SSO), enabling smooth and secure wallet-based authentication.
+- 🎯 **Dynamic Campaign Content Display**: Automatically fetch and showcase campaign-specific content—like text and images—tailored to users based on their engagement and wallet status.
+- 🎨 **Customizable UI**: Enjoy a responsive and dynamic interface that adapts according to settings from the **Theme Block Extension**, fully integrated into Shopify product pages.
+- 🔑 **Consistent Passkey/Wallet Access**: Maintain uninterrupted access to your user's passkey wallet across all "Offline Gate" integrations, ensuring a unified and seamless experience across platforms.
+- 🌐 **Multi-Language Support**: Engage a global audience with support for multiple languages, providing localized experiences for users around the world.
+
 ## Overview
 
 **Shopify Unlock (Offline Unlock)** is a **Remix** app that plays a critical role in the Shopify integration within the Offline ecosystem. It is deployed on **Render.com** and serves as a key interface for handling user interactions related to web3 wallet connections and campaign content delivery within Shopify stores.
-
-### Main Features
-
-- **Web3 Wallet Integration**: Utilizes **Cometh Connect** for Single Sign-On (SSO), enabling users to connect via a web3 wallet for seamless wallet-based authentication.
-- **Campaign Content Display**: Fetches and displays campaign-specific content, such as text and images, to users based on their engagement and wallet status.
-- **Customizable UI**: Adapts dynamically according to the settings provided by the **Theme Block Extension**, integrated into Shopify product pages.
-- **Passkey/Wallet Access**: Ensures consistent access to the user's passkey or wallet across all "Offline Gate" integrations, providing a unified experience across platforms.
 
 ## Relationship to the Marketplace Repository
 
@@ -166,7 +167,7 @@ This app uses [Prisma](https://www.prisma.io/) for database interactions. By def
 
 Update your `prisma/schema.prisma` and `.env` files accordingly.
 
-## Tech Stack
+## 🧰 Tech Stack
 
 - **Remix**: For building the app's frontend and server-rendered components.
 - **Shopify App Remix**: Provides authentication and methods for interacting with Shopify APIs.
