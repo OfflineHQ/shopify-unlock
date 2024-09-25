@@ -1,6 +1,8 @@
-<p align="center"><img width="25%" alt="Offline logo" src="https://github.com/user-attachments/assets/35c58da8-89ee-41c4-af27-884b86ee4834"></p>
+<p align="center">
+  <img width="25%" alt="Offline logo" src="https://github.com/user-attachments/assets/35c58da8-89ee-41c4-af27-884b86ee4834">
+</p>
 
-<h1 align="center">Shopify Unlock (Offline Unlock)</h1>
+# Shopify Unlock (Offline Unlock)
 
 > [!IMPORTANT]  
 > Offline development has been stopped on July 2024 and the project is no longer maintained.
@@ -10,8 +12,9 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-## Table of Contents
+## 📖 Table of Contents
 
+- [✨ Features](#-features)
 - [Overview](#overview)
 - [Relationship to the Marketplace Repository](#relationship-to-the-marketplace-repository)
 - [Quick Start](#quick-start)
@@ -21,10 +24,17 @@
   - [Local Development](#local-development)
 - [Authenticating and Querying Data](#authenticating-and-querying-data)
 - [Deployment](#deployment)
-- [Tech Stack](#tech-stack)
+  - [Build](#build)
+  - [Environment Variables on Render.com](#environment-variables-on-rendercom)
+  - [Application Storage](#application-storage)
+- [🧰 Tech Stack](#-tech-stack)
 - [Troubleshooting](#troubleshooting)
-- [Resources](#resources)
-- [License](#license)
+  - [Database Tables Do Not Exist](#database-tables-do-not-exist)
+  - [OAuth Loop After Changing Scopes](#oauth-loop-after-changing-scopes)
+  - [Webhook Subscriptions Not Updating](#webhook-subscriptions-not-updating)
+  - [Issues with Web3 Wallet Connection](#issues-with-web3-wallet-connection)
+- [📚 Resources](#-resources)
+- [📄 License](#-license)
 
 ## ✨ Features
 
@@ -51,20 +61,13 @@ In essence, **Shopify Unlock** is the user-facing component that interacts with 
 
 Before you begin, you'll need the following:
 
-1. **Node.js**: [Download and install](https://nodejs.org/en/download/) it if you haven't already.
+1. **Node.js**: [Download and install](https://nodejs.org/en/download/) if you haven't already.
 2. **Shopify Partner Account**: [Create an account](https://partners.shopify.com/signup) if you don't have one.
 3. **Test Store**: Set up either a [development store](https://help.shopify.com/en/partners/dashboard/development-stores#create-a-development-store) or a [Shopify Plus sandbox store](https://help.shopify.com/en/partners/dashboard/managing-stores/plus-sandbox-store) for testing your app.
 4. **Cometh Connect API Key**: Sign up for an account with [Cometh Connect](https://docs.cometh.io/connect) to obtain your API key.
 5. **Offline Marketplace API Access**: Ensure you have access to the Offline Marketplace API for NFT minting and retrieval.
 
 ### Setup
-
-Clone the repository:
-
-```shell
-git clone https://github.com/yourusername/shopify-unlock.git
-cd shopify-unlock
-```
 
 Install dependencies using **pnpm**:
 
@@ -169,15 +172,15 @@ Update your `prisma/schema.prisma` and `.env` files accordingly.
 
 ## 🧰 Tech Stack
 
-- **Remix**: For building the app's frontend and server-rendered components.
-- **Shopify App Remix**: Provides authentication and methods for interacting with Shopify APIs.
-- **Cometh Connect**: For web3 wallet integration and SSO functionality.
-- **Render.com**: For deploying and hosting the app.
-- **Prisma**: For database ORM.
-- **Shopify Polaris**: For consistent UI components.
-- **Shopify App Bridge**: For seamless integration within Shopify's Admin.
-- **Web3 Technologies**: For blockchain interactions and NFT management.
-- **pnpm**: As the package manager for faster and more efficient dependency management.
+- ⚛️ **Remix**: For building the app's frontend and server-rendered components.
+- 🛍️ **Shopify App Remix**: Provides authentication and methods for interacting with Shopify APIs.
+- 🔗 **Cometh Connect**: For web3 wallet integration and SSO functionality.
+- ☁️ **Render.com**: For deploying and hosting the app.
+- 🌐 **Prisma**: For database ORM.
+- 🎨 **Shopify Polaris**: For consistent UI components.
+- 🔌 **Shopify App Bridge**: For seamless integration within Shopify's Admin.
+- 🕸️ **Web3 Technologies**: For blockchain interactions and NFT management.
+- 📦 **pnpm**: As the package manager for faster and more efficient dependency management.
 
 ## Troubleshooting
 
@@ -211,7 +214,7 @@ This app registers webhooks after OAuth completes. If webhooks are not updating 
 
 Ensure that your **Cometh Connect** API key is valid and that the integration is correctly set up. Refer to the [Cometh Connect Documentation](https://docs.cometh.io/connect) for troubleshooting tips.
 
-## Resources
+## 📚 Resources
 
 - [Remix Documentation](https://remix.run/docs/en/main#remix-docs)
 - [Shopify App Remix](https://shopify.dev/docs/api/shopify-app-remix)
@@ -222,6 +225,6 @@ Ensure that your **Cometh Connect** API key is valid and that the integration is
 - [Shopify Polaris](https://polaris.shopify.com/)
 - [pnpm Documentation](https://pnpm.io/)
 
-## License
+## 📄 License
 
 This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
