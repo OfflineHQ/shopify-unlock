@@ -1,12 +1,50 @@
-# Shopify App Template - Remix
+<p align="center"><img width="25%" alt="Offline logo" src="https://github.com/user-attachments/assets/35c58da8-89ee-41c4-af27-884b86ee4834"></p>
 
-This is a template for building a [Shopify app](https://shopify.dev/docs/apps/getting-started) using the [Remix](https://remix.run) framework.
+<h1 align="center">Shopify Unlock (Offline Unlock)</h1>
 
-Rather than cloning this repo, you can use your preferred package manager and the Shopify CLI with [these steps](https://shopify.dev/docs/apps/getting-started/create).
+> [!IMPORTANT]  
+> Offline development has been stopped on July 2024 and the project is no longer maintained.
 
-Visit the [`shopify.dev` documentation](https://shopify.dev/docs/api/shopify-app-remix) for more details on the Remix app package.
+> **Note:** This is the repository for **Shopify Unlock (Offline Unlock)**, our token-gating system on Shopify. This app plays a critical role in the Shopify integration within the Offline ecosystem.
 
-## Quick start
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Relationship to the Marketplace Repository](#relationship-to-the-marketplace-repository)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Environment Configuration](#environment-configuration)
+  - [Local Development](#local-development)
+- [Authenticating and Querying Data](#authenticating-and-querying-data)
+- [Deployment](#deployment)
+- [Tech Stack](#tech-stack)
+- [Troubleshooting](#troubleshooting)
+- [Resources](#resources)
+- [License](#license)
+
+## Overview
+
+**Shopify Unlock (Offline Unlock)** is a **Remix** app that plays a critical role in the Shopify integration within the Offline ecosystem. It is deployed on **Render.com** and serves as a key interface for handling user interactions related to web3 wallet connections and campaign content delivery within Shopify stores.
+
+### Main Features
+
+- **Web3 Wallet Integration**: Utilizes **Cometh Connect** for Single Sign-On (SSO), enabling users to connect via a web3 wallet for seamless wallet-based authentication.
+- **Campaign Content Display**: Fetches and displays campaign-specific content, such as text and images, to users based on their engagement and wallet status.
+- **Customizable UI**: Adapts dynamically according to the settings provided by the **Theme Block Extension**, integrated into Shopify product pages.
+- **Passkey/Wallet Access**: Ensures consistent access to the user's passkey or wallet across all "Offline Gate" integrations, providing a unified experience across platforms.
+
+## Relationship to the Marketplace Repository
+
+- **NFT Minting and Retrieval**: Connects to the **Offline Marketplace** API to mint and retrieve NFT information. This integration is critical for creating and managing NFTs (like OF Keys and Stamps) that represent user interactions within the Shopify store.
+- **Perk and Reward System**: The marketplace manages the backend for distributing perks such as discounts or rewards by leveraging the NFTs tied to user purchases and activity. These NFTs are tracked and managed in the marketplace, which provides the backend support for the campaigns running on the Shopify platform.
+
+In essence, **Shopify Unlock** is the user-facing component that interacts with the NFT and campaign data housed within the **Offline Marketplace** repository, ensuring that NFTs are minted, managed, and perks linked to them are applied properly in Shopify stores for each customer.
+
+## Quick Start
 
 ### Prerequisites
 
@@ -15,58 +53,65 @@ Before you begin, you'll need the following:
 1. **Node.js**: [Download and install](https://nodejs.org/en/download/) it if you haven't already.
 2. **Shopify Partner Account**: [Create an account](https://partners.shopify.com/signup) if you don't have one.
 3. **Test Store**: Set up either a [development store](https://help.shopify.com/en/partners/dashboard/development-stores#create-a-development-store) or a [Shopify Plus sandbox store](https://help.shopify.com/en/partners/dashboard/managing-stores/plus-sandbox-store) for testing your app.
+4. **Cometh Connect API Key**: Sign up for an account with [Cometh Connect](https://docs.cometh.io/connect) to obtain your API key.
+5. **Offline Marketplace API Access**: Ensure you have access to the Offline Marketplace API for NFT minting and retrieval.
 
 ### Setup
 
-If you used the CLI to create the template, you can skip this section.
-
-Using yarn:
+Clone the repository:
 
 ```shell
-yarn install
+git clone https://github.com/yourusername/shopify-unlock.git
+cd shopify-unlock
 ```
 
-Using npm:
-
-```shell
-npm install
-```
-
-Using pnpm:
+Install dependencies using **pnpm**:
 
 ```shell
 pnpm install
 ```
 
+### Environment Configuration
+
+Create a `.env` file in the root directory and provide the necessary environment variables:
+
+```env
+# Shopify API credentials
+SHOPIFY_API_KEY=your_shopify_api_key
+SHOPIFY_API_SECRET=your_shopify_api_secret
+
+# Cometh Connect API key
+COMETH_CONNECT_API_KEY=your_cometh_connect_api_key
+
+# Offline Marketplace API
+OFFLINE_MARKETPLACE_API_URL=https://api.offline.marketplace.com
+OFFLINE_MARKETPLACE_API_KEY=your_offline_marketplace_api_key
+
+# Session secret
+SESSION_SECRET=your_session_secret
+
+# Other necessary environment variables
+# ...
+```
+
 ### Local Development
 
-Using yarn:
+Start the development server using **pnpm**:
 
 ```shell
-yarn dev
+pnpm dev
 ```
 
-Using npm:
+Press **P** to open the URL to your app. Once you click install, you can start development.
 
-```shell
-npm run dev
-```
+Local development is powered by the [Shopify CLI](https://shopify.dev/docs/apps/tools/cli). It logs into your partner account, connects to an app, provides environment variables, updates remote config, creates a tunnel, and provides commands to generate extensions.
 
-Using pnpm:
+## Authenticating and Querying Data
 
-```shell
-pnpm run dev
-```
-
-Press P to open the URL to your app. Once you click install, you can start development.
-
-Local development is powered by [the Shopify CLI](https://shopify.dev/docs/apps/tools/cli). It logs into your partners account, connects to an app, provides environment variables, updates remote config, creates a tunnel and provides commands to generate extensions.
-
-### Authenticating and querying data
-
-To authenticate and query data you can use the `shopify` const that is exported from `/app/shopify.server.js`:
+To authenticate and query data, you can use the `shopify` constant exported from `/app/shopify.server.js`:
 
 ```js
+// Example loader function
 export async function loader({ request }) {
   const { admin } = await shopify.authenticate.admin(request);
 
@@ -90,252 +135,92 @@ export async function loader({ request }) {
 }
 ```
 
-This template comes preconfigured with examples of:
+This app comes preconfigured with examples of:
 
-1. Setting up your Shopify app in [/app/shopify.server.ts](https://github.com/Shopify/shopify-app-template-remix/blob/main/app/shopify.server.ts)
-2. Querying data using Graphql. Please see: [/app/routes/app.\_index.tsx](https://github.com/Shopify/shopify-app-template-remix/blob/main/app/routes/app._index.tsx).
-3. Responding to mandatory webhooks in [/app/routes/webhooks.tsx](https://github.com/Shopify/shopify-app-template-remix/blob/main/app/routes/webhooks.tsx)
+1. Setting up your Shopify app in `/app/shopify.server.js`
+2. Querying data using GraphQL (see `/app/routes/app._index.jsx`)
+3. Responding to mandatory webhooks in `/app/routes/webhooks.jsx`
 
-Please read the [documentation for @shopify/shopify-app-remix](https://www.npmjs.com/package/@shopify/shopify-app-remix#authenticating-admin-requests) to understand what other API's are available.
+For more details on the available APIs, refer to the [Shopify App Remix documentation](https://www.npmjs.com/package/@shopify/shopify-app-remix#authenticating-admin-requests).
 
 ## Deployment
 
-### Application Storage
-
-This template uses [Prisma](https://www.prisma.io/) to store session data, by default using an [SQLite](https://www.sqlite.org/index.html) database.
-The database is defined as a Prisma schema in `prisma/schema.prisma`.
-
-This use of SQLite works in production if your app runs as a single instance.
-The database that works best for you depends on the data your app needs and how it is queried.
-You can run your database of choice on a server yourself or host it with a SaaS company.
-Here’s a short list of databases providers that provide a free tier to get started:
-
-| Database   | Type             | Hosters                                                                                                                                                                                                                               |
-| ---------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MySQL      | SQL              | [Digital Ocean](https://www.digitalocean.com/try/managed-databases-mysql), [Planet Scale](https://planetscale.com/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Google Cloud SQL](https://cloud.google.com/sql/docs/mysql) |
-| PostgreSQL | SQL              | [Digital Ocean](https://www.digitalocean.com/try/managed-databases-postgresql), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Google Cloud SQL](https://cloud.google.com/sql/docs/postgres)                                   |
-| Redis      | Key-value        | [Digital Ocean](https://www.digitalocean.com/try/managed-databases-redis), [Amazon MemoryDB](https://aws.amazon.com/memorydb/)                                                                                                        |
-| MongoDB    | NoSQL / Document | [Digital Ocean](https://www.digitalocean.com/try/managed-databases-mongodb), [MongoDB Atlas](https://www.mongodb.com/atlas/database)                                                                                                  |
-
-To use one of these, you can use a different [datasource provider](https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#datasource) in your `schema.prisma` file, or a different [SessionStorage adapter package](https://github.com/Shopify/shopify-api-js/blob/main/packages/shopify-api/docs/guides/session-storage.md).
+- Our **Shopify Unlock** app is deployed using [Render.com](https://render.com/). When you're ready to deploy your app, follow Render.com's documentation for deploying a Remix app. We have a staging and production environment that you can find in the [staging render.yaml](./deploy/staging/render.yaml) and [production render.yaml](./deploy/production/render.yaml) files.
+- The **theme block extensions and checkout functions** are deployed through our [GitHub Action](./.github/workflows/deploy-shopify-app.yml).
 
 ### Build
 
-Remix handles building the app for you, by running the command below with the package manager of your choice:
-
-Using yarn:
+Remix handles building the app for you. Run the build command using **pnpm**:
 
 ```shell
-yarn build
+pnpm build
 ```
 
-Using npm:
+### Environment Variables on Render.com
 
-```shell
-npm run build
-```
+Ensure that all the necessary environment variables are set in your Render.com dashboard. This includes any API keys, database URLs, and other secrets required by your app.
 
-Using pnpm:
+### Application Storage
 
-```shell
-pnpm run build
-```
+This app uses [Prisma](https://www.prisma.io/) for database interactions. By default, it uses SQLite for local development. For production, consider using a hosted database like PostgreSQL, MySQL, or MongoDB.
 
-## Hosting
+Update your `prisma/schema.prisma` and `.env` files accordingly.
 
-When you're ready to set up your app in production, you can follow [our deployment documentation](https://shopify.dev/docs/apps/deployment/web) to host your app on a cloud provider like [Heroku](https://www.heroku.com/) or [Fly.io](https://fly.io/).
+## Tech Stack
 
-When you reach the step for [setting up environment variables](https://shopify.dev/docs/apps/deployment/web#set-env-vars), you also need to set the variable `NODE_ENV=production`.
+- **Remix**: For building the app's frontend and server-rendered components.
+- **Shopify App Remix**: Provides authentication and methods for interacting with Shopify APIs.
+- **Cometh Connect**: For web3 wallet integration and SSO functionality.
+- **Render.com**: For deploying and hosting the app.
+- **Prisma**: For database ORM.
+- **Shopify Polaris**: For consistent UI components.
+- **Shopify App Bridge**: For seamless integration within Shopify's Admin.
+- **Web3 Technologies**: For blockchain interactions and NFT management.
+- **pnpm**: As the package manager for faster and more efficient dependency management.
 
-### Hosting on Vercel
+## Troubleshooting
 
-Using the Vercel Preset is recommended when hosting your Shopify Remix app on Vercel. You'll also want to ensure imports that would normally come from `@remix-run/node` are imported from `@vercel/remix` instead. Learn more about hosting Remix apps on Vercel [here](https://vercel.com/docs/frameworks/remix).
+### Database Tables Do Not Exist
 
-```diff
-// vite.config.ts
-import { vitePlugin as remix } from "@remix-run/dev";
-import { defineConfig, type UserConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-+ import { vercelPreset } from '@vercel/remix/vite';
-
-installGlobals();
-
-export default defineConfig({
-  plugins: [
-    remix({
-      ignoredRouteFiles: ["**/.*"],
-+     presets: [vercelPreset()],
-    }),
-    tsconfigPaths(),
-  ],
-});
-```
-
-## Gotchas / Troubleshooting
-
-### Database tables don't exist
-
-If you get this error:
+If you encounter an error like:
 
 ```
 The table `main.Session` does not exist in the current database.
 ```
 
-You need to create the database for Prisma. Run the `setup` script in `package.json` using your preferred package manager.
-
-### Navigating/redirecting breaks an embedded app
-
-Embedded Shopify apps must maintain the user session, which can be tricky inside an iFrame. To avoid issues:
-
-1. Use `Link` from `@remix-run/react` or `@shopify/polaris`. Do not use `<a>`.
-2. Use the `redirect` helper returned from `authenticate.admin`. Do not use `redirect` from `@remix-run/node`
-3. Use `useSubmit` or `<Form/>` from `@remix-run/react`. Do not use a lowercase `<form/>`.
-
-This only applies if you app is embedded, which it will be by default.
-
-### Non Embedded
-
-Shopify apps are best when they are embedded into the Shopify Admin. This template is configured that way. If you have a reason to not embed your please make 2 changes:
-
-1. Change the `isEmbeddedApp` prop to false for the `AppProvider` in `/app/routes/app.jsx`
-2. Remove any use of App Bridge APIs (`window.shopify`) from your code
-3. Update the config for shopifyApp in `app/shopify.server.js`. Pass `isEmbeddedApp: false`
-
-### OAuth goes into a loop when I change my app's scopes
-
-If you change your app's scopes and authentication goes into a loop and fails with a message from Shopify that it tried too many times, you might have forgotten to update your scopes with Shopify.
-To do that, you can run the `deploy` CLI command.
-
-Using yarn:
+You need to create the database tables for Prisma. Run the `setup` script using **pnpm**:
 
 ```shell
-yarn deploy
+pnpm setup
 ```
 
-Using npm:
+### OAuth Loop After Changing Scopes
+
+If you change your app's scopes and authentication goes into a loop, failing with a message from Shopify that it tried too many times, you might need to update your app's configuration on Shopify. Run the `deploy` command to update the app settings:
 
 ```shell
-npm run deploy
+pnpm deploy
 ```
 
-Using pnpm:
+### Webhook Subscriptions Not Updating
 
-```shell
-pnpm run deploy
-```
+This app registers webhooks after OAuth completes. If webhooks are not updating as expected, try uninstalling and reinstalling the app in your development store to force the OAuth process and trigger webhook registration.
 
-### My webhook subscriptions aren't being updated
+### Issues with Web3 Wallet Connection
 
-This template registers webhooks after OAuth completes, using the `afterAuth` hook when calling `shopifyApp`.
-The package calls that hook in 2 scenarios:
-
-- After installing the app
-- When an access token expires
-
-During normal development, the app won't need to re-authenticate most of the time, so the subscriptions aren't updated.
-
-To force your app to update the subscriptions, you can uninstall and reinstall it in your development store.
-That will force the OAuth process and call the `afterAuth` hook.
-
-### Admin created webhook failing HMAC validation
-
-Webhooks subscriptions created in the [Shopify admin](https://help.shopify.com/en/manual/orders/notifications/webhooks) will fail HMAC validation. This is because the webhook payload is not signed with your app's secret key.
-
-Create [webhook subscriptions](https://shopify.dev/docs/api/shopify-app-remix/v1/guide-webhooks) using the `shopifyApp` object instead.
-
-Test your webhooks with the [Shopify CLI](https://shopify.dev/docs/apps/tools/cli/commands#webhook-trigger) or by triggering events manually in the Shopify admin(e.g. Updating the product title to trigger a `PRODUCTS_UPDATE`).
-
-### Incorrect GraphQL Hints
-
-By default the [graphql.vscode-graphql](https://marketplace.visualstudio.com/items?itemName=GraphQL.vscode-graphql) extension for VS Code will assume that GraphQL queries or mutations are for the [Shopify Admin API](https://shopify.dev/docs/api/admin). This is a sensible default, but it may not be true if:
-
-1. You use another Shopify API such as the storefront API.
-2. You use a third party GraphQL API.
-
-in this situation, please update the [.graphqlrc.ts](https://github.com/Shopify/shopify-app-template-remix/blob/main/.graphqlrc.ts) config.
-
-### First parameter has member 'readable' that is not a ReadableStream.
-
-See [hosting on Vercel](#hosting-on-vercel).
-
-### Admin object undefined on webhook events triggered by the CLI
-
-When you trigger a webhook event using the Shopify CLI, the `admin` object will be `undefined`. This is because the CLI triggers an event with a valid, but non-existent, shop. The `admin` object is only available when the webhook is triggered by a shop that has installed the app.
-
-Webhooks triggered by the CLI are intended for initial experimentation testing of your webhook configuration. For more information on how to test your webhooks, see the [Shopify CLI documentation](https://shopify.dev/docs/apps/tools/cli/commands#webhook-trigger).
-
-### Using Defer & await for streaming responses
-
-To test [streaming using defer/await](https://remix.run/docs/en/main/guides/streaming) during local development you'll need to use the Shopify CLI slightly differently:
-
-1. First setup ngrok: https://ngrok.com/product/secure-tunnels
-2. Create an ngrok tunnel on port 8080: `ngrok http 8080`.
-3. Copy the forwarding address. This should be something like: `https://f355-2607-fea8-bb5c-8700-7972-d2b5-3f2b-94ab.ngrok-free.app`
-4. In a separate terminal run `yarn shopify app dev --tunnel-url=TUNNEL_URL:8080` replacing `TUNNEL_URL` for the address you copied in step 3.
-
-By default the CLI uses a cloudflare tunnel. Unfortunately it cloudflare tunnels wait for the Response stream to finish, then sends one chunk.
-
-This will not affect production, since tunnels are only for local development.
-
-### Using MongoDB and Prisma
-
-By default this template uses SQLlite as the database. It is recommended to move to a persisted database for production. If you choose to use MongoDB, you will need to make some modifications to the schema and prisma configuration. For more information please see the [Prisma MongoDB documentation](https://www.prisma.io/docs/orm/overview/databases/mongodb).
-
-Alternatively  you can use a MongDB database directly with the [MongoDB session storage adapter](https://github.com/Shopify/shopify-app-js/tree/main/packages/apps/session-storage/shopify-app-session-storage-mongodb).
-
-#### Mapping the id field
-In MongoDB, an ID must be a single field that defines an @id attribute and a @map("_id") attribute.
-The prisma adapter expects the ID field to be the ID of the session, and not the _id field of the document.
-
-To make this work you can add a new field to the schema that maps the _id field to the id field. For more information see the [Prisma documentation](https://www.prisma.io/docs/orm/prisma-schema/data-model/models#defining-an-id-field)
-
-```prisma
-model Session {
-  session_id  String    @id @default(auto()) @map("_id") @db.ObjectId
-  id          String    @unique
-...
-}
-```
-
-####  Error: The "mongodb" provider is not supported with this command
-MongoDB does not support the [prisma migrate](https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate/overview) command. If you are using MongoDB please see the [Prisma documentation](https://www.prisma.io/docs/orm/overview/databases/mongodb) for more information.
-
-#### Prisma needs to perform transactions, which requires your mongodb server to be run as a replica set
-See the [Prisma documentation](https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/mongodb/connect-your-database-node-mongodb) for connecting to a MongoDB database.
-
-## Benefits
-
-Shopify apps are built on a variety of Shopify tools to create a great merchant experience.
-
-<!-- TODO: Uncomment this after we've updated the docs -->
-<!-- The [create an app](https://shopify.dev/docs/apps/getting-started/create) tutorial in our developer documentation will guide you through creating a Shopify app using this template. -->
-
-The Remix app template comes with the following out-of-the-box functionality:
-
-- [OAuth](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-admin-requests): Installing the app and granting permissions
-- [GraphQL Admin API](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#using-the-shopify-admin-graphql-api): Querying or mutating Shopify admin data
-- [REST Admin API](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#using-the-shopify-admin-rest-api): Resource classes to interact with the API
-- [Webhooks](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-webhook-requests): Callbacks sent by Shopify when certain events occur
-- [AppBridge](https://shopify.dev/docs/api/app-bridge): This template uses the next generation of the Shopify App Bridge library which works in unison with previous versions.
-- [Polaris](https://polaris.shopify.com/): Design system that enables apps to create Shopify-like experiences
-
-## Tech Stack
-
-This template uses [Remix](https://remix.run). The following Shopify tools are also included to ease app development:
-
-- [Shopify App Remix](https://shopify.dev/docs/api/shopify-app-remix) provides authentication and methods for interacting with Shopify APIs.
-- [Shopify App Bridge](https://shopify.dev/docs/apps/tools/app-bridge) allows your app to seamlessly integrate your app within Shopify's Admin.
-- [Polaris React](https://polaris.shopify.com/) is a powerful design system and component library that helps developers build high quality, consistent experiences for Shopify merchants.
-- [Webhooks](https://github.com/Shopify/shopify-app-js/tree/main/packages/shopify-app-remix#authenticating-webhook-requests): Callbacks sent by Shopify when certain events occur
-- [Polaris](https://polaris.shopify.com/): Design system that enables apps to create Shopify-like experiences
+Ensure that your **Cometh Connect** API key is valid and that the integration is correctly set up. Refer to the [Cometh Connect Documentation](https://docs.cometh.io/connect) for troubleshooting tips.
 
 ## Resources
 
-- [Remix Docs](https://remix.run/docs/en/v1)
+- [Remix Documentation](https://remix.run/docs/en/main#remix-docs)
 - [Shopify App Remix](https://shopify.dev/docs/api/shopify-app-remix)
-- [Introduction to Shopify apps](https://shopify.dev/docs/apps/getting-started)
-- [App authentication](https://shopify.dev/docs/apps/auth)
 - [Shopify CLI](https://shopify.dev/docs/apps/tools/cli)
-- [App extensions](https://shopify.dev/docs/apps/app-extensions/list)
-- [Shopify Functions](https://shopify.dev/docs/api/functions)
-- [Getting started with internationalizing your app](https://shopify.dev/docs/apps/best-practices/internationalization/getting-started)
+- [Cometh Connect Documentation](https://docs.cometh.io/connect)
+- [Render.com Documentation](https://render.com/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Shopify Polaris](https://polaris.shopify.com/)
+- [pnpm Documentation](https://pnpm.io/)
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
