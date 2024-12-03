@@ -12,6 +12,13 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
+## 📈 Pitch Deck
+
+Discover the vision and journey behind Shopify Unlock through our detailed pitch deck.
+
+[![View Pitch Deck](https://img.shields.io/badge/View_Pitch_Deck-Click_Here-blue)](https://www.canva.com/design/DAGI90JcDQA/O_y__9JnJ1i4PP-IKgD-xA/view?utm_content=DAGI90JcDQA&utm_campaign=designshare&utm_medium=link&utm_source=editor)
+
+
 ## 📖 Table of Contents
 
 - [✨ Features](#-features)
